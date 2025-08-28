@@ -1,11 +1,13 @@
 package Experiments.Eli_Herring;
 
+
 public class Test {
-    
-    
-    
+
     public static void main(String args[]){
-        
-        System.out.println(1 + 2);
+        Deck cards = new Deck("Standard");
+
+        for(int i = 0; i < 52; i++){
+            System.out.println(cards.deck[i].toString());
+        }
     }
 }
