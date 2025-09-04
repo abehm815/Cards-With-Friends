@@ -34,11 +34,33 @@ public class Deck {
                 Card temp = new Card(i,"Diamonds");
                 deck[i - 1 + 39] = temp;
             }
-
-
-
-
         } 
+
+        if(type == "Euchre"){
+
+            //This implementation causes the Ace card to have the value 14
+            deck = new Card[24];
+
+            for(int i = 0; i < 6; i++){
+                Card temp = new Card(i + 9, "Spades");
+                deck[i] = temp;
+            }
+
+            for(int i = 6; i < 12; i++){
+                Card temp = new Card(i + 9 - 6, "Hearts");
+                deck[i] = temp;
+            }
+
+            for(int i = 12; i < 18; i++){
+                Card temp = new Card(i + 9 - 12, "Clubs");
+                deck[i] = temp;
+            }
+
+            for(int i = 18; i < 24; i++) {
+                Card temp = new Card(i + 9 -18, "Diamonds");
+                deck[i] = temp;
+            }
+        }
         
     }
     
