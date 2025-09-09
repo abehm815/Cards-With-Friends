@@ -23,15 +23,21 @@ public class Person {
 
     private String telephone;
 
+    private String eMail;
+
+    private String favCardGame;
+
 //    public Person(){
 //
 //    }
 
-    public Person(String firstName, String lastName, String address, String telephone){
+    public Person(String firstName, String lastName, String address, String telephone, String EMail) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
         this.telephone = telephone;
+        this.eMail = eMail;
+        this.favCardGame = favCardGame;
     }
 
 
@@ -72,11 +78,29 @@ public class Person {
         this.telephone = telephone;
     }
 
+    public String getEMail() {
+        return this.eMail;
+    }
+
+    public void setEMail(String eMail) {
+        this.eMail = eMail;
+    }
+
+    public String getFavCardGame() {
+        return this.favCardGame;
+    }
+
+    public void setFavCardGame(String favCardGame) {
+        this.favCardGame = favCardGame;
+    }
+
     @Override
     public String toString() {
         return firstName + " " 
                + lastName + " "
                + address + " "
-               + telephone;
+               + telephone + " "
+               + eMail + " "
+               + favCardGame;
     }
 }
