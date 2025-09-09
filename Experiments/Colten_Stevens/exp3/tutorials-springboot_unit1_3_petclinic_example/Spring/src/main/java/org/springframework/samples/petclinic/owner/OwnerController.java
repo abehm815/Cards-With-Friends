@@ -18,10 +18,7 @@ package org.springframework.samples.petclinic.owner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -74,6 +71,25 @@ class OwnerController {
         logger.info("Entered into Controller Layer");
         Optional<Owners> results = ownersRepository.findById(id);
         return results;
+    }
+    @RequestMapping(method = RequestMethod.DELETE, path = "/owners/delete/{ownerId}")
+    public String deleteOwnerById(@PathVariable("ownerId") int id) {
+        logger.info("Entered into Controller Layer");
+        Owners temp = ownersRepository.findById(id).get();
+        ownersRepository.deleteById(id);
+        return "deleted owner " + temp.getFirstName();
+    }
+
+    @RequestMapping(method = RequestMethod.PUT, path = "/owners/change/{ownerId}")
+    public String updateOwner(@PathVariable("ownerId") int id, @RequestBody Owners updatedOwner) {
+        logger.info("Entered into Controller Layer");
+        Owners existingOwner = ownersRepository.getReferenceById(id);
+        existingOwner.setFirstName(updatedOwner.getFirstName());
+        existingOwner.setLastName(updatedOwner.getLastName());
+        existingOwner.setAddress(updatedOwner.getAddress());
+        existingOwner.setTelephone(updatedOwner.getTelephone());
+        ownersRepository.save(existingOwner);
+        return "updated " + existingOwner.getFirstName();
     }
 
 }
