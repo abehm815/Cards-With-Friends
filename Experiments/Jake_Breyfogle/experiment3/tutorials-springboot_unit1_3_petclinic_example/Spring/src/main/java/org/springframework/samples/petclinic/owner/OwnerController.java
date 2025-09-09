@@ -66,11 +66,45 @@ class OwnerController {
         return results;
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/owners/{ownerId}")
+    @RequestMapping(method = RequestMethod.GET, path = "/owners/id/{ownerId}")
     public Optional<Owners> findOwnerById(@PathVariable("ownerId") int id) {
         logger.info("Entered into Controller Layer");
         Optional<Owners> results = ownersRepository.findById(id);
         return results;
+    }
+
+    /**
+     * Delete method to remove an owner from the list
+     * @param id
+     * @return
+     */
+    @DeleteMapping("/owners/{ownerId}")
+    public String returnDeletedOwner(@PathVariable("ownerId") int id) {
+        // Get the owner from the repository
+        Owners DeletedOwner = ownersRepository.findById(id).get();
+
+        // Delete owner and log
+        ownersRepository.deleteById(id);
+        logger.info("Deleted user from database");
+
+        // Return string telling user what owner was deleted
+        return "Deleted " + DeletedOwner.getFirstName() + " " + DeletedOwner.getLastName() + " from the list.";
+    }
+
+    /**
+     * Find an owner by First Name
+     * @param name
+     * @return
+     */
+    @GetMapping("/owners/first/{ownerName}")
+    public Owners findOwnerByName(@PathVariable("ownerName") String name) {
+        List<Owners> allOwners = ownersRepository.findAll();
+        for (Owners o:allOwners) {
+            if (o.getFirstName().equals(name)) {
+                return o;
+            }
+        }
+        return null;
     }
 
 }
