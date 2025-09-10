@@ -62,16 +62,21 @@ public class Owners {
     @NotFound(action = NotFoundAction.IGNORE)
     private String telephone;
 
+    @Column(name = "age")
+    @NotFound(action = NotFoundAction.IGNORE)
+    private Integer age;
+
     public Owners(){
         
     }
 
-    public Owners(int id, String firstName, String lastName, String address, String telephone){
+    public Owners(int id, String firstName, String lastName, String address, String telephone, int age) {
         this.id = id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.address = address;
         this.telephone = telephone;
+        this.age = age;
     }
 
     public Integer getId() {
@@ -118,6 +123,10 @@ public class Owners {
         this.telephone = telephone;
     }
 
+    public Integer getAge() {return age;}
+
+    public void setAge(Integer age) {this.age = age;}
+
     @Override
     public String toString() {
         return new ToStringCreator(this)
@@ -127,6 +136,7 @@ public class Owners {
                 .append("lastName", this.getLastName())
                 .append("firstName", this.getFirstName())
                 .append("address", this.address)
-                .append("telephone", this.telephone).toString();
+                .append("telephone", this.telephone)
+                .append("age", this.getAge()).toString();
     }
 }

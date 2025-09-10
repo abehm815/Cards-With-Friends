@@ -45,12 +45,12 @@ class OwnerController {
         return "New Owner "+ owner.getFirstName() + " Saved";
     }
      // function just to create dummy data
-    @RequestMapping(method = RequestMethod.GET, path = "/owner/create")
+    @RequestMapping(method = RequestMethod.GET, path = "/owners/create")
     public String createDummyData() {
-        Owners o1 = new Owners(1, "John", "Doe", "404 Not found", "some numbers");
-        Owners o2 = new Owners(2, "Jane", "Doe", "Its a secret", "you wish");
-        Owners o3 = new Owners(3, "Some", "Pleb", "Right next to the Library", "515-345-41213");
-        Owners o4 = new Owners(4, "Chad", "Champion", "Reddit memes corner", "420-420-4200");
+        Owners o1 = new Owners(1, "John", "Doe", "404 Not found", "some numbers", 33);
+        Owners o2 = new Owners(2, "Jane", "Doe", "Its a secret", "you wish",27);
+        Owners o3 = new Owners(3, "Some", "Pleb", "Right next to the Library", "515-345-41213",12);
+        Owners o4 = new Owners(4, "Chad", "Champion", "Reddit memes corner", "420-420-4200",52);
         ownersRepository.save(o1);
         ownersRepository.save(o2);
         ownersRepository.save(o3);
@@ -84,10 +84,21 @@ class OwnerController {
     public String updateOwner(@PathVariable("ownerId") int id, @RequestBody Owners updatedOwner) {
         logger.info("Entered into Controller Layer");
         Owners existingOwner = ownersRepository.getReferenceById(id);
-        existingOwner.setFirstName(updatedOwner.getFirstName());
-        existingOwner.setLastName(updatedOwner.getLastName());
-        existingOwner.setAddress(updatedOwner.getAddress());
-        existingOwner.setTelephone(updatedOwner.getTelephone());
+        if(updatedOwner.getFirstName() != null) {
+            existingOwner.setFirstName(updatedOwner.getFirstName());
+        }
+        if (updatedOwner.getLastName() != null) {
+            existingOwner.setLastName(updatedOwner.getLastName());
+        }
+        if (updatedOwner.getAddress() != null) {
+            existingOwner.setAddress(updatedOwner.getAddress());
+        }
+        if (updatedOwner.getTelephone() != null) {
+            existingOwner.setTelephone(updatedOwner.getTelephone());
+        }
+        if (updatedOwner.getAge() != null) {
+            existingOwner.setAge(updatedOwner.getAge());
+        }
         ownersRepository.save(existingOwner);
         return "updated " + existingOwner.getFirstName();
     }
