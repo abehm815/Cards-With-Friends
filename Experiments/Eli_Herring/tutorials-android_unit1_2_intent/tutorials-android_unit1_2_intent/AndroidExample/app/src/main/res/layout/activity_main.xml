@@ -18,11 +18,26 @@
         android:textColor="#3F51B5">
     </TextView>
 
+    <TextView
+
+        android:id="@+id/total_presses_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_gravity="center"
+        android:gravity="center"
+        android:layout_marginTop="100dp"
+        android:layout_marginBottom="100dp"
+        android:textSize="30dp"
+        android:textColor="#550000">
+
+    </TextView>
+
     <Button
         android:id="@+id/main_counter_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="100dp"
+
         android:layout_gravity="center"
         android:text="To the Counter Activity"
         android:textSize="20sp"

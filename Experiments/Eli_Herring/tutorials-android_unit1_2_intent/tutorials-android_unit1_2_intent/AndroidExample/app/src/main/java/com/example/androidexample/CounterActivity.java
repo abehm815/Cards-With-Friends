@@ -22,6 +22,8 @@ public class CounterActivity extends AppCompatActivity {
     private Button divBtn;
     private int counter = 0;    // counter variable
 
+    private int moveCounter=0; //counts number of button presses
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,6 +48,7 @@ public class CounterActivity extends AppCompatActivity {
                     numberTxt.setText(String.valueOf(++counter));
                     errorMessage.setText("");
                 }
+                moveCounter+=1;
             }
         });
 
@@ -59,6 +62,7 @@ public class CounterActivity extends AppCompatActivity {
                     numberTxt.setText(String.valueOf(--counter));
                     errorMessage.setText("");
                 }
+                moveCounter +=1;
             }
         });
 
@@ -74,6 +78,7 @@ public class CounterActivity extends AppCompatActivity {
                     numberTxt.setText(String.valueOf(counter));
                     errorMessage.setText("");
                 }
+                moveCounter+=1;
             }
         });
 
@@ -86,7 +91,7 @@ public class CounterActivity extends AppCompatActivity {
                 }else{
                     errorMessage.setText("Cannot divide an odd number by 2");
                 }
-
+                moveCounter+=1;
             }
         });
 
@@ -94,9 +99,10 @@ public class CounterActivity extends AppCompatActivity {
         backBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Intent intent = new Intent(CounterActivity.this, MainActivity.class);
-                intent.putExtra("NUM", String.valueOf(counter));  // key-value to pass to the MainActivity
-                startActivity(intent);
+                Intent intent1 = new Intent(CounterActivity.this, MainActivity.class);
+                intent1.putExtra("NUM", String.valueOf(counter));  // key-value to pass to the MainActivity
+                intent1.putExtra("PRESSES", String.valueOf(moveCounter));
+                startActivity(intent1);
             }
         });
 
