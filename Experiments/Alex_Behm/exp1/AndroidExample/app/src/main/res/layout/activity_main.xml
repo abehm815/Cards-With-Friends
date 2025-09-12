@@ -28,7 +28,7 @@
     </TextView>
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/play_button"
         android:layout_width="210sp"
         android:layout_height="wrap_content"
         android:layout_gravity="center"

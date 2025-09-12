@@ -11,8 +11,6 @@ import android.widget.TextView;
 
 public class CounterActivity extends AppCompatActivity {
 
-    private String lobbyID;
-
     private TextView lobbyText;
 
     private boolean isValidLobby;
@@ -43,18 +41,18 @@ public class CounterActivity extends AppCompatActivity {
             }
         }
 
-        // Set text to see if we are in a lobby or not
+        // Set and format text to show if we are in a lobby or not
         if (isValidLobby){
-            lobbyText.setText("Entered Lobby: " + lobbyID);
+            lobbyText.setText("Entered Lobby, ID" + ": " + lobbyID);
             lobbyText.setTextColor(Color.GREEN);
-            backButton.setText("Leave");
+            backButton.setText("Back");
             backButton.setBackgroundColor(Color.RED);
         }
         else{
             lobbyText.setText("Not a valid lobby");
             lobbyText.setTextColor(Color.RED);
             backButton.setText("Retry");
-            backButton.setBackgroundColor(Color.YELLOW);
+            backButton.setBackgroundColor(Color.DKGRAY);
         }
 
         // Set back button to communicate the lobby ID back to the main activity
