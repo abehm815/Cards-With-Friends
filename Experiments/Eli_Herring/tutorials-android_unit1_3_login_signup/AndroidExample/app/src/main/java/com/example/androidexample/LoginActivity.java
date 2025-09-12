@@ -29,10 +29,12 @@ public class LoginActivity extends AppCompatActivity {
     private TextView userText;
 
     private TextView passwordText;
-    static String[][] whiteList = new String[][] {
-            {"Tom", "1234"},
-            {"Bob", "5678"},
-            {"Mike", "3333"}
+    static String[][] whiteList = new String[][] { //list of admin users and passwords
+            //not secure at all, but I have no access to backend/database right now
+            {"Eli", "3333"},
+            {"Alex", "3333"},
+            {"Jake", "3333"},
+            {"Colten","3333"}
     };
 
     static boolean stringPairCompare(String[] pair1, String[] pair2){
@@ -91,6 +93,13 @@ public class LoginActivity extends AppCompatActivity {
 
         } else {
             loginLayout.setBackgroundColor(Color.parseColor("#FFFFFF"));
+            usernameEditText.setTextColor(Color.parseColor("#000000"));
+            passwordEditText.setTextColor(Color.parseColor("#000000"));
+
+
+            header.setTextColor(Color.parseColor("#000000"));
+            userText.setTextColor(Color.parseColor("#000000"));
+            passwordText.setTextColor(Color.parseColor("#000000"));
 
 
         }

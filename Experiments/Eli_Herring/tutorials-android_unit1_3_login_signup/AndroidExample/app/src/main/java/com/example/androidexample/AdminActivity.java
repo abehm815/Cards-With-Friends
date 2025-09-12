@@ -50,7 +50,16 @@ public class AdminActivity extends  AppCompatActivity{
         messageText.setText("admin " + adminName);
 
 
+        if(extras.getBoolean("DARKMODE")){
+            welcomeText.setTextColor(Color.parseColor("#BDBDBD"));
+            adminLayout.setBackgroundColor(Color.parseColor("#1F1F1F"));
+            messageText.setTextColor(Color.parseColor("#BDBDBD"));
 
+        } else{
+            welcomeText.setTextColor(Color.parseColor("#000000"));
+            adminLayout.setBackgroundColor(Color.parseColor("#FFFFFF"));
+            messageText.setTextColor(Color.parseColor("#000000"));
+        }
 
 
 
