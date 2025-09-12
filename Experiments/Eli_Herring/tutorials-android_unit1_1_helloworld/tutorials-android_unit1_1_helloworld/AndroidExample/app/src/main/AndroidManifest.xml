@@ -21,6 +21,19 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".PlayActivity"
+            android:exported="false">
+
+        </activity>
+        <activity
+            android:name=".EuchreActivity"
+            android:exported="false"
+            ></activity>
+        <activity
+            android:name=".BlackjackActivity"
+            android:exported="false">
+
+        </activity>
     </application>
 
 </manifest>
