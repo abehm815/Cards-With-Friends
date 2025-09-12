@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg">
+
+    <!-- Title -->
+    <TextView
+        android:id="@+id/account_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sign Up Complete"
+        android:fontFamily="@font/inter_bold"
+        android:textSize="40sp"
+        android:textColor="#fc0303"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="80dp"/>
+
+    <!-- Dynamic Account Info (set in Java) -->
+    <TextView
+        android:id="@+id/account_info_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+    android:fontFamily="@font/inter_regular"
+    android:textSize="20sp"
+    android:textColor="#ffffff"
+    app:layout_constraintTop_toBottomOf="@id/account_title"
+    app:layout_constraintStart_toStartOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    android:layout_marginTop="40dp"/>
+
+    <!-- Logout Button -->
+    <Button
+        android:id="@+id/account_logout_btn"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="Logout"
+        android:textSize="18sp"
+        android:fontFamily="@font/inter_black"
+        android:textColor="#ffffff"
+        android:backgroundTint="#fc0303"
+        app:layout_constraintTop_toBottomOf="@id/account_info_text"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="60dp"/>
+</androidx.constraintlayout.widget.ConstraintLayout>

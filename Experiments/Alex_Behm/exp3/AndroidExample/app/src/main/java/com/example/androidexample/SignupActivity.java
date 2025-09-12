@@ -51,7 +51,10 @@ public class SignupActivity extends AppCompatActivity {
                 String confirm = confirmEditText.getText().toString();
 
                 if (password.equals(confirm)){
-                    Toast.makeText(getApplicationContext(), "Signing up", Toast.LENGTH_LONG).show();
+                    Intent intent = new Intent(SignupActivity.this, AccountActivity.class);
+                    intent.putExtra("USERNAME", username);
+                    intent.putExtra("PASSWORD", password);
+                    startActivity(intent);
                 }
                 else {
                     Toast.makeText(getApplicationContext(), "Password don't match", Toast.LENGTH_LONG).show();
