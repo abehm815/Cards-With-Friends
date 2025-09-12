@@ -80,4 +80,13 @@ public class Player {
     public void removeCard(MyCard card) {
         hand.remove(card);
     }
+
+    public String hasCard(int value) {
+        for (MyCard c : hand) {
+            if (c.getValue() == value) {
+                return name + " has a " + Integer.toString(value);
+            }
+        }
+        return name + " does not have a " + Integer.toString(value) + ". Go Fish!";
+    }
 }

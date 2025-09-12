@@ -39,6 +39,11 @@ class OwnerController {
 
     private final Logger logger = LoggerFactory.getLogger(OwnerController.class);
 
+    /**
+     * This method adds a new owner
+     * @param owner
+     * @return
+     */
     @RequestMapping(method = RequestMethod.POST, path = "/owners/new")
     public String saveOwner(Owners owner) {
         ownersRepository.save(owner);
@@ -58,6 +63,10 @@ class OwnerController {
         return "Successfully created dummy data";
     }
 
+    /**
+     * This method GETS all of the owners
+     * @return
+     */
     @RequestMapping(method = RequestMethod.GET, path = "/owners")
     public List<Owners> getAllOwners() {
         logger.info("Entered into Controller Layer");
@@ -66,6 +75,11 @@ class OwnerController {
         return results;
     }
 
+    /**
+     * This method GETS an owner based off of its ID
+     * @param id
+     * @return
+     */
     @RequestMapping(method = RequestMethod.GET, path = "/owners/id/{ownerId}")
     public Optional<Owners> findOwnerById(@PathVariable("ownerId") int id) {
         logger.info("Entered into Controller Layer");
