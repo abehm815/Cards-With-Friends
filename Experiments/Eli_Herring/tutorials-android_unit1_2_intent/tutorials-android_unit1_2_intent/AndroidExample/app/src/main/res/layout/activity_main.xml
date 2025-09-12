@@ -13,6 +13,7 @@
         android:layout_height="wrap_content"
         android:text="Intent Example"
         android:layout_gravity="center"
+        android:gravity="center"
         android:layout_marginTop="200dp"
         android:textSize="30dp"
         android:textColor="#3F51B5">
