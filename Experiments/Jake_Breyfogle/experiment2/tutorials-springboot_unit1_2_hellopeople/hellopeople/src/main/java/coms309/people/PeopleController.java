@@ -14,6 +14,9 @@ import java.util.UUID;
  * @author Vivek Bengre
  */
 
+/**
+ * I used this experiment to familiarize myself with postman
+ */
 @RestController
 public class PeopleController {
 
