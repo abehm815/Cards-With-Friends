@@ -27,6 +27,9 @@ public class AdminActivity extends  AppCompatActivity{
     private ConstraintLayout adminLayout;
 
 
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState){
         super.onCreate(savedInstanceState);
@@ -42,16 +45,21 @@ public class AdminActivity extends  AppCompatActivity{
 
         Bundle extras = getIntent().getExtras();
 
-
-        String adminName = extras.getString("PASSWORD");
-
+        //should wrap this in an if else for if extras == null
+        String adminName = extras.getString("USERNAME");
         messageText.setText("admin " + adminName);
+
+
+
+
+
 
         darkButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 welcomeText.setTextColor(Color.parseColor("#BDBDBD"));
                 adminLayout.setBackgroundColor(Color.parseColor("#1F1F1F"));
+                messageText.setTextColor(Color.parseColor("#BDBDBD"));
 
             }
         });
@@ -61,6 +69,7 @@ public class AdminActivity extends  AppCompatActivity{
             public void onClick(View v) {
                 welcomeText.setTextColor(Color.parseColor("#000000"));
                 adminLayout.setBackgroundColor(Color.parseColor("#FFFFFF"));
+                messageText.setTextColor(Color.parseColor("#000000"));
 
 
             }

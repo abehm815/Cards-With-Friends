@@ -17,6 +17,9 @@ public class SignupActivity extends AppCompatActivity {
     private Button loginButton;         // define login button variable
     private Button signupButton;        // define signup button variable
 
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

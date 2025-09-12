@@ -16,6 +16,32 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;         // define login button variable
     private Button signupButton;        // define signup button variable
 
+    static String[][] whiteList = new String[][] {
+            {"Tom", "1234"},
+            {"Bob", "5678"},
+            {"Mike", "3333"}
+    };
+
+    static boolean stringPairCompare(String[] pair1, String[] pair2){
+
+        for(int i = 0; i < 2; i++){
+            if(!pair1[i].equals(pair2[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+    static boolean isWhiteListed(String user, String pass){
+        String[] upInfo = new String[] {user,pass};
+
+        for(String[] whiteInfo : whiteList){
+            if(stringPairCompare(whiteInfo, upInfo)){
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -27,11 +53,7 @@ public class LoginActivity extends AppCompatActivity {
         signupButton = findViewById(R.id.login_signup_btn);  // link to signup button in the Login activity XML
 
 
-        String[][] whiteList = new String[][] {
-                {"Tom", "1234"},
-                {"Bob", "5678"},
-                {"Mike", "3333"}
-        };
+
 
 
 
@@ -46,9 +68,9 @@ public class LoginActivity extends AppCompatActivity {
                 String password = passwordEditText.getText().toString();
 
                 Intent intent;// go to MainActivity with the key-value data
-                if(username.equals("admin") && password.equals("pass")){
+                if(isWhiteListed(username,password)){
                     intent = new Intent(LoginActivity.this, AdminActivity.class);
-                    intent.putExtra("PASSWORD", password);
+                    intent.putExtra("USERNAME", username);
                 } else {
 
                     /* when login button is pressed, use intent to switch to Login Activity */
