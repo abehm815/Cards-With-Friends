@@ -3,9 +3,11 @@ package com.example.androidexample;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -41,36 +43,51 @@ import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView messageText;     // define message textview variable
-    private Button counterButton;     // define counter button variable
+    private Button joinButton;
+
+    private String lobbyID;
+
+    private EditText lobbyInput;
+
+    private TextView lobbyText;
+
+    private Boolean isValidLobby;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);             // link to Main activity XML
+        setContentView(R.layout.activity_main);// link to Main activity XML
 
-        /* initialize UI elements */
-        messageText = findViewById(R.id.main_msg_txt);      // link to message textview in the Main activity XML
-        counterButton = findViewById(R.id.main_counter_btn);// link to counter button in the Main activity XML
+        // Link up UI components
+        joinButton = findViewById(R.id.join_button);
+        lobbyInput = findViewById(R.id.lobby_code_input);
+        lobbyText = findViewById(R.id.lobby_ind_text);
 
-        /* extract data passed into this activity from another activity */
-        Bundle extras = getIntent().getExtras();
-        if(extras == null) {
-            messageText.setText("Intent Example");
-        } else {
-            String number = extras.getString("NUM");  // this will come from LoginActivity
-            messageText.setText("The number was " + number);
+        // Get lobby ID and its validity from CounterActivity
+        Intent intent = getIntent();
+        lobbyID = intent.getStringExtra("LOBBY_ID");
+        isValidLobby = intent.getBooleanExtra("VALID_LOBBY", false);
+
+        // Check if we are in a lobby and display to user
+        if (!isValidLobby){
+            lobbyText.setText("You are not in a lobby");
+            lobbyText.setTextColor(Color.RED);
+        }
+        else {
+            lobbyText.setText("You are in a lobby!: " + lobbyID);
+            lobbyText.setTextColor(Color.GREEN);
         }
 
-        /* click listener on counter button pressed */
-        counterButton.setOnClickListener(new View.OnClickListener() {
+        // Grabs the lobby ID from the textfield and moves to the CounterActivity when Join Lobby is pressed
+        View.OnClickListener buttonListener = new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-
-                /* when counter button is pressed, use intent to switch to Counter Activity */
+            public void onClick(View view) {
+                String lobbyCode = lobbyInput.getText().toString();
                 Intent intent = new Intent(MainActivity.this, CounterActivity.class);
+                intent.putExtra("LOBBY_ID", lobbyCode);
                 startActivity(intent);
             }
-        });
+        };
+        joinButton.setOnClickListener(buttonListener);
     }
 }
