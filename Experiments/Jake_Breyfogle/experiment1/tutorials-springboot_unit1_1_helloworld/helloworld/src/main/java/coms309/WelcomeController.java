@@ -9,6 +9,7 @@ import java.util.List;
 class WelcomeController {
 
     List<Integer> CardValues = new ArrayList<>();
+    List<Player> players = new ArrayList<>();
 
     @GetMapping("/")
     public String base() {
@@ -35,4 +36,41 @@ class WelcomeController {
     // Removes a card from the list
     @DeleteMapping("/cards/{cardValue}")
     public void deleteCard(@PathVariable int cardValue) { CardValues.remove(cardValue); }
+
+    // Adds a new player to the DB
+    @PostMapping("/players")
+    public String addPlayer(@RequestBody Player player) {
+        System.out.println(player);
+        players.add(player);
+        return "New person "+ player.getName() + " Saved";
+    }
+
+    // Gets all players from the DB
+    @GetMapping("/players")
+    public List<Player> getPlayers() { return players; }
+
+    // Deletes a player from the DB
+    @DeleteMapping("/players/{name}")
+    public String deletePlayer(@PathVariable String name) {
+        for(Player p : players) {
+            if(p.getName().equals(name)) {
+                players.remove(p);
+                return "Player " + name + " has been deleted";
+            }
+        }
+        return "Player " + name + " not found";
+    }
+
+    // Updates a player in the DB
+    @PutMapping("/players/{name}")
+    public String updatePlayer(@PathVariable String name, @RequestBody Player updatedPlayer) {
+        for (Player p : players) {
+           if (p.getName().equals(name)) {
+               players.remove(p);
+               players.add(updatedPlayer);
+               return "Player " + name + " has been updated";
+           }
+        }
+        return "Player " + name + " not found";
+    }
 }
