@@ -41,8 +41,10 @@ import org.w3c.dom.Text;
 
 public class MainActivity extends AppCompatActivity {
 
-    private TextView messageText;     // define message textview variable
-    private Button counterButton;     // define counter button variable
+    private TextView messageText;// define message textview variable
+    private Button counterButton;// define counter button variable
+
+    private TextView totalText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,14 +54,16 @@ public class MainActivity extends AppCompatActivity {
         /* initialize UI elements */
         messageText = findViewById(R.id.main_msg_txt);      // link to message textview in the Main activity XML
         counterButton = findViewById(R.id.main_counter_btn);// link to counter button in the Main activity XML
-
+        totalText = findViewById(R.id.total_presses_txt);
         /* extract data passed into this activity from another activity */
         Bundle extras = getIntent().getExtras();
         if(extras == null) {
             messageText.setText("Intent Example");
         } else {
             String number = extras.getString("NUM");  // this will come from LoginActivity
+            String count = extras.getString("PRESSES");
             messageText.setText("The number was " + number);
+            totalText.setText("You found " + number + " in " + count + " button presses");
         }
 
         /* click listener on counter button pressed */
