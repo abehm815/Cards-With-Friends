@@ -61,5 +61,18 @@
         android:fontFamily="@font/inter_bold">
     </Button>
 
+    <Button
+        android:id="@+id/main_logout_btn"
+        android:layout_width="150dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"
+        android:text="Logout"
+        android:backgroundTint="@color/black"
+        android:textSize="20sp"
+        android:textColor="@color/my_red"
+        android:fontFamily="@font/inter_bold">
+    </Button>
+
 
 </androidx.appcompat.widget.LinearLayoutCompat>
