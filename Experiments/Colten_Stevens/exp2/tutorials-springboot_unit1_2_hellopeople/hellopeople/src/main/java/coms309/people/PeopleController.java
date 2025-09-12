@@ -99,5 +99,21 @@ public class PeopleController {
         peopleList.remove(firstName);
         return peopleList;
     }
+    @GetMapping("/people/count") public String getPersonCount(){
+        return "there are "+ peopleList.size() +" people in the database";
+    }
+
+    @GetMapping("/people/sorted")
+    public List<Person> getSortedPeople(@RequestParam(defaultValue = "first") String by) {
+        List<Person> sortedList = new ArrayList<>(peopleList.values());
+
+        if (by.equalsIgnoreCase("last")) {
+            sortedList.sort((p1, p2) -> p1.getLastName().compareToIgnoreCase(p2.getLastName()));
+        } else {
+            sortedList.sort((p1, p2) -> p1.getFirstName().compareToIgnoreCase(p2.getFirstName()));
+        }
+        return sortedList;
+    }
+
 } // end of people controller
 

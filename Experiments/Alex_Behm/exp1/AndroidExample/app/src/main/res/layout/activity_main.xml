@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!-- Outer Layout Container (Background) -->
+<!-- Background image by Raka Miftah, source: https://www.pexels.com/photo/black-playing-cards-on-black-background-4253484/-->
+<androidx.appcompat.widget.LinearLayoutCompat
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    tools:context=".MainActivity"
+    android:layout_height="match_parent"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/card_bg"
+    >
+
+    <!-- Game title text -->
+    <TextView
+        android:id="@+id/main_msg_txt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="50dp"
+        android:textSize="70sp"
+        android:fontFamily="@font/inter_black"
+        android:text="Euchre"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:textColor="#ffffff" >
+    </TextView>
+
+    <Button
+        android:id="@+id/play_button"
+        android:layout_width="210sp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:backgroundTint="@color/brand_red"
+        android:textSize="30sp"
+        android:fontFamily="@font/inter_black"
+        android:text="Play" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>

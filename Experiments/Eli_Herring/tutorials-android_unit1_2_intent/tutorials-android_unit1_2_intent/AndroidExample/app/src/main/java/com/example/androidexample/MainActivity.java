@@ -10,6 +10,8 @@ import android.widget.TextView;
 
 import org.w3c.dom.Text;
 
+import java.util.Random;
+
 /*
 
 1. To run this project, open the directory "Android Example", otherwise it may not recognize the file structure properly
@@ -46,6 +48,15 @@ public class MainActivity extends AppCompatActivity {
 
     private TextView totalText;
 
+
+
+    private int newNumber(){
+        Random rand = new Random(System.currentTimeMillis());
+        int lowerBound = -9999;
+        int upperBound = 9999;
+        return rand.nextInt(upperBound - lowerBound + 1) + lowerBound;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,12 +69,13 @@ public class MainActivity extends AppCompatActivity {
         /* extract data passed into this activity from another activity */
         Bundle extras = getIntent().getExtras();
         if(extras == null) {
-            messageText.setText("Intent Example");
+            messageText.setText("How many button presses does it take you to get to 777?");
         } else {
             String number = extras.getString("NUM");  // this will come from LoginActivity
             String count = extras.getString("PRESSES");
-            messageText.setText("The number was " + number);
-            totalText.setText("You found " + number + " in " + count + " button presses");
+            String newRandomNumber = String.valueOf(newNumber());
+            messageText.setText("You found " + number + " in " + count + " button presses");
+            totalText.setText("How many button presses will it take you to find " + newRandomNumber + "?");
         }
 
         /* click listener on counter button pressed */
