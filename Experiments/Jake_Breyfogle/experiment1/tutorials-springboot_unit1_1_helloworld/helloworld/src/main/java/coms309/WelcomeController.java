@@ -35,7 +35,17 @@ class WelcomeController {
 
     // Removes a card from the list
     @DeleteMapping("/cards/{cardValue}")
-    public void deleteCard(@PathVariable int cardValue) { CardValues.remove(cardValue); }
+    public String deleteCard(@PathVariable int cardValue) {
+        int index = 0;
+        for (int value : CardValues) {
+            if (value == cardValue) {
+                CardValues.remove(index);
+                return "Deleted card value " + Integer.toString(cardValue);
+            }
+            index++;
+        }
+        return "Card value not found";
+    }
 
     // Adds a new player to the DB
     @PostMapping("/players")
