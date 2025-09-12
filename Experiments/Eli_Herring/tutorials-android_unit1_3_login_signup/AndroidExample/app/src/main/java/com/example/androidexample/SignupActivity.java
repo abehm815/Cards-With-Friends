@@ -1,6 +1,7 @@
 package com.example.androidexample;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -17,7 +18,9 @@ public class SignupActivity extends AppCompatActivity {
     private Button loginButton;         // define login button variable
     private Button signupButton;        // define signup button variable
 
+    private ConstraintLayout signupLayout;
 
+    private Boolean darkModeOn = false;
 
 
     @Override

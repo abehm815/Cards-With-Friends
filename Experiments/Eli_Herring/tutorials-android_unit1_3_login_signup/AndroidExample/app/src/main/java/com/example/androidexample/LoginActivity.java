@@ -1,13 +1,17 @@
 package com.example.androidexample;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.constraintlayout.widget.ConstraintLayout;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
 import android.widget.EditText;
+import android.widget.TextView;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -16,6 +20,15 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;         // define login button variable
     private Button signupButton;        // define signup button variable
 
+    private Boolean darkModeOn = false;
+
+    private LinearLayoutCompat loginLayout;
+
+    private TextView header;
+
+    private TextView userText;
+
+    private TextView passwordText;
     static String[][] whiteList = new String[][] {
             {"Tom", "1234"},
             {"Bob", "5678"},
@@ -47,13 +60,40 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);            // link to Login activity XML
         /* initialize UI elements */
+        header = findViewById(R.id.loginText);
+        userText = findViewById(R.id.usernameText);
+        passwordText = findViewById(R.id.password_text);
+
+
         usernameEditText = findViewById(R.id.login_username_edt);
         passwordEditText = findViewById(R.id.login_password_edt);
         loginButton = findViewById(R.id.login_login_btn);    // link to login button in the Login activity XML
         signupButton = findViewById(R.id.login_signup_btn);  // link to signup button in the Login activity XML
+        loginLayout = findViewById(R.id.loginLayout);
+
+        Bundle extras = getIntent().getExtras();
+
+        if(extras != null){
+            darkModeOn = extras.getBoolean("DARKMODE");
+        }
+
+        if(darkModeOn) {
+            loginLayout.setBackgroundColor(Color.parseColor("#1F1F1F"));
+            usernameEditText.setTextColor(Color.parseColor("#BDBDBD"));
+            passwordEditText.setTextColor(Color.parseColor("#BDBDBD"));
+
+
+            header.setTextColor(Color.parseColor("#BDBDBD"));
+            userText.setTextColor(Color.parseColor("#BDBDBD"));
+            passwordText.setTextColor(Color.parseColor("#BDBDBD"));
 
 
 
+        } else {
+            loginLayout.setBackgroundColor(Color.parseColor("#FFFFFF"));
+
+
+        }
 
 
 
@@ -71,12 +111,14 @@ public class LoginActivity extends AppCompatActivity {
                 if(isWhiteListed(username,password)){
                     intent = new Intent(LoginActivity.this, AdminActivity.class);
                     intent.putExtra("USERNAME", username);
+                    intent.putExtra("DARKMODE",darkModeOn);
                 } else {
 
                     /* when login button is pressed, use intent to switch to Login Activity */
                     intent = new Intent(LoginActivity.this, MainActivity.class);
                     intent.putExtra("USERNAME", username);  // key-value to pass to the MainActivity
                     intent.putExtra("PASSWORD", password);  // key-value to pass to the MainActivity
+                    intent.putExtra("DARKMODE",darkModeOn);
                 }
                 startActivity(intent);
             }
@@ -89,6 +131,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 /* when signup button is pressed, use intent to switch to Signup Activity */
                 Intent intent = new Intent(LoginActivity.this, SignupActivity.class);
+                intent.putExtra("DARKMODE",darkModeOn);
                 startActivity(intent);  // go to SignupActivity
             }
         });

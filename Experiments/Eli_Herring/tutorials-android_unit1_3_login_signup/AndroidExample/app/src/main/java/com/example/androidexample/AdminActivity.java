@@ -26,7 +26,7 @@ public class AdminActivity extends  AppCompatActivity{
 
     private ConstraintLayout adminLayout;
 
-
+    private Boolean darkModeOn = false;
 
 
 
@@ -60,6 +60,7 @@ public class AdminActivity extends  AppCompatActivity{
                 welcomeText.setTextColor(Color.parseColor("#BDBDBD"));
                 adminLayout.setBackgroundColor(Color.parseColor("#1F1F1F"));
                 messageText.setTextColor(Color.parseColor("#BDBDBD"));
+                darkModeOn = true;
 
             }
         });
@@ -70,6 +71,7 @@ public class AdminActivity extends  AppCompatActivity{
                 welcomeText.setTextColor(Color.parseColor("#000000"));
                 adminLayout.setBackgroundColor(Color.parseColor("#FFFFFF"));
                 messageText.setTextColor(Color.parseColor("#000000"));
+                darkModeOn = false;
 
 
             }
@@ -79,6 +81,7 @@ public class AdminActivity extends  AppCompatActivity{
             @Override
             public void onClick(View v){
                 Intent intent = new Intent(AdminActivity.this, LoginActivity.class);
+                intent.putExtra("DARKMODE",darkModeOn);
                 startActivity(intent);
             }
         });
