@@ -27,9 +27,6 @@ public class Person {
 
     private String favCardGame;
 
-//    public Person(){
-//
-//    }
 
     public Person(String firstName, String lastName, String address, String telephone, String EMail) {
         this.firstName = firstName;
