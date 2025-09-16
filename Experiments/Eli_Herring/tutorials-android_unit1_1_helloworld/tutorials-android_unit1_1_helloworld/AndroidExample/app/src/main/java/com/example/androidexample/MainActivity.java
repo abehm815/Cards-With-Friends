@@ -16,7 +16,7 @@ import org.w3c.dom.Text;
 
 2. Ensure you are using a compatible version of gradle, to do so you need to check 2 files.
 
-    AndroidExample/Gradle Scripts/build.gradle
+    CardsWithFriends/Gradle Scripts/build.gradle
     Here, you will have this block of code. Ensure it is set to a compatible version,
     in this case 8.12.2 should be sufficient:
         plugins {
