@@ -1,7 +1,7 @@
 package Backend.User;
 
 // Holds the stats for Go Fish games
-public class GoFishStats extends GameStats {
+public class GoFishStats extends AppUser.GameStats {
     // Stats
     private int timesWentFishing;
     private int questionsAsked;
