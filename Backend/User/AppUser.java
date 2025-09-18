@@ -1,4 +1,6 @@
-package Backend;
+package Backend.User;
+
+import Backend.MyCard;
 
 import java.util.List;
 
@@ -12,9 +14,6 @@ public class AppUser {
     public int userID;
     public List<MyCard> hand;
     public boolean inLobby = false;
-    public int tricksWon = 0;
-    public int gamesWon =0;
-    public int gamesLost = 0;
 
     //constructor for a AppUser
     public void AppUser(String username, String password, String email, String firstName, String lastName, int age, int userID) {
@@ -82,37 +81,13 @@ public class AppUser {
         this.userID = userID;
     }
 
-    public int getTricksWon() {
-        return this.tricksWon;
-    }
-
-    public void setTricksWon(int tricksWon) {
-        this.tricksWon = tricksWon;
-    }
-
-    public int getGamesWon() {
-        return this.gamesWon;
-    }
-
-    public void setGamesWon(int gamesWon) {
-        this.gamesWon = gamesWon;
-    }
-
-    public int getGamesLost() {
-        return this.gamesLost;
-    }
-
-    public void setGamesLost(int gamesLost) {
-        this.gamesLost = gamesLost;
-    }
-
     public List<MyCard> getHand() {
         return this.hand;
     }
 
     @Override
     public String toString() {
-        return username + " " + tricksWon + " " + gamesWon + " " + gamesLost + " win loss ratio " + String.format("%.2f", (double) gamesWon / gamesLost);
+        return username;
     }
 
 }
