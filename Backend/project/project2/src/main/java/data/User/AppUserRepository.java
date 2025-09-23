@@ -1,4 +1,4 @@
-package Backend.User;
+package data.User;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;

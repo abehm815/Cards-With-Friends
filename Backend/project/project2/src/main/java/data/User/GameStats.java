@@ -1,4 +1,4 @@
-package Backend.User;
+package data.User;
 
 // This is a base class that has methods that all the other stat classes will use
 public abstract class GameStats {

@@ -1,4 +1,4 @@
-package Backend.User;
+package data.User;
 
 public class BlackjackStats extends GameStats {
     // Stats
