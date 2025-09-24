@@ -22,7 +22,6 @@ public class HomeActivity extends AppCompatActivity {
         //Get username and password from signup screen and display it to the user
         Intent intent = getIntent();
         username = intent.getStringExtra("USERNAME");
-        profileButton.setText(username);
 
         //Create a listener for the logout button (Links back to main page when clicked)
         View.OnClickListener profileListener = new View.OnClickListener() {
