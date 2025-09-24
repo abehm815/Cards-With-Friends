@@ -1,0 +1,10 @@
+#Tue Sep 16 11:17:16 CDT 2025
+base.0=C\:\\1_srijita_5\\Frontend\\CardsWithFriends\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
+base.1=C\:\\1_srijita_5\\Frontend\\CardsWithFriends\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
+base.2=C\:\\1_srijita_5\\Frontend\\CardsWithFriends\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\8\\classes.dex
+path.0=classes.dex
+path.1=0/classes.dex
+path.2=8/classes.dex
+renamed.0=classes.dex
+renamed.1=classes2.dex
+renamed.2=classes3.dex
