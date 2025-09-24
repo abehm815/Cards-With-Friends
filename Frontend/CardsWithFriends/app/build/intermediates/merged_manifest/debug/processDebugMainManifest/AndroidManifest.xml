@@ -33,6 +33,12 @@
             android:name="com.example.androidexample.HomeActivity"
             android:exported="false" />
         <activity
+            android:name="com.example.androidexample.AdminActivity"
+            android:exported="false" />
+        <activity
+            android:name="com.example.androidexample.ModeratorActivity"
+            android:exported="false" />
+        <activity
             android:name="com.example.androidexample.SignupActivity"
             android:exported="false" />
         <activity

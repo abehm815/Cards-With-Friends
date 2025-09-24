@@ -22,9 +22,13 @@ id signup_confirm_edt
 id signup_password_edt
 id signup_signup_btn
 id signup_username_edt
+id textView
+id textView2
+layout activity_admin
 layout activity_home
 layout activity_login
 layout activity_main
+layout activity_moderator
 layout activity_profile
 layout activity_signup
 mipmap ic_launcher
