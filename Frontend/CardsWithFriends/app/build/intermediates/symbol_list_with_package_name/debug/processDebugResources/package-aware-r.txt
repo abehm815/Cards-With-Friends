@@ -3467,6 +3467,10 @@ id textSpacerNoTitle
 id textStart
 id textTop
 id textView
+<<<<<<< HEAD
+=======
+id textView2
+>>>>>>> b1b735ada6578a521d41dcad81dd61a70ddf6619
 id text_input_end_icon
 id text_input_error_icon
 id text_input_start_icon
@@ -3632,6 +3636,7 @@ layout activity_admin
 layout activity_home
 layout activity_login
 layout activity_main
+layout activity_moderator
 layout activity_profile
 layout activity_signup
 layout custom_dialog

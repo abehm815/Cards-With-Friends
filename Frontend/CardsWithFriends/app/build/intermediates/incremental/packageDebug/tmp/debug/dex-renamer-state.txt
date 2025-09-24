@@ -1,7 +1,14 @@
+<<<<<<< HEAD
 #Wed Sep 24 17:38:58 CDT 2025
 base.0=C\:\\1_srijita_5\\Frontend\\CardsWithFriends\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
 base.1=C\:\\1_srijita_5\\Frontend\\CardsWithFriends\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
 base.2=C\:\\1_srijita_5\\Frontend\\CardsWithFriends\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\8\\classes.dex
+=======
+#Wed Sep 24 17:48:53 CDT 2025
+base.0=C\:\\CS_3090\\Project\\1_srijita_5\\Frontend\\CardsWithFriends\\app\\build\\intermediates\\dex\\debug\\mergeExtDexDebug\\classes.dex
+base.1=C\:\\CS_3090\\Project\\1_srijita_5\\Frontend\\CardsWithFriends\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\0\\classes.dex
+base.2=C\:\\CS_3090\\Project\\1_srijita_5\\Frontend\\CardsWithFriends\\app\\build\\intermediates\\dex\\debug\\mergeProjectDexDebug\\8\\classes.dex
+>>>>>>> b1b735ada6578a521d41dcad81dd61a70ddf6619
 path.0=classes.dex
 path.1=0/classes.dex
 path.2=8/classes.dex
