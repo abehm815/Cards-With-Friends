@@ -3218,8 +3218,7 @@ id header_title
 id hideable
 id home
 id homeAsUp
-id home_logout_btn
-id home_username_text
+id home_profile_btn
 id honorRequest
 id horizontal_only
 id icon
@@ -3630,6 +3629,7 @@ layout abc_tooltip
 layout activity_home
 layout activity_login
 layout activity_main
+layout activity_profile
 layout activity_signup
 layout custom_dialog
 layout design_bottom_navigation_item

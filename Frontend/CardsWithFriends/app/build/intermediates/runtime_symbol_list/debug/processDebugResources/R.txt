@@ -3217,8 +3217,7 @@ int id header_title 0x7f0900cf
 int id hideable 0x7f0900d0
 int id home 0x7f0900d1
 int id homeAsUp 0x7f0900d2
-int id home_logout_btn 0x7f0900d3
-int id home_username_text 0x7f0900d4
+int id home_profile_btn 0x7f0901fb
 int id honorRequest 0x7f0900d5
 int id horizontal_only 0x7f0900d6
 int id icon 0x7f0900d7
@@ -3629,6 +3628,7 @@ int layout abc_tooltip 0x7f0c001b
 int layout activity_home 0x7f0c001c
 int layout activity_login 0x7f0c001d
 int layout activity_main 0x7f0c001e
+int layout activity_profile 0x7f0c006d
 int layout activity_signup 0x7f0c001f
 int layout custom_dialog 0x7f0c0020
 int layout design_bottom_navigation_item 0x7f0c0021
