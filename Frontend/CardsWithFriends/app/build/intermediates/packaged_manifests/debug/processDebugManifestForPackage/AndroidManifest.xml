@@ -39,6 +39,9 @@
             android:name="com.example.androidexample.LoginActivity"
             android:exported="false" />
         <activity
+            android:name="com.example.androidexample.ProfileActivity"
+            android:exported="false" />
+        <activity
             android:name="com.example.androidexample.MainActivity"
             android:exported="true" >
             <intent-filter>

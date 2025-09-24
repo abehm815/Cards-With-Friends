@@ -10,8 +10,7 @@ font inter_black
 font inter_bold
 font inter_regular
 id app_title_txt
-id home_logout_btn
-id home_username_text
+id home_profile_btn
 id login_back_btn
 id login_login_btn
 id login_password_edt
@@ -26,6 +25,7 @@ id signup_username_edt
 layout activity_home
 layout activity_login
 layout activity_main
+layout activity_profile
 layout activity_signup
 mipmap ic_launcher
 mipmap ic_launcher_foreground
