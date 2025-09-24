@@ -12,24 +12,36 @@
         "source": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-main-6:\\xml\\backup_rules.xml"
     },
     {
-        "merged": "com.example.androidexample.app-debug-4:/layout_activity_profile.xml.flat",
-        "source": "com.example.androidexample.app-main-6:/layout/activity_profile.xml"
+        "merged": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-debug-4:\\layout_activity_admin.xml.flat",
+        "source": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-main-6:\\layout\\activity_admin.xml"
     },
     {
-        "merged": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-debug-4:\\mipmap-xxhdpi_ic_launcher_foreground.webp.flat",
-        "source": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-main-6:\\mipmap-xxhdpi\\ic_launcher_foreground.webp"
+        "merged": "com.example.androidexample.app-debug-4:/layout_activity_login.xml.flat",
+        "source": "com.example.androidexample.app-main-6:/layout/activity_login.xml"
     },
     {
-        "merged": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-debug-4:\\mipmap-hdpi_ic_launcher.webp.flat",
-        "source": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-main-6:\\mipmap-hdpi\\ic_launcher.webp"
+        "merged": "com.example.androidexample.app-debug-4:/layout_activity_main.xml.flat",
+        "source": "com.example.androidexample.app-main-6:/layout/activity_main.xml"
     },
     {
         "merged": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-debug-4:\\mipmap-xhdpi_ic_launcher.webp.flat",
         "source": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-main-6:\\mipmap-xhdpi\\ic_launcher.webp"
     },
     {
+        "merged": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-debug-4:\\mipmap-hdpi_ic_launcher.webp.flat",
+        "source": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-main-6:\\mipmap-hdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-debug-4:\\mipmap-xxhdpi_ic_launcher_foreground.webp.flat",
+        "source": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-main-6:\\mipmap-xxhdpi\\ic_launcher_foreground.webp"
+    },
+    {
         "merged": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-debug-4:\\mipmap-mdpi_ic_launcher_foreground.webp.flat",
         "source": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-main-6:\\mipmap-mdpi\\ic_launcher_foreground.webp"
+    },
+    {
+        "merged": "com.example.androidexample.app-debug-4:/layout_activity_home.xml.flat",
+        "source": "com.example.androidexample.app-main-6:/layout/activity_home.xml"
     },
     {
         "merged": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-debug-4:\\font_inter_black.ttf.flat",
@@ -110,6 +122,10 @@
     {
         "merged": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-debug-4:\\mipmap-xxhdpi_ic_launcher.webp.flat",
         "source": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-main-6:\\mipmap-xxhdpi\\ic_launcher.webp"
+    },
+    {
+        "merged": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-debug-4:\\layout_activity_profile.xml.flat",
+        "source": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-main-6:\\layout\\activity_profile.xml"
     },
     {
         "merged": "C:\\Users\\alexb\\.gradle\\daemon\\8.13\\com.example.androidexample.app-debug-4:\\layout_activity_login.xml.flat",

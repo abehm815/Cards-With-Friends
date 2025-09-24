@@ -1,6 +1,7 @@
 R_DEF: Internal format may change without notice
 local
 color black
+color my_gray
 color my_red
 color white
 drawable bg
@@ -22,6 +23,8 @@ id signup_confirm_edt
 id signup_password_edt
 id signup_signup_btn
 id signup_username_edt
+id textView
+layout activity_admin
 layout activity_home
 layout activity_login
 layout activity_main
