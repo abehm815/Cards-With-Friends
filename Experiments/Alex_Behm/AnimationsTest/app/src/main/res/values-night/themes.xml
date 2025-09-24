@@ -1,0 +1,6 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.AnimationsTest" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- you can add color overrides here if needed -->
+    </style>
+</resources>
