@@ -17,6 +17,12 @@
             android:name=".HomeActivity"
             android:exported="false" />
         <activity
+            android:name=".AdminActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ModeratorActivity"
+            android:exported="false" />
+        <activity
             android:name=".SignupActivity"
             android:exported="false" />
         <activity
