@@ -1,4 +1,4 @@
-package Backend.User;
+package data.User;
 
 import java.util.HashMap;
 import java.util.Map;

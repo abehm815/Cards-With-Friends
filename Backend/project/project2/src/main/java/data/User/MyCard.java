@@ -1,4 +1,4 @@
-package Backend.User;
+package data.User;
 
 /**
  * This class describes a card object. Each card has a value and a suit
