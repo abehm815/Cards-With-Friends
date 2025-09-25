@@ -2,11 +2,10 @@ package data.User;
 
 import java.util.List;
 
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToOne;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 
+@Entity
 public class AppUser {
 
     @Id
@@ -22,6 +21,7 @@ public class AppUser {
     public boolean inLobby = false;
 
     @OneToOne
+    @JsonIgnore
     private UserStats UserStats;
 
     //constructor for a AppUser

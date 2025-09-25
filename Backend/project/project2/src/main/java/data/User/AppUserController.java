@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class AppUserController {
+
     @Autowired
     AppUserRepository AppUserRepository;
     private String success = "{\"message\":\"success\"}";
