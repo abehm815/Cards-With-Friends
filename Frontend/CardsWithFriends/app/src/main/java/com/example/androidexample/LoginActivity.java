@@ -88,6 +88,7 @@ public class LoginActivity extends AppCompatActivity {
                     Intent intent;
                     intent = new Intent(LoginActivity.this, ModeratorActivity.class);
                     intent.putExtra("USERNAME", username);
+                    Toast.makeText(getApplicationContext(), "Welcome Moderator!", Toast.LENGTH_SHORT).show();
                     startActivity(intent);
                 } else{
                     /* if the user is a valid admin, direct them to the admin page*/
@@ -95,6 +96,7 @@ public class LoginActivity extends AppCompatActivity {
                     Intent intent;
                     intent = new Intent(LoginActivity.this, AdminActivity.class);
                     intent.putExtra("USERNAME", username);
+                    Toast.makeText(getApplicationContext(), "Welcome Admin!", Toast.LENGTH_SHORT).show();
                     startActivity(intent);
                 }
 

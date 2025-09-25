@@ -2020,7 +2020,7 @@ color mtrl_textinput_disabled_color
 color mtrl_textinput_filled_box_default_background_color
 color mtrl_textinput_focused_box_stroke_color
 color mtrl_textinput_hovered_box_stroke_color
-color my_gray
+color my_grey
 color my_red
 color notification_action_color_filter
 color notification_icon_bg_color
@@ -2931,6 +2931,7 @@ drawable ic_mtrl_chip_checked_black
 drawable ic_mtrl_chip_checked_circle
 drawable ic_mtrl_chip_close_circle
 drawable ic_search_black_24
+drawable logo
 drawable m3_appbar_background
 drawable m3_avd_hide_password
 drawable m3_avd_show_password
@@ -3088,7 +3089,7 @@ id animateToEnd
 id animateToStart
 id antiClockwise
 id anticipate
-id app_title_txt
+id app_logo
 id arc
 id asConfigured
 id async
@@ -3108,6 +3109,7 @@ id bounceBoth
 id bounceEnd
 id bounceStart
 id buttonPanel
+id button_group
 id cache_measures
 id callMeasure
 id cancel_button
@@ -3251,6 +3253,7 @@ id list_item
 id login_back_btn
 id login_login_btn
 id login_password_edt
+id login_title
 id login_username_edt
 id m3_side_sheet
 id main_login_btn
@@ -3344,6 +3347,7 @@ id parent
 id parentPanel
 id parentRelative
 id parent_matrix
+id password_input
 id password_toggle
 id path
 id pathRelative
@@ -3353,6 +3357,7 @@ id pin
 id position
 id postLayout
 id pressed
+id profile_back_btn
 id progress_circular
 id progress_horizontal
 id radio
@@ -3409,10 +3414,15 @@ id showCustom
 id showHome
 id showTitle
 id signup_back_btn
+id signup_button_group
 id signup_confirm_edt
+id signup_confirm_input
 id signup_password_edt
+id signup_password_input
 id signup_signup_btn
+id signup_title
 id signup_username_edt
+id signup_username_input
 id sin
 id skipCollapsed
 id skipped
@@ -3467,10 +3477,9 @@ id textSpacerNoTitle
 id textStart
 id textTop
 id textView
-<<<<<<< HEAD
-=======
 id textView2
->>>>>>> b1b735ada6578a521d41dcad81dd61a70ddf6619
+id textView3
+id textView4
 id text_input_end_icon
 id text_input_error_icon
 id text_input_start_icon
@@ -3501,6 +3510,7 @@ id uniform
 id unlabeled
 id up
 id useLogo
+id username_input
 id vertical_only
 id view_offset_helper
 id view_transition
