@@ -1,9 +1,24 @@
 package data.User;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+
 import java.util.HashMap;
 import java.util.Map;
 
+@Entity
 public class UserStats {
+    public int getId() {
+        return UserID;
+    }
+
+    public void setId(int UserID) {
+        this.UserID = UserID;
+    }
+
+    @Id
+    private int UserID;
+
     private Map<String, GameStats> gameStats;
 
     public UserStats() {
