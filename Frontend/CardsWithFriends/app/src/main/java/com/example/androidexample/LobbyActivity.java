@@ -14,6 +14,10 @@ public class LobbyActivity extends AppCompatActivity{
 
     private Button backButton;
 
+    private Button joinButton;
+
+    private String gameType;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -21,9 +25,11 @@ public class LobbyActivity extends AppCompatActivity{
 
         gameText = findViewById(R.id.lobby_title);
         backButton = findViewById(R.id.lobby_back_btn);
+        joinButton = findViewById(R.id.lobby_join_btn);
 
         Intent intent = getIntent();
-        gameText.setText(intent.getStringExtra("GAMETYPE"));
+        gameType = intent.getStringExtra("GAMETYPE");
+        gameText.setText(gameType);
 
         View.OnClickListener backButtonListener = new View.OnClickListener() {
             @Override
@@ -33,6 +39,16 @@ public class LobbyActivity extends AppCompatActivity{
             }
         };
         backButton.setOnClickListener(backButtonListener);
+
+        View.OnClickListener joinButtonListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(LobbyActivity.this, JoinActivity.class);
+                intent.putExtra("GAMETYPE", gameType);
+                startActivity(intent);
+            }
+        };
+        joinButton.setOnClickListener(joinButtonListener);
 
     }
 }
