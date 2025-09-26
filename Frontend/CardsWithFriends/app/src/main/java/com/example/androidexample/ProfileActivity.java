@@ -4,12 +4,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 public class ProfileActivity extends AppCompatActivity {
 
     private Button backButton;
+
+    private TextView usernameDisplayText;
 
     private String username;
 
@@ -22,11 +25,14 @@ public class ProfileActivity extends AppCompatActivity {
         String username = intent.getStringExtra("USERNAME");
 
         backButton = findViewById(R.id.profile_back_btn);
+        usernameDisplayText = findViewById(R.id.profile_username_text);
+        usernameDisplayText.setText(username);
 
         View.OnClickListener backButtonListener= new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                     Intent intent = new Intent(ProfileActivity.this, HomeActivity.class);
+                    intent.putExtra("USERNAME", username);
                     startActivity(intent);
             }
         };
