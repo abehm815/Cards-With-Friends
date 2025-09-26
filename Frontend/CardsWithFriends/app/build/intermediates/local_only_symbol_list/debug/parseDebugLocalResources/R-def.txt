@@ -4,7 +4,9 @@ color black
 color my_grey
 color my_red
 color white
-drawable bg
+drawable bg_gradient
+drawable blackjack_card
+drawable euchre_card
 drawable ic_launcher_background
 drawable ic_launcher_foreground
 drawable logo
@@ -13,6 +15,8 @@ font inter_bold
 font inter_regular
 id app_logo
 id button_group
+id home_blackjack_card
+id home_euchre_card
 id home_profile_btn
 id login_back_btn
 id login_login_btn
@@ -23,6 +27,7 @@ id main_login_btn
 id main_signup_btn
 id password_input
 id profile_back_btn
+id profile_username_text
 id signup_back_btn
 id signup_button_group
 id signup_confirm_edt
@@ -35,8 +40,6 @@ id signup_username_edt
 id signup_username_input
 id textView
 id textView2
-id textView3
-id textView4
 id username_input
 layout activity_admin
 layout activity_home

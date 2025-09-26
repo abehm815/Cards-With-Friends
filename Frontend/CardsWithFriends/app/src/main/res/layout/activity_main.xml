@@ -6,56 +6,55 @@
     tools:context=".MainActivity"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black">
+    android:background="@drawable/bg_gradient">
 
-    <!-- Logo Image -->
     <ImageView
         android:id="@+id/app_logo"
         android:layout_width="300dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="80dp"
+        android:layout_marginTop="108dp"
         android:adjustViewBounds="true"
-        android:src="@drawable/logo"
         android:contentDescription="@string/app_name"
         android:scaleType="fitCenter"
-        app:layout_constraintTop_toTopOf="parent"
+        android:src="@drawable/logo"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.495"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Login Button (Filled) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/main_login_btn"
+        style="@style/Widget.MaterialComponents.Button"
         android:layout_width="170dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="48dp"
+        android:layout_marginTop="72dp"
+        android:fontFamily="@font/inter_bold"
         android:text="Login"
         android:textColor="@android:color/black"
-        android:fontFamily="@font/inter_bold"
         android:textSize="20sp"
-        style="@style/Widget.MaterialComponents.Button"
-        app:cornerRadius="12dp"
         app:backgroundTint="@android:color/white"
-        app:layout_constraintTop_toBottomOf="@id/app_logo"
+        app:cornerRadius="12dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/app_logo" />
 
-
-    <!-- Signup Button (Outlined) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/main_signup_btn"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
         android:layout_width="170dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/inter_bold"
         android:text="Signup"
         android:textColor="@android:color/white"
-        android:fontFamily="@font/inter_bold"
         android:textSize="20sp"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        app:strokeColor="@color/white"
-        app:strokeWidth="2dp"
         app:cornerRadius="15dp"
-        app:layout_constraintTop_toBottomOf="@id/main_login_btn"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toBottomOf="@id/main_login_btn"
+        app:strokeColor="@color/white"
+        app:strokeWidth="2dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

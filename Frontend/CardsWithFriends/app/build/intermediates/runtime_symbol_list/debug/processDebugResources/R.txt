@@ -2902,7 +2902,8 @@ int drawable abc_textfield_search_material 0x7f070076
 int drawable abc_vector_test 0x7f070077
 int drawable avd_hide_password 0x7f070078
 int drawable avd_show_password 0x7f070079
-int drawable bg 0x7f07007a
+int drawable bg_gradient 0x7f0700e1
+int drawable blackjack_card 0x7f0700e2
 int drawable btn_checkbox_checked_mtrl 0x7f07007b
 int drawable btn_checkbox_checked_to_unchecked_mtrl_animation 0x7f07007c
 int drawable btn_checkbox_unchecked_mtrl 0x7f07007d
@@ -2916,6 +2917,7 @@ int drawable design_ic_visibility 0x7f070084
 int drawable design_ic_visibility_off 0x7f070085
 int drawable design_password_eye 0x7f070086
 int drawable design_snackbar_background 0x7f070087
+int drawable euchre_card 0x7f0700e3
 int drawable ic_arrow_back_black_24 0x7f070088
 int drawable ic_clear_black_24 0x7f070089
 int drawable ic_clock_black_24dp 0x7f07008a
@@ -3220,6 +3222,8 @@ int id header_title 0x7f0900d0
 int id hideable 0x7f0900d1
 int id home 0x7f0900d2
 int id homeAsUp 0x7f0900d3
+int id home_blackjack_card 0x7f09020b
+int id home_euchre_card 0x7f09020c
 int id home_profile_btn 0x7f0900d4
 int id honorRequest 0x7f0900d5
 int id horizontal_only 0x7f0900d6
@@ -3357,6 +3361,7 @@ int id position 0x7f090159
 int id postLayout 0x7f09015a
 int id pressed 0x7f09015b
 int id profile_back_btn 0x7f09015c
+int id profile_username_text 0x7f09020a
 int id progress_circular 0x7f09015d
 int id progress_horizontal 0x7f09015e
 int id radio 0x7f09015f
@@ -3477,8 +3482,6 @@ int id textStart 0x7f0901d1
 int id textTop 0x7f0901d2
 int id textView 0x7f0901d3
 int id textView2 0x7f0901d4
-int id textView3 0x7f0901d5
-int id textView4 0x7f0901d6
 int id text_input_end_icon 0x7f0901d7
 int id text_input_error_icon 0x7f0901d8
 int id text_input_start_icon 0x7f0901d9
