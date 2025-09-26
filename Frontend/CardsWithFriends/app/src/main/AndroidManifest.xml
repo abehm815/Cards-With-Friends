@@ -12,6 +12,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidExample"
         tools:targetApi="31">
+        <service android:name=".services.MusicService" />
+
         <!-- New Account Activity -->
         <activity
             android:name=".HomeActivity"
