@@ -6,11 +6,17 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import android.os.Bundle;
+
+
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.example.androidexample.services.MusicService;
 
 public class HomeActivity extends AppCompatActivity {
     private String username;
     private Button profileButton;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,6 +24,9 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
 
         profileButton = findViewById(R.id.home_profile_btn);
+
+
+
 
         //Get username and password from signup screen and display it to the user
         Intent intent = getIntent();

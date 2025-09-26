@@ -48,6 +48,8 @@ layout activity_signup
 mipmap ic_launcher
 mipmap ic_launcher_foreground
 mipmap ic_launcher_round
+raw lobbymusic1
+raw testmusic1
 string app_name
 style Base.Theme.AndroidExample
 style Theme.AndroidExample

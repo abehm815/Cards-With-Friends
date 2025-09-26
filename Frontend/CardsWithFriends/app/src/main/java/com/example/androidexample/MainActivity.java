@@ -7,6 +7,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 
+import com.example.androidexample.services.MusicService;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button loginButton;     // define login button variable
@@ -19,6 +21,9 @@ public class MainActivity extends AppCompatActivity {
 
         loginButton = findViewById(R.id.main_login_btn);    // link to login button in the Main activity XML
         signupButton = findViewById(R.id.main_signup_btn);  // link to signup button in the Main activity XML
+
+        Intent musicServiceIntent = new Intent(this, MusicService.class);
+        startService(musicServiceIntent);
 
         /* click listener on login button pressed */
         loginButton.setOnClickListener(new View.OnClickListener() {
