@@ -14,15 +14,9 @@ public class Lobby {
     @Enumerated(EnumType.STRING)
     private GameType gameType;
 
-    public void setId(int lobbyID) {
-        this.lobbyID = lobbyID;
-    }
+    @OneToMany(mappedBy = "lobby", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<AppUser> users;
 
-    public int getId() {
-        return lobbyID;
-    }
-
-    public List<AppUser> users;
 
     public int getLobbyID() {
         return lobbyID;
