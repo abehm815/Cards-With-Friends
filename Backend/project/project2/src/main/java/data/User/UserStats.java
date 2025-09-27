@@ -1,28 +1,22 @@
 package data.User;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @Entity
 public class UserStats {
-    public int getId() {
-        return UserID;
-    }
-
-    public void setId(int UserID) {
-        this.UserID = UserID;
-    }
 
     @Id
-    private int UserID;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private long id;
 
-    private Map<String, GameStats> gameStats;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @MapKeyColumn(name = "game_name")
+    private Map<String, GameStats> gameStats = new HashMap<>();
 
     public UserStats() {
-        this.gameStats = new HashMap<>();
     }
 
     public void addGameStats(String gameName, GameStats stats) {
@@ -35,5 +29,13 @@ public class UserStats {
 
     public Map<String, GameStats> getAllGameStats() {
         return gameStats;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
     }
 }

@@ -10,23 +10,37 @@ public class AppUser {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int userID;
-    public String username;
-    public String password;
-    public String email;
-    public String firstName;
-    public String lastName;
-    public int age;
-    public List<MyCard> hand;
-    public boolean inLobby = false;
+    private long id;
 
-    @OneToOne
+    private String username;
+    private String password;
+    private String email;
+    private String firstName;
+    private String lastName;
+    private int age;
+
+    @Transient
+    private boolean inLobby = false;
+
+    @Transient
+    private List<MyCard> hand;
+
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_stats_id", referencedColumnName = "id")
     @JsonIgnore
-    private UserStats UserStats;
+    private UserStats userStats;
+
+    @ManyToOne
+    @JoinColumn(name = "lobby_id")
+    private Lobby lobby;
+
+    // default constructor, needed for JPA
+    public AppUser() {
+
+    }
 
     //constructor for a AppUser
-    public void AppUser(String username, String password, String email, String firstName, String lastName, int age, int userID) {
-        this.userID = userID;
+    public AppUser(String username, String password, String email, String firstName, String lastName, int age) {
         this.username = username;
         this.password = password;
         this.email = email;
@@ -39,7 +53,6 @@ public class AppUser {
     public String getUsername() {
         return this.username;
     }
-
     public void setUsername(String username) {
         this.username = username;
     }
@@ -47,7 +60,6 @@ public class AppUser {
     public String getPassword() {
         return this.password;
     }
-
     public void setPassword(String password) {
         this.password = password;
     }
@@ -55,7 +67,6 @@ public class AppUser {
     public String getEmail() {
         return this.email;
     }
-
     public void setEmail(String email) {
         this.email = email;
     }
@@ -63,7 +74,6 @@ public class AppUser {
     public String getFirstName() {
         return this.firstName;
     }
-
     public void setFirstName(String firstName) {
         this.firstName = firstName;
     }
@@ -71,7 +81,6 @@ public class AppUser {
     public String getLastName() {
         return this.lastName;
     }
-
     public void setLastName(String lastName) {
         this.lastName = lastName;
     }
@@ -79,22 +88,23 @@ public class AppUser {
     public int getAge() {
         return this.age;
     }
-
     public void setAge(int age) {
         this.age = age;
     }
 
-    public int getUserID() {
-        return this.userID;
+    public long getUserID() {
+        return this.id;
     }
-
-    public void setUserID(int userID) {
-        this.userID = userID;
+    public void setUserID(long userID) {
+        this.id = userID;
     }
 
     public List<MyCard> getHand() {
         return this.hand;
     }
+
+    public Lobby getLobby() { return lobby; }
+    public void setLobby(Lobby lobby) { this.lobby = lobby; }
 
     @Override
     public String toString() {
