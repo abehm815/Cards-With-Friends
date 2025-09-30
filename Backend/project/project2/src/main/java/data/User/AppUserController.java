@@ -25,9 +25,9 @@ public class AppUserController {
         return this.AppUserRepository.findAll();
     }
 
-    @GetMapping(path = {"/AppUser/{UserID}"})
-    AppUser getAppUserById(@PathVariable int UserID) {
-        return this.AppUserRepository.findById(UserID);
+    @GetMapping(path = {"/AppUser/{id}"})
+    AppUser getAppUserById(@PathVariable long id) {
+        return this.AppUserRepository.findById(id);
     }
 
     @PostMapping(path = {"/AppUser"})
@@ -41,19 +41,19 @@ public class AppUserController {
     }
 
     @PutMapping(path = {"/AppUser/{id}"})
-    AppUser updateAppUser(@PathVariable int UserID, @RequestBody AppUser request) {
-        AppUser AppUser = this.AppUserRepository.findById(UserID);
+    AppUser updateAppUser(@PathVariable long id, @RequestBody AppUser request) {
+        AppUser AppUser = this.AppUserRepository.findById(id);
         if (AppUser == null) {
             return null;
         } else {
             this.AppUserRepository.save(request);
-            return this.AppUserRepository.findById(UserID);
+            return this.AppUserRepository.findById(id);
         }
     }
 
     @DeleteMapping(path = {"/AppUser/{id}"})
-    String deleteAppUser(@PathVariable int UserID) {
-        this.AppUserRepository.deleteById(UserID);
+    String deleteAppUser(@PathVariable long id) {
+        this.AppUserRepository.deleteById(id);
         return this.success;
     }
 }
