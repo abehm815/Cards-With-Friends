@@ -11,8 +11,12 @@ public class AppUser {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
+    /**
+    / Does not allow users to have the same username if users try and have same username exception thrown
+     **/
+    @Column(unique = true, nullable = false)
     private String username;
+
     private String password;
     private String email;
     private String firstName;
