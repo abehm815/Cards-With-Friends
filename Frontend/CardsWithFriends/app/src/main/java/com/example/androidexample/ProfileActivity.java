@@ -12,6 +12,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     private Button backButton;
 
+    private Button deleteButton;
+
     private TextView usernameDisplayText;
 
     private String username;
@@ -25,6 +27,7 @@ public class ProfileActivity extends AppCompatActivity {
         String username = intent.getStringExtra("USERNAME");
 
         backButton = findViewById(R.id.profile_back_btn);
+        deleteButton = findViewById(R.id.profile_delete_btn);
         usernameDisplayText = findViewById(R.id.profile_username_text);
         usernameDisplayText.setText(username);
 
@@ -37,7 +40,21 @@ public class ProfileActivity extends AppCompatActivity {
             }
         };
 
+        View.OnClickListener deleteButtonListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                //this is where we will do delete stuff
+            }
+        };
+
+
+
         backButton.setOnClickListener(backButtonListener);
+        deleteButton.setOnClickListener(deleteButtonListener);
+
+
+
+
 
     }
 }

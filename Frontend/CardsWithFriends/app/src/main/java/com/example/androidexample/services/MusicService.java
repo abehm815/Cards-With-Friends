@@ -23,7 +23,7 @@ public class MusicService extends Service {
     public void onCreate() {
         super.onCreate();
         if (mediaPlayer == null) {
-            mediaPlayer = MediaPlayer.create(this, R.raw.lobbymusic1); // Your file here
+            mediaPlayer = MediaPlayer.create(this, R.raw.ingamemusic1); // Your file here
             mediaPlayer.setLooping(true);
             mediaPlayer.start();
         }
