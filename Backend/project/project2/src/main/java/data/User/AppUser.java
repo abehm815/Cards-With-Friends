@@ -40,7 +40,7 @@ public class AppUser {
 
     // default constructor, needed for JPA
     public AppUser() {
-
+        this.userStats = new UserStats();
     }
 
     //constructor for a AppUser
@@ -51,6 +51,7 @@ public class AppUser {
         this.firstName = firstName;
         this.lastName = lastName;
         this.age = age;
+        this.userStats = new UserStats();
     }
 
 
@@ -109,6 +110,9 @@ public class AppUser {
 
     public Lobby getLobby() { return lobby; }
     public void setLobby(Lobby lobby) { this.lobby = lobby; }
+
+    public UserStats getUserStats() { return userStats; }
+    public void setUserStats(UserStats stats) { this.userStats = stats; }
 
     @Override
     public String toString() {
