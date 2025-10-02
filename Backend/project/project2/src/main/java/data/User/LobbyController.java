@@ -61,7 +61,6 @@ public class LobbyController {
      * <p>
      * Updates an existing lobby by its ID. Only updates fields that are provided
      * in the request body (currently supports updating {@code gameType} and {@code users}).
-     *
      * I am gonna make a new method that can just update users inside a lobby for ease of use
      * if you want to change users you must relist users that are currently in lobby plus new additions in json
      *
