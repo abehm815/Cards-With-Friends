@@ -102,13 +102,25 @@ public class AppUserController {
         if (existingUser == null) {
             return null;
         } else {
-            existingUser.setFirstName(request.getFirstName());
-            existingUser.setLastName(request.getLastName());
-            existingUser.setEmail(request.getEmail());
-            existingUser.setPassword(request.getPassword());
-            existingUser.setAge(request.getAge());
-            existingUser.setUsername(request.getUsername());
-            return this.AppUserRepository.save(existingUser);
+            if (request.getFirstName() != null) {
+                existingUser.setFirstName(request.getFirstName());
+            }
+            if (request.getLastName() != null) {
+                existingUser.setLastName(request.getLastName());
+            }
+            if (request.getEmail() != null) {
+                existingUser.setEmail(request.getEmail());
+            }
+            if (request.getPassword() != null) {
+                existingUser.setPassword(request.getPassword());
+            }
+            if (request.getAge() != 0) { // careful: primitive int defaults to 0
+                existingUser.setAge(request.getAge());
+            }
+            if (request.getUsername() != null) {
+                existingUser.setUsername(request.getUsername());
+            }
+            return AppUserRepository.save(existingUser);
         }
     }
 
