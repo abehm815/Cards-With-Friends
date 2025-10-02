@@ -12,14 +12,22 @@ public class UserStats {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(
+            mappedBy = "userStats",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     @MapKeyColumn(name = "game_name")
     private Map<String, GameStats> gameStats = new HashMap<>();
 
     public UserStats() {
+        addGameStats("Euchre", new EuchreStats());
+        addGameStats("Blackjack", new BlackjackStats());
+        addGameStats("Go Fish", new GoFishStats());
     }
 
     public void addGameStats(String gameName, GameStats stats) {
+        stats.setUserStats(this);
         gameStats.put(gameName, stats);
     }
 

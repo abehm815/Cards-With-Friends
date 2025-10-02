@@ -12,7 +12,13 @@ public class BlackjackStats extends GameStats {
     private int timesSplit;
     private int timesHit;
 
-    protected BlackjackStats() { }
+    protected BlackjackStats() {
+        moneyWon = 0;
+        betsWon = 0;
+        timesDoubledDown = 0;
+        timesSplit = 0;
+        timesHit = 0;
+    }
 
     public BlackjackStats(double moneyWon, int betsWon, int timesDoubledDown, int timesSplit, int timesHit) {
         this.moneyWon = moneyWon;

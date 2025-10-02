@@ -13,6 +13,10 @@ public abstract class GameStats {
 
     private int gamesPlayed;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_stats_id", nullable = false)
+    private UserStats userStats;
+
     public void addGamePlayed() {
         gamesPlayed++;
     }
@@ -27,5 +31,13 @@ public abstract class GameStats {
 
     public void setId(long id) {
         this.id = id;
+    }
+
+    public UserStats getUserStats() {
+        return userStats;
+    }
+
+    public void setUserStats(UserStats userStats) {
+        this.userStats = userStats;
     }
 }
