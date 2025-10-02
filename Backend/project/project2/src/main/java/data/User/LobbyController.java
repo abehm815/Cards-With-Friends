@@ -87,6 +87,49 @@ public class LobbyController {
     }
 
     /**
+     * Updates the users in a given lobby by either adding or removing the specified user.
+     * <p>
+     * This endpoint is mapped to <code>/Lobby/{lobbyID}/{username}</code>.
+     * It first verifies that both the lobby and the user exist. If either is not found,
+     * the method returns {@code this.failure}.
+     * <p>
+     * If the user is already in the lobby, they are removed and their lobby reference is set to {@code null}.
+     * If the user is not in the lobby, they are added and their lobby reference is updated.
+     * Afterward, both the user and the lobby are saved back to their respective repositories.
+     *
+     * @param lobbyID  the unique identifier of the lobby to update
+     * @param username the username of the user to add or remove from the lobby
+     * @return {@code this.success} if the operation was successful,
+     *         otherwise {@code this.failure} if the lobby or user could not be found
+     */
+    @PutMapping(path= {"/Lobby/{lobbyID}/{username}"})
+    public String updateLobbyUsers(@PathVariable long lobbyID, @PathVariable String username){
+        Lobby lobby = this.LobbyRepository.findById(lobbyID);
+        if (lobby == null) {
+            return this.failure; // Lobby not found
+        }
+        AppUser user = this.AppUserRepository.findByUsername(username);
+        if (user == null) {
+            return this.failure; // User not found
+        }
+        List<AppUser> usersInLobby = lobby.getUsers();
+        if (usersInLobby.contains(user)) {
+            // User already in lobby -> remove
+            usersInLobby.remove(user);
+            user.setLobby(null);
+        } else {
+            // User not in lobby -> add
+            usersInLobby.add(user);
+            user.setLobby(lobby);
+        }
+        //after proper list of users created set users in lobby to created list and save
+        lobby.setUsers(usersInLobby);
+        this.AppUserRepository.save(user);
+        this.LobbyRepository.save(lobby);
+        return this.success;
+    }
+
+    /**
      * DELETE /Lobby/{lobbyID}
      * <p>
      * Deletes a lobby by its ID. Also removes the relationship between the lobby
