@@ -9,20 +9,20 @@ public class Lobby {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int lobbyID;
+    private long lobbyID;
 
     @Enumerated(EnumType.STRING)
     private GameType gameType;
 
-    @OneToMany(mappedBy = "lobby", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "lobby")
     private List<AppUser> users;
 
 
-    public int getLobbyID() {
+    public long getLobbyID() {
         return lobbyID;
     }
 
-    public void setLobbyID(int lobbyID) {
+    public void setLobbyID(long lobbyID) {
         this.lobbyID = lobbyID;
     }
 
