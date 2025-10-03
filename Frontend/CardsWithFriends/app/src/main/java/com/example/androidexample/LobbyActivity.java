@@ -16,6 +16,8 @@ public class LobbyActivity extends AppCompatActivity{
 
     private Button joinButton;
 
+    private Button hostButton;
+
     private String gameType;
 
     @Override
@@ -26,6 +28,7 @@ public class LobbyActivity extends AppCompatActivity{
         gameText = findViewById(R.id.lobby_title);
         backButton = findViewById(R.id.lobby_back_btn);
         joinButton = findViewById(R.id.lobby_join_btn);
+        hostButton = findViewById(R.id.lobby_host_btn);
 
         Intent intent = getIntent();
         gameType = intent.getStringExtra("GAMETYPE");
@@ -49,6 +52,16 @@ public class LobbyActivity extends AppCompatActivity{
             }
         };
         joinButton.setOnClickListener(joinButtonListener);
+
+        View.OnClickListener hostButtonListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(LobbyActivity.this, HostActivity.class);
+                intent.putExtra("GAMETYPE", gameType);
+                startActivity(intent);
+            }
+        };
+        hostButton.setOnClickListener(hostButtonListener);
 
     }
 }
