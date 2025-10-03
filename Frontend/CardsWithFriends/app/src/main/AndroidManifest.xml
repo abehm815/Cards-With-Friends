@@ -16,6 +16,9 @@
 
         <!-- New Account Activity -->
         <activity
+            android:name=".HostActivity"
+            android:exported="false" />
+        <activity
             android:name=".JoinActivity"
             android:exported="false" />
         <activity
