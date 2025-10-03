@@ -9,9 +9,23 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
+
+
+import com.android.volley.AuthFailureError;
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+
 import java.util.HashMap;
+import java.util.Map;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -22,27 +36,13 @@ public class LoginActivity extends AppCompatActivity {
 
     private Button backButton;
 
+    private TextView msgResponse;
 
-    private HashMap<String, String> validUsers = new HashMap<String, String>() {{
-        put("alex", "alex1234");
-        put("jake", "jake1234");
-        put("eli", "eli1234");
-        put("colton", "colton1234");
-    }};
+    String url = "https://c5c54892-829a-4d77-bdcc-1d887f3cc81c.mock.pstmn.io/users";
 
-    private HashMap<String, String> validModeratorUsers = new HashMap<String, String>() {{
-        put("alexM", "alex1234");
-        put("jakeM", "jake1234");
-        put("eliM", "eli1234");
-        put("coltonM", "colton1234");
-    }}; //Hardcoded list of users (Would grab from backend when complete)
 
-    private HashMap<String, String> validAdminUsers = new HashMap<String, String>(){{
-       put("alexA","alex1234");
-       put("jakeA", "jake1234");
-       put("eliA", "eli1234");
-       put("coltonA", "colton1234");
-    }};
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,51 +55,23 @@ public class LoginActivity extends AppCompatActivity {
         loginButton = findViewById(R.id.login_login_btn);    //Login button
         backButton = findViewById(R.id.login_back_btn);
 
+
+
+
         /* click listener on login button pressed */
         loginButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+
+
                 /* grab strings from user inputs */
                 String username = usernameEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
 
+                makeJsonObjReq(username, password);
+
                 // Verify the user login attempt matches an account in our mock database
-                boolean isValidUser = validUsers.containsKey(username) && validUsers.get(username).equals(password);
-                boolean isValidModeratorUser = validModeratorUsers.containsKey(username) && validModeratorUsers.get(username).equals(password);
-                boolean isValidAdminUser = validAdminUsers.containsKey(username) && validAdminUsers.get(username).equals(password);
-
-
-
-                if(!isValidUser && !isValidModeratorUser && !isValidAdminUser) {
-                    //If the user is not valid in any manor display a toast
-                    Toast.makeText(getApplicationContext(), "User not found", Toast.LENGTH_SHORT).show();
-                }
-                else if(isValidUser){
-                    /* when login button is pressed, use intent to switch to Login Activity */
-                    Intent intent;
-                    intent = new Intent(LoginActivity.this, HomeActivity.class);
-                    intent.putExtra("USERNAME", username);
-                    Toast.makeText(getApplicationContext(), "Welcome " + username + "!", Toast.LENGTH_LONG).show();
-                    startActivity(intent);
-
-                } else if(isValidModeratorUser){
-                    /* if the user is a valid moderator, direct them to the moderator page*/
-                    Log.d("HIT: ","Moderator Page");
-                    Intent intent;
-                    intent = new Intent(LoginActivity.this, ModeratorActivity.class);
-                    intent.putExtra("USERNAME", username);
-                    Toast.makeText(getApplicationContext(), "Welcome Moderator " + username + "!", Toast.LENGTH_LONG).show();
-                    startActivity(intent);
-                } else{
-                    /* if the user is a valid admin, direct them to the admin page*/
-                    Log.d("HIT: ","Admin Page");
-                    Intent intent;
-                    intent = new Intent(LoginActivity.this, AdminActivity.class);
-                    intent.putExtra("USERNAME", username);
-                    Toast.makeText(getApplicationContext(), "Welcome Admin " + username + "!", Toast.LENGTH_LONG).show();
-                    startActivity(intent);
-                }
             }
         });
 
@@ -111,4 +83,70 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
+
+    private void makeJsonObjReq(final String username, final String password) {
+        JsonObjectRequest jsonObjReq = new JsonObjectRequest(
+                Request.Method.GET,
+                url,
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            JSONArray usersArray = response.getJSONArray("users");
+                            boolean found = false;
+
+                            for (int i = 0; i < usersArray.length(); i++) {
+                                JSONObject userObj = usersArray.getJSONObject(i);
+
+                                String u = userObj.getString("username");
+                                String p = userObj.getString("password");
+                                boolean isAdmin = userObj.getBoolean("isAdmin");
+                                boolean isModerator = userObj.getBoolean("isModerator");
+
+                                // Check if user matches input
+                                if (u.equals(username) && p.equals(password)) {
+                                    found = true;
+
+                                    if (isAdmin) {
+                                        Intent intent = new Intent(LoginActivity.this, AdminActivity.class);
+                                        intent.putExtra("USERNAME", u);
+                                        Toast.makeText(getApplicationContext(), "Welcome Admin " + u + "!", Toast.LENGTH_LONG).show();
+                                        startActivity(intent);
+                                    } else if (isModerator) {
+                                        Intent intent = new Intent(LoginActivity.this, ModeratorActivity.class);
+                                        intent.putExtra("USERNAME", u);
+                                        Toast.makeText(getApplicationContext(), "Welcome Moderator " + u + "!", Toast.LENGTH_LONG).show();
+                                        startActivity(intent);
+                                    } else {
+                                        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                                        intent.putExtra("USERNAME", u);
+                                        Toast.makeText(getApplicationContext(), "Welcome " + u + "!", Toast.LENGTH_LONG).show();
+                                        startActivity(intent);
+                                    }
+                                    break; // stop loop once found
+                                }
+                            }
+
+                            if (!found) {
+                                Toast.makeText(getApplicationContext(), "User not found", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (Exception e) {
+                            Log.e("Volley Parse Error", e.toString());
+                            msgResponse.setText("Parse error!");
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Log.e("Volley Error", error.toString());
+                        msgResponse.setText("Failed to load data. Please try again.");
+                    }
+                }
+        );
+
+        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjReq);
+    }
+
 }
