@@ -94,7 +94,7 @@ public class UpdateActivity extends AppCompatActivity{
 
         Log.d("TEST FN: ",firstName);
         Log.d("TEST LN: ", lastName);
-        Log.d("TEST E: ", email); 
+        Log.d("TEST E: ", email);
         Log.d("TEST A: ", age);   //Testing bullshit
         Log.d("TEST UN: ", username);
         Log.d("TEST PW: ", password);
@@ -123,7 +123,7 @@ public class UpdateActivity extends AppCompatActivity{
                     }
                 }
         );
-
+        //Volley
         VolleySingleton.getInstance(UpdateActivity.this).addToRequestQueue(postRequest);
     }
 
