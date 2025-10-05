@@ -109,7 +109,7 @@ public class LoginActivity extends AppCompatActivity {
                         if(username.equals(user) && password.equals(pass)){
                             Toast.makeText(this, "Logging in: " + user, Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                            intent.putExtra("Username", username);
+                            intent.putExtra("USERNAME", username);
                             startActivity(intent);
                         } else {
                             Toast.makeText(this,"User or pass incorrect", Toast.LENGTH_SHORT).show();
