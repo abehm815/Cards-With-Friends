@@ -1,5 +1,6 @@
 package data.User;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 @Entity
@@ -15,6 +16,7 @@ public abstract class GameStats {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_stats_id", nullable = false)
+    @JsonIgnore
     private UserStats userStats;
 
     public void addGamePlayed() {

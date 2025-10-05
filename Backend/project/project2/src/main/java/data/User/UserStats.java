@@ -12,6 +12,9 @@ public class UserStats {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @OneToOne(mappedBy = "userStats")
+    private AppUser appUser;
+
     @OneToMany(
             mappedBy = "userStats",
             cascade = CascadeType.ALL,
@@ -23,7 +26,7 @@ public class UserStats {
     public UserStats() {
         addGameStats("Euchre", new EuchreStats());
         addGameStats("Blackjack", new BlackjackStats());
-        addGameStats("Go Fish", new GoFishStats());
+        addGameStats("GoFish", new GoFishStats());
     }
 
     public void addGameStats(String gameName, GameStats stats) {
