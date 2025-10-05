@@ -14,6 +14,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     private Button deleteButton;
 
+    private Button updateButton;
+
     private TextView usernameDisplayText;
 
     private String username;
@@ -26,6 +28,7 @@ public class ProfileActivity extends AppCompatActivity {
         Intent intent = getIntent();
         String username = intent.getStringExtra("USERNAME");
 
+        updateButton = findViewById(R.id.profile_update_btn);
         backButton = findViewById(R.id.profile_back_btn);
         deleteButton = findViewById(R.id.profile_delete_btn);
         usernameDisplayText = findViewById(R.id.profile_username_text);
@@ -47,8 +50,17 @@ public class ProfileActivity extends AppCompatActivity {
             }
         };
 
+        View.OnClickListener updateButtonListener= new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(ProfileActivity.this, UpdateActivity.class);
+                intent.putExtra("USERNAME", username);
+                startActivity(intent);
+            }
+        };
 
 
+        updateButton.setOnClickListener(updateButtonListener);
         backButton.setOnClickListener(backButtonListener);
         deleteButton.setOnClickListener(deleteButtonListener);
 
