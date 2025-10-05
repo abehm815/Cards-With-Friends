@@ -40,10 +40,6 @@ public class LoginActivity extends AppCompatActivity {
 
     String url = "https://c5c54892-829a-4d77-bdcc-1d887f3cc81c.mock.pstmn.io/users";
 
-
-
-
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

@@ -22,6 +22,11 @@ public class SignupActivity extends AppCompatActivity {
     private EditText usernameEditText;
     private EditText passwordEditText;
     private EditText confirmEditText;
+    private EditText firstnameEditText;
+    private EditText lastnameEditText;
+    private EditText emailEditText;
+    private EditText ageEditText;
+
     private Button signupButton;
     private Button backButton;
 
@@ -31,6 +36,10 @@ public class SignupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_signup);
 
         // Initialize UI elements
+        firstnameEditText = findViewById(R.id.signup_firstname_edt);
+        lastnameEditText = findViewById(R.id.signup_lastname_edt);
+        emailEditText = findViewById(R.id.signup_email_edt);
+        ageEditText = findViewById(R.id.signup_age_edt);
         usernameEditText = findViewById(R.id.signup_username_edt);
         passwordEditText = findViewById(R.id.signup_password_edt);
         confirmEditText = findViewById(R.id.signup_confirm_edt);
@@ -41,16 +50,25 @@ public class SignupActivity extends AppCompatActivity {
         signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String firstName = firstnameEditText.getText().toString().trim();
+                String lastName = lastnameEditText.getText().toString().trim();
+                String email = emailEditText.getText().toString().trim();
+                String age = ageEditText.getText().toString().trim();
                 String username = usernameEditText.getText().toString().trim();
                 String password = passwordEditText.getText().toString();
                 String confirm = confirmEditText.getText().toString();
 
-                if (password.equals(confirm)) {
-                    sendSignup(username, password);
-                } else {
-                    Toast.makeText(getApplicationContext(),
-                            "Passwords do not match", Toast.LENGTH_LONG).show();
+                if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || age.isEmpty() || username.isEmpty() || password.isEmpty()) {
+                    Toast.makeText(getApplicationContext(), "All fields are required", Toast.LENGTH_LONG).show();
+                    return;
                 }
+
+                if (!password.equals(confirm)) {
+                    Toast.makeText(getApplicationContext(), "Passwords do not match", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                sendSignup(firstName, lastName, email, age, username, password);
             }
         });
 
@@ -65,14 +83,17 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     // Sends signup info to backend
-    private void sendSignup(final String username, final String password) {
+    private void sendSignup(String firstName, String lastName, String email, String age, String username, String password) {
         JSONObject body = new JSONObject();
         try {
+            body.put("firstName", firstName);
+            body.put("lastName", lastName);
+            body.put("email", email);
+            body.put("age", age);
             body.put("username", username);
             body.put("password", password);
         } catch (JSONException e) {
-            Toast.makeText(getApplicationContext(),
-                    "Error Creating Request", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), "Error Creating Request", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -85,9 +106,7 @@ public class SignupActivity extends AppCompatActivity {
                 new Response.Listener<JSONObject>() {
                     @Override
                     public void onResponse(JSONObject response) {
-                        Toast.makeText(getApplicationContext(),
-                                "Signup successful!", Toast.LENGTH_SHORT).show();
-
+                        Toast.makeText(getApplicationContext(), "Signup successful!", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(SignupActivity.this, HomeActivity.class);
                         intent.putExtra("USERNAME", username);
                         startActivity(intent);
@@ -100,7 +119,7 @@ public class SignupActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), "Signup Failed", Toast.LENGTH_LONG).show();
                     }
                 }
-        ) {};
+        );
 
         VolleySingleton.getInstance(SignupActivity.this).addToRequestQueue(postRequest);
     }
