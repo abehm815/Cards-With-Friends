@@ -124,6 +124,34 @@ public class AppUserController {
         }
     }
 
+    @PutMapping(path = "/AppUser/{username}")
+    AppUser usernameUpdateAppUser(@PathVariable String username, @RequestBody AppUser request) {
+        AppUser existingUser = this.AppUserRepository.findByUsername(username);
+        if (existingUser == null) {
+            return null;
+        } else {
+            if (request.getFirstName() != null) {
+                existingUser.setFirstName(request.getFirstName());
+            }
+            if (request.getLastName() != null) {
+                existingUser.setLastName(request.getLastName());
+            }
+            if (request.getEmail() != null) {
+                existingUser.setEmail(request.getEmail());
+            }
+            if (request.getPassword() != null) {
+                existingUser.setPassword(request.getPassword());
+            }
+            if (request.getAge() != 0) { // careful: primitive int defaults to 0
+                existingUser.setAge(request.getAge());
+            }
+            if (request.getUsername() != null) {
+                existingUser.setUsername(request.getUsername());
+            }
+            return AppUserRepository.save(existingUser);
+        }
+    }
+
     /**
      * DELETE /AppUser/{id}
      * Deletes a user by their ID.
