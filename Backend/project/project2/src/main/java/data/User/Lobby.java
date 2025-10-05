@@ -1,5 +1,6 @@
 package data.User;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -15,6 +16,7 @@ public class Lobby {
     private GameType gameType;
 
     @OneToMany(mappedBy = "lobby")
+    @JsonManagedReference
     private List<AppUser> users;
 
 
