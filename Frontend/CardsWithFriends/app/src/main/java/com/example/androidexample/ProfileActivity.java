@@ -5,8 +5,16 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+
+import org.json.JSONObject;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -46,7 +54,29 @@ public class ProfileActivity extends AppCompatActivity {
         View.OnClickListener deleteButtonListener = new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //this is where we will do delete stuff
+                String url = "http://coms-3090-006.class.las.iastate.edu:8080/AppUser/username/" + username ;
+
+                JsonObjectRequest deleteRequest = new JsonObjectRequest(
+                        Request.Method.DELETE,
+                        url,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Toast.makeText(getApplicationContext(),
+                                        "Deleted profile successfully!", Toast.LENGTH_SHORT).show();
+                                        Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
+                                        startActivity(intent);
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Toast.makeText(getApplicationContext(),
+                                        "Failed to delete user", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                VolleySingleton.getInstance(ProfileActivity.this).addToRequestQueue(deleteRequest);
             }
         };
 
@@ -59,14 +89,8 @@ public class ProfileActivity extends AppCompatActivity {
             }
         };
 
-
         updateButton.setOnClickListener(updateButtonListener);
         backButton.setOnClickListener(backButtonListener);
         deleteButton.setOnClickListener(deleteButtonListener);
-
-
-
-
-
     }
 }
