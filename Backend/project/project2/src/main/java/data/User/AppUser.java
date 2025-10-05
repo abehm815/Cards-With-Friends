@@ -2,6 +2,7 @@ package data.User;
 
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
@@ -36,6 +37,7 @@ public class AppUser {
 
     @ManyToOne
     @JoinColumn(name = "lobby_id")
+    @JsonBackReference
     private Lobby lobby;
 
     // default constructor, needed for JPA
