@@ -1,10 +1,7 @@
 package data.User;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -12,6 +9,11 @@ import java.util.List;
 public class UserStatsController {
     @Autowired
     UserStatsRepository UserStatsRepository;
+    @Autowired
+    AppUserRepository AppUserRepository;
+
+    private String success = "{\"message\":\"success\"}";
+    private String failure = "{\"message\":\"failure\"}";
 
     /**
      * Gets all of the user stats
@@ -34,6 +36,62 @@ public class UserStatsController {
             throw new RuntimeException("User ID " + id + " not found");
         }
         return user;
+    }
+
+    /**
+     * Deletes user stats by the user's ID, replaces it with a null value
+     * @param id (user's ID)
+     */
+    @DeleteMapping(path = {"/UserStats/{id}"})
+    String deleteUserStats(@PathVariable long id) {
+        UserStats stats = UserStatsRepository.findByAppUserId(id);
+        if (stats == null) {
+            return failure;
+        }
+        AppUser user = stats.getAppUser();
+        if (user == null) {
+            return failure;
+        }
+
+        // Unlink
+        user.setUserStats(null);
+        AppUserRepository.save(user);
+
+        UserStatsRepository.delete(stats);
+        return success;
+    }
+
+    @PostMapping(path = {"/UserStats/{id}"})
+    UserStats addUserStat(@PathVariable long id) {
+        AppUser user = AppUserRepository.findById(id);
+        if (user == null) {
+            throw new RuntimeException("User id: " + id + " not found");
+        }
+
+        UserStats stats = new UserStats(5);
+
+        GameStats newGame = new GoFishStats();
+        newGame.setUserStats(stats);
+        stats.addGameStats("GoFish", newGame);
+
+        newGame = new BlackjackStats();
+        newGame.setUserStats(stats);
+        stats.addGameStats("Blackjack", newGame);
+
+        newGame = new EuchreStats();
+        newGame.setUserStats(stats);
+        stats.addGameStats("Euchre", newGame);
+        UserStatsRepository.save(stats);
+
+        // Connect user and stats to each other
+        stats.setAppUser(user);
+        user.setUserStats(stats);
+
+
+        // Save info
+        AppUserRepository.save(user);
+
+        return stats;
     }
 
     /**

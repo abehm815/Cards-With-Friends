@@ -41,6 +41,7 @@ public class AppUser {
     // default constructor, needed for JPA
     public AppUser() {
         this.userStats = new UserStats();
+        this.userStats.setAppUser(this);
     }
 
     //constructor for a AppUser
