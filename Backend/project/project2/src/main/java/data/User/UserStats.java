@@ -29,6 +29,10 @@ public class UserStats {
         addGameStats("GoFish", new GoFishStats());
     }
 
+    public UserStats(int holder) {
+
+    }
+
     public void addGameStats(String gameName, GameStats stats) {
         stats.setUserStats(this);
         gameStats.put(gameName, stats);
@@ -41,6 +45,9 @@ public class UserStats {
     public Map<String, GameStats> getAllGameStats() {
         return gameStats;
     }
+
+    public AppUser getAppUser() { return this.appUser; }
+    public void setAppUser(AppUser user) { appUser = user; }
 
     public long getId() {
         return id;
