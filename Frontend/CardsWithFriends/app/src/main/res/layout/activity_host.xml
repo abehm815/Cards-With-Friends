@@ -25,15 +25,12 @@
         app:layout_constraintStart_toStartOf="parent" />
 
     <!-- Title -->
-    <TextView
-        android:id="@+id/host_code_title"
+    <Button
+        android:id="@+id/host_create_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="148dp"
-        android:fontFamily="@font/inter_bold"
-        android:text="(Code)"
-        android:textColor="@android:color/white"
-        android:textSize="50sp"
+        android:text="Create Lobby"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
