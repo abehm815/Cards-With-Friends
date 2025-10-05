@@ -124,7 +124,7 @@ public class AppUserController {
         }
     }
 
-    @PutMapping(path = "/AppUser/{username}")
+    @PutMapping(path = "/AppUser/username/{username}")
     AppUser usernameUpdateAppUser(@PathVariable String username, @RequestBody AppUser request) {
         AppUser existingUser = this.AppUserRepository.findByUsername(username);
         if (existingUser == null) {
