@@ -27,6 +27,9 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+
+
+
 public class LoginActivity extends AppCompatActivity {
 
     private EditText usernameEditText;  // define username edittext variable
@@ -36,20 +39,24 @@ public class LoginActivity extends AppCompatActivity {
 
     private Button backButton;
 
+
+
     private TextView msgResponse;
 
-    String url = "https://c5c54892-829a-4d77-bdcc-1d887f3cc81c.mock.pstmn.io/users";
 
 
 
 
+    String dbURL = "http://coms-3090-006.class.las.iastate.edu:8080";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);            // link to Login activity XML
 
         /* initialize UI elements */
+
         usernameEditText = findViewById(R.id.login_username_edt); //Username text field
         passwordEditText = findViewById(R.id.login_password_edt); //Password text field
         loginButton = findViewById(R.id.login_login_btn);    //Login button
@@ -69,9 +76,9 @@ public class LoginActivity extends AppCompatActivity {
                 String username = usernameEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
 
-                makeJsonObjReq(username, password);
+                getUserFromBackend(username, password);
 
-                // Verify the user login attempt matches an account in our mock database
+
             }
         });
 
@@ -84,69 +91,45 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void makeJsonObjReq(final String username, final String password) {
-        JsonObjectRequest jsonObjReq = new JsonObjectRequest(
+
+
+    private void getUserFromBackend(String username, String password) {
+
+        String url = "http://coms-3090-006.class.las.iastate.edu:8080/AppUser/username/" + username;
+        Log.d("URL user: ",username);
+        Log.d("URL:",url);
+        JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.GET,
                 url,
                 null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            JSONArray usersArray = response.getJSONArray("users");
-                            boolean found = false;
-
-                            for (int i = 0; i < usersArray.length(); i++) {
-                                JSONObject userObj = usersArray.getJSONObject(i);
-
-                                String u = userObj.getString("username");
-                                String p = userObj.getString("password");
-                                boolean isAdmin = userObj.getBoolean("isAdmin");
-                                boolean isModerator = userObj.getBoolean("isModerator");
-
-                                // Check if user matches input
-                                if (u.equals(username) && p.equals(password)) {
-                                    found = true;
-
-                                    if (isAdmin) {
-                                        Intent intent = new Intent(LoginActivity.this, AdminActivity.class);
-                                        intent.putExtra("USERNAME", u);
-                                        Toast.makeText(getApplicationContext(), "Welcome Admin " + u + "!", Toast.LENGTH_LONG).show();
-                                        startActivity(intent);
-                                    } else if (isModerator) {
-                                        Intent intent = new Intent(LoginActivity.this, ModeratorActivity.class);
-                                        intent.putExtra("USERNAME", u);
-                                        Toast.makeText(getApplicationContext(), "Welcome Moderator " + u + "!", Toast.LENGTH_LONG).show();
-                                        startActivity(intent);
-                                    } else {
-                                        Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                                        intent.putExtra("USERNAME", u);
-                                        Toast.makeText(getApplicationContext(), "Welcome " + u + "!", Toast.LENGTH_LONG).show();
-                                        startActivity(intent);
-                                    }
-                                    break; // stop loop once found
-                                }
-                            }
-
-                            if (!found) {
-                                Toast.makeText(getApplicationContext(), "User not found", Toast.LENGTH_SHORT).show();
-                            }
-                        } catch (Exception e) {
-                            Log.e("Volley Parse Error", e.toString());
-                            msgResponse.setText("Parse error!");
+                response -> {
+                    try {
+                        String user = response.getString("username");
+                        String pass = response.getString("password");
+                        if(username.equals(user) && password.equals(pass)){
+                            Toast.makeText(this, "Logging in: " + user, Toast.LENGTH_SHORT).show();
+                            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                            intent.putExtra("Username", username);
+                            startActivity(intent);
+                        } else {
+                            Toast.makeText(this,"User or pass incorrect", Toast.LENGTH_SHORT).show();
                         }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Log.e("Volley Error", error.toString());
-                        msgResponse.setText("Failed to load data. Please try again.");
-                    }
+                error -> {
+                    Log.e("Volley", "Error fetching user: " + error.toString());
+                    Toast.makeText(this, "User or pass incorrect", Toast.LENGTH_SHORT).show();
                 }
         );
 
-        VolleySingleton.getInstance(getApplicationContext()).addToRequestQueue(jsonObjReq);
+        // Add to the request queue
+        VolleySingleton.getInstance(this).addToRequestQueue(request);
     }
+
+
+
 
 }
