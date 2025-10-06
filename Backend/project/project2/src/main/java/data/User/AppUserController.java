@@ -1,6 +1,7 @@
 package data.User;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -102,22 +103,22 @@ public class AppUserController {
         if (existingUser == null) {
             return null;
         } else {
-            if (request.getFirstName() != null) {
+            if (!Objects.equals(request.getFirstName(),"")) {
                 existingUser.setFirstName(request.getFirstName());
             }
-            if (request.getLastName() != null) {
+            if (!Objects.equals(request.getLastName(),"")) {
                 existingUser.setLastName(request.getLastName());
             }
-            if (request.getEmail() != null) {
+            if (!Objects.equals(request.getEmail(),"")) {
                 existingUser.setEmail(request.getEmail());
             }
-            if (request.getPassword() != null) {
+            if (!Objects.equals(request.getPassword(), "")) {
                 existingUser.setPassword(request.getPassword());
             }
-            if (request.getAge() != 0) { // careful: primitive int defaults to 0
+            if (!Objects.equals(request.getAge(), "")) { // careful: primitive int defaults to 0
                 existingUser.setAge(request.getAge());
             }
-            if (request.getUsername() != null) {
+            if (!Objects.equals(request.getUsername(), "")) {
                 existingUser.setUsername(request.getUsername());
             }
             return AppUserRepository.save(existingUser);
@@ -130,22 +131,22 @@ public class AppUserController {
         if (existingUser == null) {
             return null;
         } else {
-            if (request.getFirstName() != null) {
+            if (!Objects.equals(request.getFirstName(), "")) {
                 existingUser.setFirstName(request.getFirstName());
             }
-            if (request.getLastName() != null) {
+            if (!Objects.equals(request.getLastName(), "")) {
                 existingUser.setLastName(request.getLastName());
             }
-            if (request.getEmail() != null) {
+            if (!Objects.equals(request.getEmail(), "")) {
                 existingUser.setEmail(request.getEmail());
             }
-            if (request.getPassword() != null) {
+            if (!Objects.equals(request.getPassword(), "")) {
                 existingUser.setPassword(request.getPassword());
             }
-            if (request.getAge() != 0) { // careful: primitive int defaults to 0
+            if (!Objects.equals(request.getAge(), "")) { // careful: primitive int defaults to 0
                 existingUser.setAge(request.getAge());
             }
-            if (request.getUsername() != null) {
+            if (!Objects.equals(request.getUsername(), "")) {
                 existingUser.setUsername(request.getUsername());
             }
             return AppUserRepository.save(existingUser);

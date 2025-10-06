@@ -22,7 +22,7 @@ public class AppUser {
     private String email;
     private String firstName;
     private String lastName;
-    private int age;
+    private String age;
 
     @Transient
     private boolean inLobby = false;
@@ -47,7 +47,7 @@ public class AppUser {
     }
 
     //constructor for a AppUser
-    public AppUser(String username, String password, String email, String firstName, String lastName, int age) {
+    public AppUser(String username, String password, String email, String firstName, String lastName, String age) {
         this.username = username;
         this.password = password;
         this.email = email;
@@ -93,10 +93,10 @@ public class AppUser {
         this.lastName = lastName;
     }
 
-    public int getAge() {
+    public String getAge() {
         return this.age;
     }
-    public void setAge(int age) {
+    public void setAge(String age) {
         this.age = age;
     }
 
