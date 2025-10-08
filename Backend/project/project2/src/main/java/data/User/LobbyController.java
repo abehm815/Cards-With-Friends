@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -67,6 +68,25 @@ public class LobbyController {
     @PostMapping(path = {"/Lobby"})
     public Lobby createLobby(@RequestBody Lobby Lobby) {
         return this.LobbyRepository.save(Lobby);
+    }
+
+    @PostMapping(path = "/Lobby/joinCode/{joinCode}/{username}")
+    public Lobby createLobby(@RequestBody Lobby lobby, @PathVariable String username, @PathVariable String joinCode) {
+        // Find the user creating the lobby (host)
+        AppUser host = this.AppUserRepository.findByUsername(username);
+        if (host == null) {
+            // Handle if user not found (optional)
+            return null;
+        }
+        // Create a list of users with the host
+        List<AppUser> users = new ArrayList<>();
+        users.add(host);
+        // Assign users to the lobby
+        lobby.setUsers(users);
+        //set join code
+        lobby.setJoinCode(joinCode);
+        // Save the lobby and return it
+        return this.LobbyRepository.save(lobby);
     }
 
     /**
