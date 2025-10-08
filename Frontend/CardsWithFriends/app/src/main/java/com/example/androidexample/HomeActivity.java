@@ -53,6 +53,7 @@ public class HomeActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(HomeActivity.this, LobbyActivity.class);
                 intent.putExtra("GAMETYPE", "Euchre");
+                intent.putExtra("USERNAME", username);
                 startActivity(intent);
             }
         };
@@ -64,6 +65,7 @@ public class HomeActivity extends AppCompatActivity {
             public void onClick(View view) {
                 Intent intent = new Intent(HomeActivity.this, LobbyActivity.class);
                 intent.putExtra("GAMETYPE", "Blackjack");
+                intent.putExtra("USERNAME", username);
                 startActivity(intent);
             }
         };

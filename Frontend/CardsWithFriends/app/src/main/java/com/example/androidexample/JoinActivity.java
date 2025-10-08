@@ -6,16 +6,26 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+
+import org.json.JSONObject;
+
 public class JoinActivity extends AppCompatActivity {
 
-    private Button backButton, delButton;
+    private Button backButton, delButton, joinButton;
     private TextView codeText;
     private String code;
 
     private String gameType;
+
+    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,12 +34,14 @@ public class JoinActivity extends AppCompatActivity {
 
         Intent incomingIntent = getIntent();
         gameType = incomingIntent.getStringExtra("GAMETYPE");
+        username = incomingIntent.getStringExtra("USERNAME");
 
         code = "";
 
         backButton = findViewById(R.id.join_back_btn);
         delButton = findViewById(R.id.join_backspace_btn);
         codeText = findViewById(R.id.join_code_display);
+        joinButton = findViewById(R.id.join_submit_btn);
 
         // Button IDs into an array
         int[] numberButtonIds = {
@@ -70,8 +82,34 @@ public class JoinActivity extends AppCompatActivity {
             intent.putExtra("GAMETYPE", gameType);
             startActivity(intent);
         });
-    }
 
+        joinButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String url = "http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/" + codeText.getText() + "/" + username;
+                Log.d("ENDPOINT URL", url);
+                JsonObjectRequest postRequest = new JsonObjectRequest(
+                        Request.Method.PUT,
+                        url,
+                        null,
+                        new Response.Listener<JSONObject>() {
+                            @Override
+                            public void onResponse(JSONObject response) {
+                                Toast.makeText(getApplicationContext(), "Lobby Created", Toast.LENGTH_SHORT).show();
+                            }
+                        },
+                        new Response.ErrorListener() {
+                            @Override
+                            public void onErrorResponse(VolleyError error) {
+                                Toast.makeText(getApplicationContext(), "Lobby Failed", Toast.LENGTH_LONG).show();
+                            }
+                        }
+                );
+
+                VolleySingleton.getInstance(JoinActivity.this).addToRequestQueue(postRequest);
+            }
+        });
+    }
     // Helper function to set the code based on button
     private void handleCode(Button b) {
         if (code.length() <= 3) {
