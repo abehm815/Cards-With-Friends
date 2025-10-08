@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -21,7 +22,13 @@ public class HostActivity extends AppCompatActivity {
     private Button backButton;
 
     private Button createLobbyButton;
+
+    private Button delButton;
     private String gameType;
+
+    private String code = "";
+
+    private TextView codeText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +40,39 @@ public class HostActivity extends AppCompatActivity {
 
         backButton = findViewById(R.id.host_back_btn);
         createLobbyButton = findViewById(R.id.host_create_btn);
+        codeText = findViewById(R.id.host_code_display);
+        delButton = findViewById(R.id.host_backspace_btn);
+
+        // Button IDs into an array
+        int[] numberButtonIds = {
+                R.id.host_0_btn,
+                R.id.host_1_btn,
+                R.id.host_2_btn,
+                R.id.host_3_btn,
+                R.id.host_4_btn,
+                R.id.host_5_btn,
+                R.id.host_6_btn,
+                R.id.host_7_btn,
+                R.id.host_8_btn,
+                R.id.host_9_btn
+        };
+
+        // Create ONE click listener for all number buttons
+        View.OnClickListener numberClickListener = v -> {
+            Button b = (Button) v;
+            handleCode(b);
+        };
+        for (int id : numberButtonIds) {
+            findViewById(id).setOnClickListener(numberClickListener);
+        }
+
+        // Delete button logic
+        delButton.setOnClickListener(v -> {
+            if (!code.isEmpty()) {
+                code = code.substring(0, code.length() - 1);
+                codeText.setText(code);
+            }
+        });
 
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,6 +98,8 @@ public class HostActivity extends AppCompatActivity {
                         enumedGameType = 2;
                     }
                     body.put("gameType", enumedGameType);
+                    //TODO: Change to box input thing
+                    body.put("joinCode", "1234");
                 } catch (JSONException e) {
                     Toast.makeText(getApplicationContext(), "Error Creating Request", Toast.LENGTH_LONG).show();
                     return;
@@ -85,6 +127,12 @@ public class HostActivity extends AppCompatActivity {
             }
         });
 
+    }
+    private void handleCode(Button b) {
+        if (code.length() <= 3) {
+            code += b.getText().toString();
+            codeText.setText(code);
+        }
     }
 
 }

@@ -20,6 +20,8 @@ public class LobbyActivity extends AppCompatActivity{
 
     private String gameType;
 
+    private String username;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,6 +34,7 @@ public class LobbyActivity extends AppCompatActivity{
 
         Intent intent = getIntent();
         gameType = intent.getStringExtra("GAMETYPE");
+        username = intent.getStringExtra("USERNAME");
         gameText.setText(gameType);
 
         View.OnClickListener backButtonListener = new View.OnClickListener() {
@@ -48,6 +51,7 @@ public class LobbyActivity extends AppCompatActivity{
             public void onClick(View view) {
                 Intent intent = new Intent(LobbyActivity.this, JoinActivity.class);
                 intent.putExtra("GAMETYPE", gameType);
+                intent.putExtra("USERNAME", username);
                 startActivity(intent);
             }
         };
@@ -58,6 +62,7 @@ public class LobbyActivity extends AppCompatActivity{
             public void onClick(View view) {
                 Intent intent = new Intent(LobbyActivity.this, HostActivity.class);
                 intent.putExtra("GAMETYPE", gameType);
+                intent.putExtra("USERNAME", username);
                 startActivity(intent);
             }
         };
