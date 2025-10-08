@@ -94,9 +94,10 @@ public class LobbyController {
             if (lobbyDetails.getUsers() != null) {
                 oldLobby.setUsers(lobbyDetails.getUsers());
             }
-            if(lobbyDetails.getJoinCode() != null){
+            if(lobbyDetails.getJoinCode() != null) {
                 oldLobby.setJoinCode(lobbyDetails.getJoinCode());
             }
+            this.LobbyRepository.save(oldLobby);
             return this.success;
         }
     }
@@ -117,6 +118,7 @@ public class LobbyController {
             if(lobbyDetails.getJoinCode() != null){
                 oldLobby.setJoinCode(lobbyDetails.getJoinCode());
             }
+            this.LobbyRepository.save(oldLobby);
             return this.success;
         }
     }
