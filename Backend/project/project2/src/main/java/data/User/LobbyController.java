@@ -44,6 +44,19 @@ public class LobbyController {
     }
 
     /**
+     * GET /Lobby/{lobbyID}
+     * <p>
+     * Retrieves a specific lobby by its ID.
+     *
+     * @param joinCode the joinCode of the lobby to retrieve
+     * @return the {@link Lobby} entity if found, otherwise null
+     */
+    @GetMapping(path = {"/Lobby/joinCode/{joinCode}"})
+    Lobby getLobbyById(@PathVariable String joinCode) {
+        return this.LobbyRepository.findByJoinCode(joinCode);
+    }
+
+    /**
      * POST /Lobby
      * <p>
      * Creates a new lobby and saves it to the database.
@@ -61,7 +74,7 @@ public class LobbyController {
      * <p>
      * Updates an existing lobby by its ID. Only updates fields that are provided
      * in the request body (currently supports updating {@code gameType} and {@code users}).
-     * I am gonna make a new method that can just update users inside a lobby for ease of use
+     * I am going to make a new method that can just update users inside a lobby for ease of use
      * if you want to change users you must relist users that are currently in lobby plus new additions in json
      *
      * @param lobbyID      the ID of the lobby to update
@@ -80,6 +93,29 @@ public class LobbyController {
             }
             if (lobbyDetails.getUsers() != null) {
                 oldLobby.setUsers(lobbyDetails.getUsers());
+            }
+            if(lobbyDetails.getJoinCode() != null){
+                oldLobby.setJoinCode(lobbyDetails.getJoinCode());
+            }
+            return this.success;
+        }
+    }
+
+    @PutMapping(path= {"/Lobby/joinCode/{joinCode}"})
+    public String updateLobbyByCode(@PathVariable String joinCode, @RequestBody Lobby lobbyDetails){
+        Lobby oldLobby= this.LobbyRepository.findByJoinCode(joinCode);
+        if (oldLobby == null){
+            return this.failure;
+        }
+        else {
+            if (lobbyDetails.getGameType() != null) {
+                oldLobby.setGameType(lobbyDetails.getGameType());
+            }
+            if (lobbyDetails.getUsers() != null) {
+                oldLobby.setUsers(lobbyDetails.getUsers());
+            }
+            if(lobbyDetails.getJoinCode() != null){
+                oldLobby.setJoinCode(lobbyDetails.getJoinCode());
             }
             return this.success;
         }
@@ -128,6 +164,33 @@ public class LobbyController {
         return this.success;
     }
 
+    @PutMapping(path= {"/Lobby/joinCode/{joinCode}/{username}"})
+    public String updateLobbyUsersByCode(@PathVariable String joinCode, @PathVariable String username){
+        Lobby lobby = this.LobbyRepository.findByJoinCode(joinCode);
+        if (lobby == null) {
+            return this.failure; // Lobby not found
+        }
+        AppUser user = this.AppUserRepository.findByUsername(username);
+        if (user == null) {
+            return this.failure; // User not found
+        }
+        List<AppUser> usersInLobby = lobby.getUsers();
+        if (usersInLobby.contains(user)) {
+            // User already in lobby -> remove
+            usersInLobby.remove(user);
+            user.setLobby(null);
+        } else {
+            // User not in lobby -> add
+            usersInLobby.add(user);
+            user.setLobby(lobby);
+        }
+        //after proper list of users created set users in lobby to created list and save
+        lobby.setUsers(usersInLobby);
+        this.AppUserRepository.save(user);
+        this.LobbyRepository.save(lobby);
+        return this.success;
+    }
+
     /**
      * DELETE /Lobby/{lobbyID}
      * <p>
@@ -150,5 +213,21 @@ public class LobbyController {
          this.AppUserRepository.saveAll(usersInLobby);
          this.LobbyRepository.deleteById(lobbyID);
          return this.success;
+    }
+
+
+    @DeleteMapping(path = {"/Lobby/joinCode/{joinCode}"})
+    String deleteLobbyByCode(@PathVariable String joinCode) {
+        Lobby lobby = LobbyRepository.findByJoinCode(joinCode);
+        if (lobby == null) {
+            return this.failure; // Lobby not found
+        }
+        List<AppUser> usersInLobby = lobby.getUsers();
+        for (AppUser user : usersInLobby) {
+            user.setLobby(null); // break the relationship
+        }
+        this.AppUserRepository.saveAll(usersInLobby);
+        this.LobbyRepository.deleteByJoinCode(joinCode);
+        return this.success;
     }
 }

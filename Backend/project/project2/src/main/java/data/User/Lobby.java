@@ -20,6 +20,9 @@ public class Lobby {
     private List<AppUser> users;
 
 
+    private String joinCode;
+
+
     public long getLobbyID() {
         return lobbyID;
     }
@@ -42,6 +45,14 @@ public class Lobby {
 
     public void setUsers(List<AppUser> users) {
         this.users = users;
+    }
+
+    public String getJoinCode() {
+        return joinCode;
+    }
+
+    public void setJoinCode(String joinCode) {
+        this.joinCode = joinCode;
     }
 
     public AppUser getUser(int userID) {

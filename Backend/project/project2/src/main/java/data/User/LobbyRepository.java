@@ -8,4 +8,10 @@ public interface LobbyRepository extends JpaRepository<Lobby, Long>  {
 
     @Transactional
     void deleteById(long lobbyID);
+
+    Lobby findByJoinCode(String joinCode);
+
+    @Transactional
+    void deleteByJoinCode(String joinCode);
+
 }
