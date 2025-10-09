@@ -41,6 +41,7 @@ public class LobbyActivity extends AppCompatActivity{
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(LobbyActivity.this, HomeActivity.class);
+                intent.putExtra("USERNAME", username);
                 startActivity(intent);
             }
         };
