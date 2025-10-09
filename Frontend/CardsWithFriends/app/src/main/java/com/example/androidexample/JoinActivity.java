@@ -80,6 +80,7 @@ public class JoinActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> {
             Intent intent = new Intent(JoinActivity.this, LobbyActivity.class);
             intent.putExtra("GAMETYPE", gameType);
+            intent.putExtra("USERNAME", username);
             startActivity(intent);
         });
 

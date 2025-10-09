@@ -31,6 +31,8 @@ public class UpdateActivity extends AppCompatActivity{
     private Button updateButton;
     private Button backButton;
 
+    private String username;
+
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
@@ -45,6 +47,9 @@ public class UpdateActivity extends AppCompatActivity{
         confirmEditText = findViewById(R.id.update_confirm_edt);
         updateButton = findViewById(R.id.update_update_btn);
         backButton = findViewById(R.id.update_back_btn);
+
+        Intent incomingIntent = getIntent();
+        username = incomingIntent.getStringExtra("USERNAME");
 
         updateButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -72,6 +77,7 @@ public class UpdateActivity extends AppCompatActivity{
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(UpdateActivity.this, ProfileActivity.class);
+                intent.putExtra("USERNAME", username);
                 startActivity(intent);
             }
         });

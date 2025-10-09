@@ -2,6 +2,7 @@ package com.example.androidexample;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -26,6 +27,8 @@ public class HostActivity extends AppCompatActivity {
     private Button delButton;
     private String gameType;
 
+    private String username;
+
     private String code = "";
 
     private TextView codeText;
@@ -37,6 +40,7 @@ public class HostActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         gameType = intent.getStringExtra("GAMETYPE");
+        username = intent.getStringExtra("USERNAME");
 
         backButton = findViewById(R.id.host_back_btn);
         createLobbyButton = findViewById(R.id.host_create_btn);
@@ -74,11 +78,13 @@ public class HostActivity extends AppCompatActivity {
             }
         });
 
+        //Back Button logic
         backButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(HostActivity.this, LobbyActivity.class);
                 intent.putExtra("GAMETYPE", gameType);
+                intent.putExtra("USERNAME", username);
                 startActivity(intent);
             }
         });
@@ -86,7 +92,9 @@ public class HostActivity extends AppCompatActivity {
         createLobbyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String url = "http://coms-3090-006.class.las.iastate.edu:8080/Lobby";
+                String url = "http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/3333/" + username;
+
+                Log.e("TAG", url);
 
                 JSONObject body = new JSONObject();
 
@@ -98,8 +106,7 @@ public class HostActivity extends AppCompatActivity {
                         enumedGameType = 2;
                     }
                     body.put("gameType", enumedGameType);
-                    //TODO: Change to box input thing
-                    body.put("joinCode", "1234");
+                    body.put("joinCode", "3333");
                 } catch (JSONException e) {
                     Toast.makeText(getApplicationContext(), "Error Creating Request", Toast.LENGTH_LONG).show();
                     return;
