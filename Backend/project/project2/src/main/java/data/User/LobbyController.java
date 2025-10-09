@@ -53,7 +53,7 @@ public class LobbyController {
      * @return the {@link Lobby} entity if found, otherwise null
      */
     @GetMapping(path = {"/Lobby/joinCode/{joinCode}"})
-    Lobby getLobbyById(@PathVariable String joinCode) {
+    Lobby getLobbyByJoinCode(@PathVariable String joinCode) {
         return this.LobbyRepository.findByJoinCode(joinCode);
     }
 
@@ -71,22 +71,30 @@ public class LobbyController {
     }
 
     @PostMapping(path = "/Lobby/joinCode/{joinCode}/{username}")
-    public Lobby createLobby(@RequestBody Lobby lobby, @PathVariable String username, @PathVariable String joinCode) {
+    public Lobby createLobbyWithJoinCode(@RequestBody Lobby lobby, @PathVariable String username, @PathVariable String joinCode) {
         // Find the user creating the lobby (host)
         AppUser host = this.AppUserRepository.findByUsername(username);
         if (host == null) {
             // Handle if user not found (optional)
             return null;
         }
+        //set join code
+        lobby.setJoinCode(joinCode);
+
         // Create a list of users with the host
         List<AppUser> users = new ArrayList<>();
         users.add(host);
+
         // Assign users to the lobby
         lobby.setUsers(users);
-        //set join code
-        lobby.setJoinCode(joinCode);
+
+        // Assign lobby to user
+        host.setLobby(lobby);
+
         // Save the lobby and return it
-        return this.LobbyRepository.save(lobby);
+        Lobby savedLobby = this.LobbyRepository.save(lobby);
+        this.AppUserRepository.save(host);
+        return  savedLobby;
     }
 
     /**
