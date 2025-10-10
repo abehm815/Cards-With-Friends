@@ -70,8 +70,8 @@ public class ProfileActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 deleteStats(username);
-                /*
-                String url = "http://coms-3090-006.class.las.iastate.edu:8080/AppUser/username/" + username ;
+
+                /*String url = "http://coms-3090-006.class.las.iastate.edu:8080/AppUser/username/" + username ;
 
                 JsonObjectRequest deleteRequest = new JsonObjectRequest(
                         Request.Method.DELETE,
@@ -95,7 +95,9 @@ public class ProfileActivity extends AppCompatActivity {
                         });
                 VolleySingleton.getInstance(ProfileActivity.this).addToRequestQueue(deleteRequest);
 
+                
                  */
+
 
             }
 

@@ -3,18 +3,50 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-             android:layout_height="match_parent">
+    android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/textView2"
+        android:id="@+id/moderator_greeting_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="This is where the moderator page will go :)"
+        android:layout_gravity="center"
         android:gravity="center"
+        android:text="Here you can create new user stats"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.125" />
+
+    <Button
+        android:id="@+id/moderator_update_stats_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="128dp"
+        android:text="Create new stats"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.46"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/moderator_greeting_text"
+        app:layout_constraintVertical_bias="0.487" />
+
+    <EditText
+        android:id="@+id/moderator_user_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Username: "
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/moderator_update_stats_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/moderator_greeting_text"
+        app:layout_constraintVertical_bias="0.159" />
+
+    \
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
