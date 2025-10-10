@@ -92,9 +92,7 @@ public class HostActivity extends AppCompatActivity {
         createLobbyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                String url = "http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/3333/" + username;
-
-                Log.e("TAG", url);
+                String url = "http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/" + code + "/" + username;
 
                 JSONObject body = new JSONObject();
 
@@ -106,7 +104,6 @@ public class HostActivity extends AppCompatActivity {
                         enumedGameType = 2;
                     }
                     body.put("gameType", enumedGameType);
-                    body.put("joinCode", "3333");
                 } catch (JSONException e) {
                     Toast.makeText(getApplicationContext(), "Error Creating Request", Toast.LENGTH_LONG).show();
                     return;
@@ -120,6 +117,11 @@ public class HostActivity extends AppCompatActivity {
                             @Override
                             public void onResponse(JSONObject response) {
                                 Toast.makeText(getApplicationContext(), "Lobby Created", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(HostActivity.this, LobbyViewActivity.class);
+                                intent.putExtra("USERNAME", username);
+                                intent.putExtra("GAMETYPE", gameType);
+                                intent.putExtra("JOINCODE", code);
+                                startActivity(intent);
                             }
                         },
                         new Response.ErrorListener() {
