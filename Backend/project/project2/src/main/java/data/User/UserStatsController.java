@@ -8,9 +8,9 @@ import java.util.List;
 @RestController
 public class UserStatsController {
     @Autowired
-    UserStatsRepository UserStatsRepository;
+    UserStatsRepository userStatsRepository;
     @Autowired
-    AppUserRepository AppUserRepository;
+    AppUserRepository appUserRepository;
 
     private String success = "{\"message\":\"success\"}";
     private String failure = "{\"message\":\"failure\"}";
@@ -21,7 +21,9 @@ public class UserStatsController {
      * @return List of User Stat Objects
      */
     @GetMapping(path = {"/UserStats"})
-    List<UserStats> getAllUserStats() { return UserStatsRepository.findAll(); }
+    List<UserStats> getAllUserStats() {
+        return userStatsRepository.findAll();
+    }
 
     /**
      * Gets a single user's stats
@@ -31,7 +33,7 @@ public class UserStatsController {
      */
     @GetMapping(path = {"/UserStats/{id}"})
     UserStats getUserStats(@PathVariable long id) {
-        UserStats user = UserStatsRepository.findByAppUserId(id);
+        UserStats user = userStatsRepository.findByAppUserId(id);
         if(user == null) {
             throw new RuntimeException("User ID " + id + " not found");
         }
@@ -44,7 +46,7 @@ public class UserStatsController {
      */
     @DeleteMapping(path = {"/UserStats/{id}"})
     String deleteUserStats(@PathVariable long id) {
-        UserStats stats = UserStatsRepository.findByAppUserId(id);
+        UserStats stats = userStatsRepository.findByAppUserId(id);
         if (stats == null) {
             return failure;
         }
@@ -55,15 +57,31 @@ public class UserStatsController {
 
         // Unlink
         user.setUserStats(null);
-        AppUserRepository.save(user);
+        appUserRepository.save(user);
 
-        UserStatsRepository.delete(stats);
+        userStatsRepository.delete(stats);
         return success;
     }
 
+    /**
+     * Delete by user stat ID, used for cleaning
+     * @param id (user stat ID)
+     * @return String
+     */
+    @DeleteMapping(path = {"/UserStats/statID/{id}"})
+    String deleteUserStatsByUserStatID(@PathVariable long id) {
+        userStatsRepository.deleteById(id);
+        return success;
+    }
+
+    /**
+     * Creates and attatches a new empty UserStats object to a user
+     * @param id (user's ID)
+     * @return new UserStat
+     */
     @PostMapping(path = {"/UserStats/{id}"})
     UserStats addUserStat(@PathVariable long id) {
-        AppUser user = AppUserRepository.findById(id);
+        AppUser user = appUserRepository.findById(id);
         if (user == null) {
             throw new RuntimeException("User id: " + id + " not found");
         }
@@ -81,7 +99,7 @@ public class UserStatsController {
         newGame = new EuchreStats();
         newGame.setUserStats(stats);
         stats.addGameStats("Euchre", newGame);
-        UserStatsRepository.save(stats);
+        userStatsRepository.save(stats);
 
         // Connect user and stats to each other
         stats.setAppUser(user);
@@ -89,7 +107,7 @@ public class UserStatsController {
 
 
         // Save info
-        AppUserRepository.save(user);
+        appUserRepository.save(user);
 
         return stats;
     }
@@ -106,7 +124,7 @@ public class UserStatsController {
     @PutMapping(path = {"/UserStats/{id}/{gameName}/increment/{stat}"})
     UserStats incrementStat(@PathVariable long id, @PathVariable String gameName, @PathVariable String stat) {
         // Look for user and throw error if not found
-        UserStats user = UserStatsRepository.findByAppUserId(id);
+        UserStats user = userStatsRepository.findByAppUserId(id);
         if(user == null) {
             throw new RuntimeException("User ID " + id + " not found");
         }
@@ -156,7 +174,7 @@ public class UserStatsController {
                 break;
         }
 
-        return UserStatsRepository.save(user);
+        return userStatsRepository.save(user);
     }
 
     /**
@@ -172,7 +190,7 @@ public class UserStatsController {
     @PutMapping(path = {"/UserStats/{id}/{gameName}/set/{stat}/{amount}"})
     UserStats setStat(@PathVariable long id, @PathVariable String gameName, @PathVariable String stat, @PathVariable int amount) {
         // Look for user and throw error if not found
-        UserStats user = UserStatsRepository.findByAppUserId(id);
+        UserStats user = userStatsRepository.findByAppUserId(id);
         if(user == null) {
             throw new RuntimeException("User ID " + id + " not found");
         }
@@ -222,7 +240,7 @@ public class UserStatsController {
                 break;
         }
 
-        return UserStatsRepository.save(user);
+        return userStatsRepository.save(user);
     }
 
 }

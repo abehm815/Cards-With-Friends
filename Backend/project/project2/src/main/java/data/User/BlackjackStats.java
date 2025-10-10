@@ -11,6 +11,7 @@ public class BlackjackStats extends GameStats {
     private int timesDoubledDown;
     private int timesSplit;
     private int timesHit;
+    @Column(nullable = false)
     private int gamesWon;
 
     protected BlackjackStats() {
