@@ -15,6 +15,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class JoinActivity extends AppCompatActivity {
@@ -98,12 +99,22 @@ public class JoinActivity extends AppCompatActivity {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                Toast.makeText(getApplicationContext(), "Lobby Joined", Toast.LENGTH_SHORT).show();
-                                Intent intent = new Intent(JoinActivity.this, LobbyViewActivity.class);
-                                intent.putExtra("USERNAME", username);
-                                intent.putExtra("GAMETYPE", gameType);
-                                intent.putExtra("JOINCODE", code);
-                                startActivity(intent);
+                                try {
+                                    String message = response.getString("message");
+                                    if (message.equals("success")){
+                                        Toast.makeText(getApplicationContext(), "Lobby Joined", Toast.LENGTH_SHORT).show();
+                                        Intent intent = new Intent(JoinActivity.this, LobbyViewActivity.class);
+                                        intent.putExtra("USERNAME", username);
+                                        intent.putExtra("GAMETYPE", gameType);
+                                        intent.putExtra("JOINCODE", code);
+                                        startActivity(intent);
+                                    }
+                                    else {
+                                        Toast.makeText(getApplicationContext(), "Failed to find lobby.", Toast.LENGTH_SHORT).show();
+                                    }
+                                } catch (JSONException e) {
+                                    throw new RuntimeException(e);
+                                }
                             }
                         },
                         new Response.ErrorListener() {

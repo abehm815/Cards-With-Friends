@@ -15,10 +15,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.google.android.material.card.MaterialCardView;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class LobbyViewActivity extends AppCompatActivity {
@@ -30,6 +33,8 @@ public class LobbyViewActivity extends AppCompatActivity {
     private TextView joinCodeTxt;
     private LinearLayout userListLayout;
     private Button deleteBtn;
+
+    private Button leaveBtn;
 
     private static final String TAG = "LobbyViewActivity";
 
@@ -43,6 +48,7 @@ public class LobbyViewActivity extends AppCompatActivity {
         joinCodeTxt = findViewById(R.id.lobbyview_code_txt);
         userListLayout = findViewById(R.id.lobbyview_user_list);
         deleteBtn = findViewById(R.id.lobbyview_delete_btn);
+        leaveBtn = findViewById(R.id.lobbyview_leave_btn);
 
         //Grab info from previous page
         Intent intent = getIntent();
@@ -59,6 +65,8 @@ public class LobbyViewActivity extends AppCompatActivity {
 
         //Handle delete button
         deleteBtn.setOnClickListener(v -> deleteLobbyRequest());
+
+        leaveBtn.setOnClickListener(v -> leaveLobbyRequest());
     }
     /**
      *
@@ -75,7 +83,6 @@ public class LobbyViewActivity extends AppCompatActivity {
                 null,
                 response -> {
                     try {
-                        Log.d(TAG, "Lobby JSON:\n" + response.toString(4));
                         JSONArray usersArray = response.getJSONArray("users");
 
                         userListLayout.removeAllViews();
@@ -154,4 +161,42 @@ public class LobbyViewActivity extends AppCompatActivity {
 
         VolleySingleton.getInstance(LobbyViewActivity.this).addToRequestQueue(deleteRequest);
     }
-}
+
+    private void leaveLobbyRequest() {
+        String url = "http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/" + joinCode + "/" + username;
+        Log.d("ENDPOINT URL", url);
+        JsonObjectRequest postRequest = new JsonObjectRequest(
+                Request.Method.PUT,
+                url,
+                null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        try {
+                            String message = response.getString("message");
+                            if (message.equals("success")){
+                                Toast.makeText(getApplicationContext(), "Lobby left!", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(LobbyViewActivity.this, JoinActivity.class);
+                                intent.putExtra("USERNAME", username);
+                                intent.putExtra("GAMETYPE", gameType);
+                                startActivity(intent);
+                            }
+                            else {
+                                Toast.makeText(getApplicationContext(), "Can't leave lobby", Toast.LENGTH_SHORT).show();
+                            }
+                        } catch (JSONException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        Toast.makeText(getApplicationContext(), "Lobby Join Failed", Toast.LENGTH_LONG).show();
+                    }
+                }
+        );
+
+        VolleySingleton.getInstance(LobbyViewActivity.this).addToRequestQueue(postRequest);
+
+    }}
