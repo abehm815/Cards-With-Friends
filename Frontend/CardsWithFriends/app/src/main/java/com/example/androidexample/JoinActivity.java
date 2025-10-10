@@ -15,6 +15,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class JoinActivity extends AppCompatActivity {
@@ -80,8 +81,11 @@ public class JoinActivity extends AppCompatActivity {
         backButton.setOnClickListener(v -> {
             Intent intent = new Intent(JoinActivity.this, LobbyActivity.class);
             intent.putExtra("GAMETYPE", gameType);
+            intent.putExtra("USERNAME", username);
             startActivity(intent);
         });
+
+        //TODO: Backend needs to change so that
 
         joinButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,13 +99,28 @@ public class JoinActivity extends AppCompatActivity {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                Toast.makeText(getApplicationContext(), "Lobby Created", Toast.LENGTH_SHORT).show();
+                                try {
+                                    String message = response.getString("message");
+                                    if (message.equals("success")){
+                                        Toast.makeText(getApplicationContext(), "Lobby Joined", Toast.LENGTH_SHORT).show();
+                                        Intent intent = new Intent(JoinActivity.this, LobbyViewActivity.class);
+                                        intent.putExtra("USERNAME", username);
+                                        intent.putExtra("GAMETYPE", gameType);
+                                        intent.putExtra("JOINCODE", code);
+                                        startActivity(intent);
+                                    }
+                                    else {
+                                        Toast.makeText(getApplicationContext(), "Failed to find lobby.", Toast.LENGTH_SHORT).show();
+                                    }
+                                } catch (JSONException e) {
+                                    throw new RuntimeException(e);
+                                }
                             }
                         },
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Toast.makeText(getApplicationContext(), "Lobby Failed", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "Lobby Join Failed", Toast.LENGTH_LONG).show();
                             }
                         }
                 );

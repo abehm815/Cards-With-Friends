@@ -64,8 +64,6 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp" />
 
-        <!-- Stats Button -->
-
         <!-- Delete Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/profile_delete_btn"
@@ -81,24 +79,20 @@
             app:cornerRadius="12dp" />
     </LinearLayout>
 
+    <!-- Logout Button -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/profile_stats_btn"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:id="@+id/profile_logout_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:fontFamily="@font/inter_black"
-        android:text="View stats"
-        android:textColor="@android:color/white"
+        android:text="Logout"
         android:textSize="18sp"
+        android:fontFamily="@font/inter_black"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@color/my_red"
         app:cornerRadius="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
+        android:layout_marginTop="40dp"
+        app:layout_constraintTop_toBottomOf="@id/profile_button_row"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/profile_button_row"
-        app:layout_constraintVertical_bias="0.005"
-        app:strokeColor="@android:color/white"
-        app:strokeWidth="2dp" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

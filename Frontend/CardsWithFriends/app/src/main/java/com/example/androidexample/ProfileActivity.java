@@ -37,13 +37,14 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         Intent intent = getIntent();
-        String username = intent.getStringExtra("USERNAME");
+        username = intent.getStringExtra("USERNAME");
 
         updateButton = findViewById(R.id.profile_update_btn);
         backButton = findViewById(R.id.profile_back_btn);
         deleteButton = findViewById(R.id.profile_delete_btn);
         usernameDisplayText = findViewById(R.id.profile_username_text);
         viewStatsButton = findViewById(R.id.profile_stats_btn);
+        Button logoutBtn = findViewById(R.id.profile_logout_btn);
         usernameDisplayText.setText(username);
 
         View.OnClickListener backButtonListener= new View.OnClickListener() {
@@ -110,6 +111,12 @@ public class ProfileActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         };
+
+        logoutBtn.setOnClickListener(v -> {
+            Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(ProfileActivity.this, LoginActivity.class));
+            finish();
+        });
 
         updateButton.setOnClickListener(updateButtonListener);
         backButton.setOnClickListener(backButtonListener);
