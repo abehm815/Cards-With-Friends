@@ -74,6 +74,15 @@ public class LoginActivity extends AppCompatActivity {
                 String username = usernameEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
 
+                if(username.equals("admin") && password.equals("admin")){
+                    Intent intent = new Intent(LoginActivity.this, AdminActivity.class);
+                    startActivity(intent);
+                }
+                if(username.equals("mod") && password.equals("mod")){
+                    Intent intent = new Intent(LoginActivity.this, ModeratorActivity.class);
+                    startActivity(intent);
+                }
+
                 getUserFromBackend(username, password);
 
 
@@ -126,8 +135,4 @@ public class LoginActivity extends AppCompatActivity {
         // Add to the request queue
         VolleySingleton.getInstance(this).addToRequestQueue(request);
     }
-
-
-
-
 }
