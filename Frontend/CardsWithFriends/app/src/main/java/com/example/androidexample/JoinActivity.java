@@ -84,6 +84,8 @@ public class JoinActivity extends AppCompatActivity {
             startActivity(intent);
         });
 
+        //TODO: Backend needs to change so that
+
         joinButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
