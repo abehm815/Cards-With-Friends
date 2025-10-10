@@ -70,8 +70,6 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-
-
                 /* grab strings from user inputs */
                 String username = usernameEditText.getText().toString();
                 String password = passwordEditText.getText().toString();
