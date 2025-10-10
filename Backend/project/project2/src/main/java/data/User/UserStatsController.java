@@ -210,7 +210,7 @@ public class UserStatsController {
                     case "questionAsked": ((GoFishStats) stats).setQuestionsAsked(amount); break;
                     case "bookCollected": ((GoFishStats) stats).setBooksCollected(amount); break;
                     case "gameWon": ((GoFishStats) stats).setGamesWon(amount); break;
-                    case "gamePlayed": stats.addGamePlayed(); break;
+                    case "gamePlayed": stats.setGamesPlayed(amount); break;
                     default: throw new RuntimeException("Stat " + stat + " not valid");
                 }
                 break;
@@ -222,7 +222,7 @@ public class UserStatsController {
                     case "goneAlone": ((EuchreStats) stats).setTimesGoneAlone(amount); break;
                     case "sweepWon": ((EuchreStats) stats).setSweepsWon(amount); break;
                     case "gameWon": ((EuchreStats) stats).setGamesWon(amount); break;
-                    case "gamePlayed": stats.addGamePlayed(); break;
+                    case "gamePlayed": stats.setGamesPlayed(amount); break;
                     default: throw new RuntimeException("Stat " + stat + " not valid");
                 }
                 break;
@@ -234,7 +234,7 @@ public class UserStatsController {
                     case "split": ((BlackjackStats) stats).setTimesSplit(amount); break;
                     case "hit": ((BlackjackStats) stats).setTimesHit(amount); break;
                     case "gameWon": ((BlackjackStats) stats).setGamesWon(amount); break;
-                    case "gamePlayed": stats.addGamePlayed(); break;
+                    case "gamePlayed": stats.setGamesPlayed(amount); break;
                     default: throw new RuntimeException("Stat" + stat + " not valid");
                 }
                 break;

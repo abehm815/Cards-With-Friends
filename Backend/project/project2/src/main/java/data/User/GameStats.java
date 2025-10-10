@@ -23,6 +23,10 @@ public abstract class GameStats {
         gamesPlayed++;
     }
 
+    public void setGamesPlayed(int gamesPlayed) {
+        this.gamesPlayed = gamesPlayed;
+    }
+
     public int getGamesPlayed() {
         return gamesPlayed;
     }
