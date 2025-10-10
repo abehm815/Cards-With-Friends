@@ -96,13 +96,18 @@ public class JoinActivity extends AppCompatActivity {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
-                                Toast.makeText(getApplicationContext(), "Lobby Created", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(getApplicationContext(), "Lobby Joined", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(JoinActivity.this, LobbyViewActivity.class);
+                                intent.putExtra("USERNAME", username);
+                                intent.putExtra("GAMETYPE", gameType);
+                                intent.putExtra("JOINCODE", code);
+                                startActivity(intent);
                             }
                         },
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Toast.makeText(getApplicationContext(), "Lobby Failed", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getApplicationContext(), "Lobby Join Failed", Toast.LENGTH_LONG).show();
                             }
                         }
                 );
