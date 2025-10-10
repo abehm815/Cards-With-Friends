@@ -89,6 +89,9 @@ public class HostActivity extends AppCompatActivity {
             }
         });
 
+        //TODO: Backend needs to change so that the code is auto generated
+        //TODO: Backend needs to change so no two lobby of the same join code can be created
+
         createLobbyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
