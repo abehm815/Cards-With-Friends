@@ -2,11 +2,12 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/lobby_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_gradient">
 
-    <!-- Back Button (Outlined White at Top Left) -->
+    <!-- Back Button with Arrow Icon -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/lobby_back_btn"
         android:layout_width="wrap_content"
@@ -21,6 +22,10 @@
         app:strokeColor="@android:color/white"
         app:strokeWidth="2dp"
         app:cornerRadius="12dp"
+        app:icon="@drawable/backarrow"
+        app:iconTint="@android:color/white"
+        app:iconPadding="8dp"
+        app:iconGravity="textStart"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
@@ -30,7 +35,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="148dp"
-        android:fontFamily="@font/inter_bold"
+        android:fontFamily="@font/inter_black"
         android:text="Lobbies"
         android:textColor="@android:color/white"
         android:textSize="50sp"

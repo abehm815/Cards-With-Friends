@@ -100,13 +100,7 @@ public class HostActivity extends AppCompatActivity {
                 JSONObject body = new JSONObject();
 
                 try {
-                    String enumedGameType = "NONE";
-                    if (gameType.equals("Blackjack")){
-                        enumedGameType = "BLACKJACK";
-                    } else if (gameType.equals("Euchre")) {
-                        enumedGameType = "EUCHRE";
-                    }
-                    body.put("gameType", enumedGameType);
+                    body.put("gameType", gameType);
                 } catch (JSONException e) {
                     Toast.makeText(getApplicationContext(), "Error Creating Request", Toast.LENGTH_LONG).show();
                     return;

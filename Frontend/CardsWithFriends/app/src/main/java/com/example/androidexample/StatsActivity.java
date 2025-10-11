@@ -3,7 +3,6 @@ package com.example.androidexample;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,38 +14,33 @@ import com.android.volley.toolbox.JsonObjectRequest;
 
 import org.json.JSONObject;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 public class StatsActivity extends AppCompatActivity {
 
-    private Button backButton;
     private Button euchreButton;
     private Button blackJackButton;
     private Button goFishButton;
 
-    private TextView usernameText;
+    private TextView stat1, stat2, stat3, stat4, stat5, stat6, stat7;
 
-    private TextView stat1;
-    private TextView stat2;
-    private TextView stat3;
-    private TextView stat4;
-    private TextView stat5;
-    private TextView stat6;
-    private TextView stat7;
-
-
-
-    private String dbURL = "http://coms-3090-006.class.las.iastate.edu:8080";
+    private static final String DB_URL = "http://coms-3090-006.class.las.iastate.edu:8080";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stats);
 
-        backButton = findViewById(R.id.stats_back_btn);
+        // --- Get username from intent ---
+        Intent intent = getIntent();
+        String username = intent.getStringExtra("USERNAME");
+
+        // --- Setup bottom nav ---
+        BottomNavHelper.setupBottomNav(this, username);
+
+        // --- Bind UI elements ---
         euchreButton = findViewById(R.id.stats_euchre_btn);
         blackJackButton = findViewById(R.id.stats_black_jack_btn);
         goFishButton = findViewById(R.id.stats_go_fish_btn);
+
         stat1 = findViewById(R.id.stat_1_text);
         stat2 = findViewById(R.id.stat_2_text);
         stat3 = findViewById(R.id.stat_3_text);
@@ -54,73 +48,41 @@ public class StatsActivity extends AppCompatActivity {
         stat5 = findViewById(R.id.stat_5_text);
         stat6 = findViewById(R.id.stat_6_text);
         stat7 = findViewById(R.id.stat_7_text);
-        usernameText = findViewById(R.id.stats_username_text);
 
-        Intent intent = getIntent();
-        String username = intent.getStringExtra("USERNAME");
+        // --- Button Listeners ---
+        euchreButton.setOnClickListener(v -> {
+            clearStats();
+            stat1.setText("Loading Euchre stats...");
+            getUserID(username, "Euchre");
+        });
 
-        usernameText.setText(username + " stats");
+        blackJackButton.setOnClickListener(v -> {
+            clearStats();
+            stat1.setText("Loading Blackjack stats...");
+            getUserID(username, "Blackjack");
+        });
 
-        View.OnClickListener backButtonListener= new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(StatsActivity.this, HomeActivity.class);
-                intent.putExtra("USERNAME", username);
-                startActivity(intent);
-            }
-        };
-
-        View.OnClickListener euchreButtonListener= new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getUserID(username, "Euchre");
-                stat4.setText("Euchre stats to be loaded");
-                stat1.setText("");
-                stat2.setText("");
-                stat3.setText("");
-                stat5.setText("");
-                stat6.setText("");
-                stat7.setText("");
-            }
-        };
-
-        View.OnClickListener blackJackButtonListener= new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getUserID(username, "Blackjack");
-                stat4.setText("Black Jack stats to be loaded");
-                stat1.setText("");
-                stat2.setText("");
-                stat3.setText("");
-                stat5.setText("");
-                stat6.setText("");
-                stat7.setText("");
-            }
-        };
-
-        View.OnClickListener goFishButtonListener= new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getUserID(username, "GoFish");
-                stat4.setText("Go Fish stats to be loaded");
-                stat1.setText("");
-                stat2.setText("");
-                stat3.setText("");
-                stat5.setText("");
-                stat6.setText("");
-                stat7.setText("");
-            }
-        };
-
-        backButton.setOnClickListener(backButtonListener);
-        euchreButton.setOnClickListener(euchreButtonListener);
-        blackJackButton.setOnClickListener(blackJackButtonListener);
-        goFishButton.setOnClickListener(goFishButtonListener);
+        goFishButton.setOnClickListener(v -> {
+            clearStats();
+            stat1.setText("Loading Go Fish stats...");
+            getUserID(username, "GoFish");
+        });
     }
 
+    /** Clears all stat text fields before updating new stats. */
+    private void clearStats() {
+        stat1.setText("");
+        stat2.setText("");
+        stat3.setText("");
+        stat4.setText("");
+        stat5.setText("");
+        stat6.setText("");
+        stat7.setText("");
+    }
 
-    private void getUserID(String username, String game){
-        String url = dbURL + "/AppUser/username/" + username;
+    /** Gets the user ID from username, then fetches the corresponding stats. */
+    private void getUserID(String username, String game) {
+        String url = DB_URL + "/AppUser/username/" + username;
 
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.GET,
@@ -128,25 +90,24 @@ public class StatsActivity extends AppCompatActivity {
                 null,
                 response -> {
                     try {
-                        String user = response.getString("username");
-                        int userID = response.getInt("userID");;
+                        int userID = response.getInt("userID");
                         getUserStats(userID, game);
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Toast.makeText(this, "Error parsing user data", Toast.LENGTH_SHORT).show();
                     }
                 },
                 error -> {
-                    Log.e("Volley", "Error fetching user: " + error.toString());
-                    Toast.makeText(this, "User or pass incorrect", Toast.LENGTH_SHORT).show();
+                    Log.e("Volley", "Error fetching user: " + error);
+                    Toast.makeText(this, "Failed to load user info", Toast.LENGTH_SHORT).show();
                 }
         );
 
-        // Add to the request queue
         VolleySingleton.getInstance(this).addToRequestQueue(request);
     }
 
-    private void getUserStats(int userID, String game){
-        String url = dbURL + "/UserStats/" + userID;
+    /** Fetches user stats for the given game and user ID. */
+    private void getUserStats(int userID, String game) {
+        String url = DB_URL + "/UserStats/" + userID;
 
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.GET,
@@ -154,80 +115,63 @@ public class StatsActivity extends AppCompatActivity {
                 null,
                 response -> {
                     try {
+                        JSONObject allStats = response.getJSONObject("allGameStats");
+                        JSONObject gameStats = allStats.getJSONObject(game);
 
-                        if(game.equals("GoFish")){
-                            JSONObject allGameStats = response.getJSONObject("allGameStats");
-                            JSONObject goFishStats = allGameStats.getJSONObject(game);
-
-                            int gamesPlayed = goFishStats.getInt("gamesPlayed");
-                            int timesWentFishing = goFishStats.getInt("timesWentFishing");
-                            int questionsAsked = goFishStats.getInt("questionsAsked");
-                            int booksCollected = goFishStats.getInt("booksCollected");
-                            int gamesWon = goFishStats.getInt("gamesWon");
-
-                            stat1.setText("Games played: " + gamesPlayed);
-                            stat2.setText("Times went fishing: " + timesWentFishing);
-                            stat3.setText("Questions asked: " + questionsAsked);
-                            stat4.setText("Books colllected: " + booksCollected);
-                            stat5.setText("Games won: " + gamesWon);
-                            stat6.setText("");
-                            stat7.setText("");
+                        switch (game) {
+                            case "GoFish":
+                                populateGoFishStats(gameStats);
+                                break;
+                            case "Euchre":
+                                populateEuchreStats(gameStats);
+                                break;
+                            case "Blackjack":
+                                populateBlackjackStats(gameStats);
+                                break;
                         }
-                        if(game.equals("Euchre")){
-                            JSONObject allGameStats = response.getJSONObject("allGameStats");
-                            JSONObject euchreStats = allGameStats.getJSONObject(game);
-
-                            int gamesPlayed = euchreStats.getInt("gamesPlayed");
-                            int gamesWon = euchreStats.getInt("gamesWon");
-                            int tricksTaken = euchreStats.getInt("tricksTaken");
-                            int timesPickedUp = euchreStats.getInt("timesPickedUp");
-                            int timesGoneAlone = euchreStats.getInt("timesGoneAlone");
-                            int sweepsWon = euchreStats.getInt("sweepsWon");
-
-                            stat1.setText("Games played: " + gamesPlayed);
-                            stat2.setText("Games won: " + gamesWon);
-                            stat3.setText("Tricks taken: " + tricksTaken);
-                            stat4.setText("Times picked up: " + timesPickedUp);
-                            stat5.setText("Times gone alone: " + timesGoneAlone);
-                            stat6.setText("Sweeps won: " + sweepsWon);
-                            stat7.setText("");
-                        }
-                        if(game.equals("Blackjack")){
-                            JSONObject allGameStats = response.getJSONObject("allGameStats");
-                            JSONObject blackjackStats = allGameStats.getJSONObject(game);
-
-                            int gamesPlayed = blackjackStats.getInt("gamesPlayed");
-                            int moneyWon = blackjackStats.getInt("moneyWon");
-                            int betsWon = blackjackStats.getInt("betsWon");
-                            int timesDoubledDown = blackjackStats.getInt("timesDoubledDown");
-                            int timesSplit = blackjackStats.getInt("timesSplit");
-                            int timesHit = blackjackStats.getInt("timesHit");
-                            int gamesWon = blackjackStats.getInt("gamesWon");
-
-                            stat1.setText("Games played: " + gamesPlayed);
-                            stat2.setText("Money won: " + moneyWon);
-                            stat3.setText("Bets won: " + betsWon);
-                            stat4.setText("Times doubled down: " + timesDoubledDown);
-                            stat5.setText("Times split: " + timesSplit);
-                            stat6.setText("Times hit: " + timesHit);
-                            stat7.setText("Games won: " + gamesWon);
-                        }
-
-
-
 
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        Toast.makeText(this, "Error reading stats", Toast.LENGTH_SHORT).show();
                     }
                 },
                 error -> {
-                    Log.e("Volley", "Error fetching user stats: " + error.toString());
+                    Log.e("Volley", "Error fetching user stats: " + error);
                     Toast.makeText(this, "Cannot fetch stats right now", Toast.LENGTH_SHORT).show();
                 }
         );
 
-        // Add to the request queue
         VolleySingleton.getInstance(this).addToRequestQueue(request);
+    }
 
+    // --- Individual game stat renderers ---
+
+    private void populateGoFishStats(JSONObject stats) throws Exception {
+        stat1.setText("Games played: " + stats.getInt("gamesPlayed"));
+        stat2.setText("Times went fishing: " + stats.getInt("timesWentFishing"));
+        stat3.setText("Questions asked: " + stats.getInt("questionsAsked"));
+        stat4.setText("Books collected: " + stats.getInt("booksCollected"));
+        stat5.setText("Games won: " + stats.getInt("gamesWon"));
+        stat6.setText("");
+        stat7.setText("");
+    }
+
+    private void populateEuchreStats(JSONObject stats) throws Exception {
+        stat1.setText("Games played: " + stats.getInt("gamesPlayed"));
+        stat2.setText("Games won: " + stats.getInt("gamesWon"));
+        stat3.setText("Tricks taken: " + stats.getInt("tricksTaken"));
+        stat4.setText("Times picked up: " + stats.getInt("timesPickedUp"));
+        stat5.setText("Times gone alone: " + stats.getInt("timesGoneAlone"));
+        stat6.setText("Sweeps won: " + stats.getInt("sweepsWon"));
+        stat7.setText("");
+    }
+
+    private void populateBlackjackStats(JSONObject stats) throws Exception {
+        stat1.setText("Games played: " + stats.getInt("gamesPlayed"));
+        stat2.setText("Money won: " + stats.getInt("moneyWon"));
+        stat3.setText("Bets won: " + stats.getInt("betsWon"));
+        stat4.setText("Times doubled down: " + stats.getInt("timesDoubledDown"));
+        stat5.setText("Times split: " + stats.getInt("timesSplit"));
+        stat6.setText("Times hit: " + stats.getInt("timesHit"));
+        stat7.setText("Games won: " + stats.getInt("gamesWon"));
     }
 }
