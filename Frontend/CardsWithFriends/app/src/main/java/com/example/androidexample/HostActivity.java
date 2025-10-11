@@ -100,11 +100,11 @@ public class HostActivity extends AppCompatActivity {
                 JSONObject body = new JSONObject();
 
                 try {
-                    int enumedGameType = 0;
+                    String enumedGameType = "NONE";
                     if (gameType.equals("Blackjack")){
-                        enumedGameType = 1;
+                        enumedGameType = "BLACKJACK";
                     } else if (gameType.equals("Euchre")) {
-                        enumedGameType = 2;
+                        enumedGameType = "EUCHRE";
                     }
                     body.put("gameType", enumedGameType);
                 } catch (JSONException e) {
