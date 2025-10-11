@@ -1,11 +1,11 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Base application theme -->
     <style name="Base.Theme.AndroidExample" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Make status bar red -->
-        <item name="android:statusBarColor">@color/white</item>
+        <!-- Make status bar black -->
+        <item name="android:statusBarColor">@android:color/black</item>
 
-        <!-- Make status bar icons white -->
-        <item name="android:windowLightStatusBar">true</item>
+        <!-- Keep icons white -->
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 
     <style name="Theme.AndroidExample" parent="Base.Theme.AndroidExample" />

@@ -3,7 +3,6 @@ package com.example.androidexample;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,15 +18,10 @@ import org.json.JSONObject;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private Button backButton;
-
     private Button deleteButton;
-
     private Button updateButton;
-
+    private Button logoutButton;
     private TextView usernameDisplayText;
-
-    private Button viewStatsButton;
 
     private String username;
 
@@ -39,96 +33,37 @@ public class ProfileActivity extends AppCompatActivity {
         Intent intent = getIntent();
         username = intent.getStringExtra("USERNAME");
 
+        // Setup bottom navigation bar
+        BottomNavHelper.setupBottomNav(this, username);
+
+        // Link UI elements
         updateButton = findViewById(R.id.profile_update_btn);
-        backButton = findViewById(R.id.profile_back_btn);
         deleteButton = findViewById(R.id.profile_delete_btn);
+        logoutButton = findViewById(R.id.profile_logout_btn);
         usernameDisplayText = findViewById(R.id.profile_username_text);
-        viewStatsButton = findViewById(R.id.profile_stats_btn);
-        Button logoutBtn = findViewById(R.id.profile_logout_btn);
+
         usernameDisplayText.setText(username);
 
-        View.OnClickListener backButtonListener= new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                    Intent intent = new Intent(ProfileActivity.this, HomeActivity.class);
-                    intent.putExtra("USERNAME", username);
-                    startActivity(intent);
-            }
-        };
+        // --- Update Button ---
+        updateButton.setOnClickListener(v -> {
+            Intent i = new Intent(ProfileActivity.this, UpdateActivity.class);
+            i.putExtra("USERNAME", username);
+            startActivity(i);
+        });
 
-        View.OnClickListener statsButtonListener= new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(ProfileActivity.this, StatsActivity.class);
-                intent.putExtra("USERNAME", username);
-                startActivity(intent);
-            }
-        };
+        // --- Delete Button ---
+        deleteButton.setOnClickListener(v -> deleteStats(username));
 
-        View.OnClickListener deleteButtonListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                deleteStats(username);
-
-                /*String url = "http://coms-3090-006.class.las.iastate.edu:8080/AppUser/username/" + username ;
-
-                JsonObjectRequest deleteRequest = new JsonObjectRequest(
-                        Request.Method.DELETE,
-                        url,
-                        null,
-                        new Response.Listener<JSONObject>() {
-                            @Override
-                            public void onResponse(JSONObject response) {
-                                Toast.makeText(getApplicationContext(),
-                                        "Deleted profile successfully!", Toast.LENGTH_SHORT).show();
-                                        Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
-                                        startActivity(intent);
-                            }
-                        },
-                        new Response.ErrorListener() {
-                            @Override
-                            public void onErrorResponse(VolleyError error) {
-                                Toast.makeText(getApplicationContext(),
-                                        "Failed to delete user", Toast.LENGTH_LONG).show();
-                            }
-                        });
-                VolleySingleton.getInstance(ProfileActivity.this).addToRequestQueue(deleteRequest);
-
-                
-                 */
-
-
-            }
-
-        };
-
-
-
-        View.OnClickListener updateButtonListener= new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Intent intent = new Intent(ProfileActivity.this, UpdateActivity.class);
-                intent.putExtra("USERNAME", username);
-                startActivity(intent);
-            }
-        };
-
-        logoutBtn.setOnClickListener(v -> {
+        // --- Logout Button ---
+        logoutButton.setOnClickListener(v -> {
             Toast.makeText(this, "Logged out", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(ProfileActivity.this, LoginActivity.class));
             finish();
         });
-
-        updateButton.setOnClickListener(updateButtonListener);
-        backButton.setOnClickListener(backButtonListener);
-        deleteButton.setOnClickListener(deleteButtonListener);
-        viewStatsButton.setOnClickListener(statsButtonListener);
     }
 
-    private void deleteStats(String username){
-
-        String url = "http://coms-3090-006.class.las.iastate.edu:8080" + "/AppUser/username/" + username;
+    private void deleteStats(String username) {
+        String url = "http://coms-3090-006.class.las.iastate.edu:8080/AppUser/username/" + username;
 
         JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.GET,
@@ -136,46 +71,38 @@ public class ProfileActivity extends AppCompatActivity {
                 null,
                 response -> {
                     try {
-                        String user = response.getString("username");
-                        int userID = response.getInt("userID");;
+                        int userID = response.getInt("userID");
                         deleteStatsFromID(userID);
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 },
                 error -> {
-                    Log.e("Volley", "Error fetching user: " + error.toString());
+                    Log.e("Volley", "Error fetching user: " + error);
                     Toast.makeText(this, "Failed to delete user", Toast.LENGTH_SHORT).show();
                 }
         );
 
-        // Add to the request queue
         VolleySingleton.getInstance(this).addToRequestQueue(request);
     }
 
-    private void deleteStatsFromID(int userID){
-        String url = "http://coms-3090-006.class.las.iastate.edu:8080" + "/UserStats/" + userID;
+    private void deleteStatsFromID(int userID) {
+        String url = "http://coms-3090-006.class.las.iastate.edu:8080/UserStats/" + userID;
+
         JsonObjectRequest deleteRequest = new JsonObjectRequest(
                 Request.Method.DELETE,
                 url,
                 null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        Toast.makeText(getApplicationContext(),
-                                "Deleted profile stats successfully!", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(ProfileActivity.this, MainActivity.class);
-                        startActivity(intent);
-                    }
+                response -> {
+                    Toast.makeText(this, "Deleted profile stats successfully!", Toast.LENGTH_SHORT).show();
+                    Intent i = new Intent(ProfileActivity.this, MainActivity.class);
+                    startActivity(i);
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        Toast.makeText(getApplicationContext(),
-                                "Failed to delete user stats", Toast.LENGTH_LONG).show();
-                    }
-                });
-        VolleySingleton.getInstance(ProfileActivity.this).addToRequestQueue(deleteRequest);
+                error -> {
+                    Toast.makeText(this, "Failed to delete user stats", Toast.LENGTH_LONG).show();
+                }
+        );
 
+        VolleySingleton.getInstance(this).addToRequestQueue(deleteRequest);
     }
 }

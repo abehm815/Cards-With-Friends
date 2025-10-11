@@ -8,6 +8,20 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_gradient">
 
+    <!-- Title -->
+    <TextView
+        android:id="@+id/profile_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="PROFILE"
+        android:textColor="@android:color/white"
+        android:textSize="44sp"
+        android:fontFamily="@font/inter_black"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        android:layout_marginTop="60dp" />
+
     <!-- Username Display -->
     <TextView
         android:id="@+id/profile_username_text"
@@ -15,12 +29,12 @@
         android:layout_height="wrap_content"
         android:text="(Username)"
         android:textColor="@android:color/white"
-        android:textSize="40sp"
+        android:textSize="36sp"
         android:fontFamily="@font/inter_bold"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/profile_title"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="160dp" />
+        android:layout_marginTop="60dp" />
 
     <!-- Buttons Row -->
     <LinearLayout
@@ -33,20 +47,6 @@
         app:layout_constraintTop_toBottomOf="@id/profile_username_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
-
-        <!-- Back Button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/profile_back_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Back"
-            android:textSize="18sp"
-            android:fontFamily="@font/inter_black"
-            android:textColor="@android:color/white"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            app:strokeColor="@android:color/white"
-            app:strokeWidth="2dp"
-            app:cornerRadius="12dp" />
 
         <!-- Update Button -->
         <com.google.android.material.button.MaterialButton
@@ -61,7 +61,6 @@
             app:strokeColor="@android:color/white"
             app:strokeWidth="2dp"
             app:cornerRadius="12dp"
-            android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp" />
 
         <!-- Delete Button -->
@@ -82,37 +81,27 @@
     <!-- Logout Button -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/profile_logout_btn"
-        android:layout_width="wrap_content"
+        android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="44dp"
+        android:layout_marginTop="60dp"
         android:backgroundTint="@color/my_red"
         android:fontFamily="@font/inter_black"
         android:text="Logout"
         android:textColor="@android:color/white"
         android:textSize="18sp"
         app:cornerRadius="12dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.81"
+        app:layout_constraintTop_toBottomOf="@id/profile_button_row"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/profile_button_row" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/profile_stats_btn"
-        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="wrap_content"
+    <!-- Bottom Navigation -->
+    <include
+        android:id="@+id/bottom_nav_include"
+        layout="@layout/bottom_nav"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/inter_black"
-        android:text="View stats"
-        android:textColor="@android:color/white"
-        android:textSize="18sp"
-        app:cornerRadius="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/profile_logout_btn"
-        app:layout_constraintHorizontal_bias="0.411"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/profile_button_row"
-        app:layout_constraintVertical_bias="0.123"
-        app:strokeColor="@android:color/white"
-        app:strokeWidth="2dp" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
