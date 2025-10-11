@@ -6,16 +6,87 @@
     android:layout_height="match_parent">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/admin_greeting_text"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:gravity="center"
-        android:text="This is where the admin page will go :)"
+        android:text="Here you can update user stats"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.125" />
+
+    <Button
+        android:id="@+id/admin_update_stats_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="128dp"
+        android:text="Update stats"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.464"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/admin_greeting_text"
+        app:layout_constraintVertical_bias="0.485" />
+
+    <EditText
+        android:id="@+id/admin_user_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Username: "
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/admin_update_stats_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.502"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/admin_greeting_text"
+        app:layout_constraintVertical_bias="0.159" />
+
+    <EditText
+        android:id="@+id/admin_game_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Game: "
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/admin_update_stats_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/admin_greeting_text"
+        app:layout_constraintVertical_bias="0.369" />
+
+    <EditText
+        android:id="@+id/admin_stat_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="Stat to change: "
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/admin_update_stats_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/admin_greeting_text"
+        app:layout_constraintVertical_bias="0.578" />
+
+    <EditText
+        android:id="@+id/admin_new_stat_input"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="New stat: "
+        android:inputType="text"
+        app:layout_constraintBottom_toTopOf="@+id/admin_update_stats_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/admin_greeting_text"
+        app:layout_constraintVertical_bias="0.784" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>
