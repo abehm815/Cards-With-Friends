@@ -143,7 +143,7 @@ public class AppUserController {
             if (!Objects.equals(request.getPassword(), "")) {
                 existingUser.setPassword(request.getPassword());
             }
-            if (!Objects.equals(request.getAge(), "")) { // careful: primitive int defaults to 0
+            if (!Objects.equals(request.getAge(), "")) {
                 existingUser.setAge(request.getAge());
             }
             if (!Objects.equals(request.getUsername(), "")) {
