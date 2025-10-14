@@ -96,7 +96,7 @@ public class BlackJackDealer {
             }
 
             // Dealer hits
-            addCard(deck.dealCard());
+            addCard(deck.dealCard(true ));
         }
     }
 }

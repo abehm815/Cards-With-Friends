@@ -41,6 +41,10 @@ public class BlackJackPlayer {
         return chips;
     }
 
+    public void setChips(int chips) {
+        this.chips = chips;
+    }
+
     /**
      * Adds a card to the player's hand
      * @param card basic MyCard
