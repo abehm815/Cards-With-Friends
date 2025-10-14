@@ -8,7 +8,7 @@ import java.util.List;
 public class GoFishPlayer {
     private String username;
     private List<MyCard> hand;
-    private List<String> completedBooks;
+    private List<Integer> completedBooks;
 
     /**
      * Constructor for a Go Fish Player for the game logic
@@ -40,7 +40,7 @@ public class GoFishPlayer {
      * Gets completed books
      * @return completedBooks
      */
-    public List<String> getCompletedBooks() {
+    public List<Integer> getCompletedBooks() {
         return completedBooks;
     }
 
@@ -51,6 +51,12 @@ public class GoFishPlayer {
     public void addCard(MyCard card) {
         hand.add(card);
     }
+
+    /**
+     * Removes a card from the player's hand
+     * @param card basic MyCard
+     */
+    public void removeCard(MyCard card) { hand.remove(card); }
 
     /**
      * Checks the player's hand for a card of the same value, returns the card object if value matches
@@ -67,6 +73,11 @@ public class GoFishPlayer {
         return null;
     }
 
+    /**
+     * Goes through the player's current hand and looks for a pair of same valued cards,
+     * if one is found, the cards will be removed from the hand and the player's completed books
+     * will be increased
+     */
     public void cleanMatchesInHand() {
         int[] cardCount = new int[14];
         // Count all up how much of each value the player has in hand
@@ -78,9 +89,17 @@ public class GoFishPlayer {
         for (int i = 0; i < cardCount.length; i++) {
             // Remove cards from hand and add to books collected
             if (cardCount[i] >= 2) {
-                
+                // Grab first card of the pair and remove it
+                MyCard card = checkForCard(i);
+                removeCard(card);
+
+                // Grab second card of the pair and remove it
+                card = checkForCard(i);
+                removeCard(card);
+
+                // Add card rank pair to books collected
+                completedBooks.add(i);
             }
         }
-
     }
 }
