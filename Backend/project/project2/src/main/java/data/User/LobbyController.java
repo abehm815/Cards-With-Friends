@@ -31,6 +31,31 @@ public class LobbyController {
          return this.LobbyRepository.findAll();
      }
 
+
+    /**
+     * Retrieves all {@link Lobby} objects that match the specified {@link GameType}.
+     * This endpoint filters the list of all lobbies to only include those whose
+     * {@code gameType} field matches the value provided in the URL path.
+     *Example request:
+     * GET /Lobby/BLACKJACK
+     * GET /Lobby/GO_FISH
+     * GET /Lobby/EUCHRE
+     *
+     * @param gameType the type of game to filter lobbies by (parsed automatically from the URL).
+     *                 Must be a valid constant of the {@link GameType} enum.
+     * @return a list of {@link Lobby} entities whose {@code gameType} matches the given value.
+     */
+    @GetMapping(path = {"/Lobby/GameType/{gameType}"}) List<Lobby> getAllLobbiesByGameType(@PathVariable GameType gameType) {
+        List<Lobby> lobbies = this.LobbyRepository.findAll();
+        List<Lobby> lobbiesGameType= new ArrayList<>();
+        for (Lobby lobby : lobbies) {
+            if (lobby.getGameType() == gameType) {
+                lobbiesGameType.add(lobby);
+            }
+        }
+        return lobbiesGameType;
+    }
+
     /**
      * GET /Lobby/{lobbyID}
      * <p>
