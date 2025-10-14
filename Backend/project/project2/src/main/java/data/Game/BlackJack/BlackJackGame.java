@@ -54,7 +54,7 @@ public class BlackJackGame {
 
     public void startRound() {
         deck.shuffle();
-        dealer.resetHand()
+        dealer.resetHand();
 
         // Clear all player hands
         for (BlackJackPlayer player : players) {
