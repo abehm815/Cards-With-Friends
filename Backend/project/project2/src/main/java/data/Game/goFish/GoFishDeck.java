@@ -60,6 +60,8 @@ public class GoFishDeck {
         return cards.size();
     }
 
-
+    public boolean isEmpty() {
+        return cards.isEmpty();
+    }
 }
 
