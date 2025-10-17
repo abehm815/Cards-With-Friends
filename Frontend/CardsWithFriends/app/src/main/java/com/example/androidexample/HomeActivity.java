@@ -32,10 +32,20 @@ public class HomeActivity extends AppCompatActivity {
 
         // Blackjack listener
         blackjackCard.setOnClickListener(v -> {
-            Intent i = new Intent(HomeActivity.this, LobbyActivity.class);
-            i.putExtra("GAMETYPE", "BLACKJACK");
-            i.putExtra("USERNAME", username);
-            startActivity(i);
+            //TODO: Remove this temporary
+            if (username.equals("offline"))
+            {
+                Intent i = new Intent(HomeActivity.this, BlackjackActivity.class);
+                i.putExtra("GAMETYPE", "BLACKJACK");
+                i.putExtra("USERNAME", username);
+                startActivity(i);
+            }
+            else{
+                Intent i = new Intent(HomeActivity.this, LobbyActivity.class);
+                i.putExtra("GAMETYPE", "BLACKJACK");
+                i.putExtra("USERNAME", username);
+                startActivity(i);
+            }
         });
 
         // Go Fish listener

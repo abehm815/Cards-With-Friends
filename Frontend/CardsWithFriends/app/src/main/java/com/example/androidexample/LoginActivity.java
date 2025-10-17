@@ -4,31 +4,14 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
-
-
-
-import com.android.volley.AuthFailureError;
 import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-
-import java.util.HashMap;
-import java.util.Map;
-
-
-
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -38,14 +21,6 @@ public class LoginActivity extends AppCompatActivity {
     private Button loginButton;
 
     private Button backButton;
-
-
-
-    private TextView msgResponse;
-
-
-
-
 
     String dbURL = "http://coms-3090-006.class.las.iastate.edu:8080";
 
@@ -61,9 +36,6 @@ public class LoginActivity extends AppCompatActivity {
         passwordEditText = findViewById(R.id.login_password_edt); //Password text field
         loginButton = findViewById(R.id.login_login_btn);    //Login button
         backButton = findViewById(R.id.login_back_btn);
-
-
-
 
         /* click listener on login button pressed */
         loginButton.setOnClickListener(new View.OnClickListener() {
@@ -82,10 +54,15 @@ public class LoginActivity extends AppCompatActivity {
                     Intent intent = new Intent(LoginActivity.this, ModeratorActivity.class);
                     startActivity(intent);
                 }
-
-                getUserFromBackend(username, password);
-
-
+                //TODO: Remove temporary
+                if(username.equals("offline") && password.equals("1")){
+                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                    intent.putExtra("USERNAME", "offline");
+                    startActivity(intent);
+                }
+                else {
+                    getUserFromBackend(username, password);
+                }
             }
         });
 
