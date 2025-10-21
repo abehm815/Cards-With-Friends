@@ -1,7 +1,5 @@
 package data.Game.BlackJack;
 
-import data.User.MyCard;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

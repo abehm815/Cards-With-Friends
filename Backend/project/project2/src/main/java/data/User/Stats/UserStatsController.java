@@ -1,5 +1,7 @@
-package data.User;
+package data.User.Stats;
 
+import data.User.AppUser;
+import data.User.AppUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

@@ -4,6 +4,9 @@ import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import data.Game.MyCard;
+import data.Lobby.Lobby;
+import data.User.Stats.UserStats;
 import jakarta.persistence.*;
 
 @Entity

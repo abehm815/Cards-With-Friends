@@ -1,6 +1,6 @@
 package data.Game.BlackJack;
 
-import data.User.MyCard;
+import data.Game.MyCard;
 
 public class BlackJackCard extends MyCard {
     public boolean isShowing;

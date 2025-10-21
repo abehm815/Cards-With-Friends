@@ -1,8 +1,8 @@
-package data.User;
+package data.Lobby;
 
+import data.User.AppUser;
+import data.User.AppUserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.support.SimpleJpaRepository;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -92,7 +92,9 @@ public class LobbyController {
      */
     @PostMapping(path = {"/Lobby"})
     public Lobby createLobby(@RequestBody Lobby Lobby) {
-        return this.LobbyRepository.save(Lobby);
+        Lobby savedLobby = this.LobbyRepository.save(Lobby);
+        LobbyListWebSocket.broadcastLobbyList(); // Notify WebSocket clients
+        return savedLobby;
     }
 
     @PostMapping(path = "/Lobby/joinCode/{joinCode}/{username}")
@@ -119,6 +121,7 @@ public class LobbyController {
         // Save the lobby and return it
         Lobby savedLobby = this.LobbyRepository.save(lobby);
         this.AppUserRepository.save(host);
+        LobbyListWebSocket.broadcastLobbyList();
         return  savedLobby;
     }
 
@@ -151,6 +154,7 @@ public class LobbyController {
                 oldLobby.setJoinCode(lobbyDetails.getJoinCode());
             }
             this.LobbyRepository.save(oldLobby);
+            LobbyListWebSocket.broadcastLobbyList();
             return this.success;
         }
     }
@@ -172,6 +176,7 @@ public class LobbyController {
                 oldLobby.setJoinCode(lobbyDetails.getJoinCode());
             }
             this.LobbyRepository.save(oldLobby);
+            LobbyListWebSocket.broadcastLobbyList();
             return this.success;
         }
     }
@@ -216,6 +221,7 @@ public class LobbyController {
         lobby.setUsers(usersInLobby);
         this.AppUserRepository.save(user);
         this.LobbyRepository.save(lobby);
+        LobbyListWebSocket.broadcastLobbyList();
         return this.success;
     }
 
@@ -243,6 +249,7 @@ public class LobbyController {
         lobby.setUsers(usersInLobby);
         this.AppUserRepository.save(user);
         this.LobbyRepository.save(lobby);
+        LobbyListWebSocket.broadcastLobbyList();
         return this.success;
     }
 
@@ -267,6 +274,7 @@ public class LobbyController {
          }
          this.AppUserRepository.saveAll(usersInLobby);
          this.LobbyRepository.deleteById(lobbyID);
+         LobbyListWebSocket.broadcastLobbyList();
          return this.success;
     }
 
@@ -283,6 +291,7 @@ public class LobbyController {
         }
         this.AppUserRepository.saveAll(usersInLobby);
         this.LobbyRepository.deleteByJoinCode(joinCode);
+        LobbyListWebSocket.broadcastLobbyList();
         return this.success;
     }
 }

@@ -1,4 +1,4 @@
-package data.User;
+package data.Game;
 
 /**
  * This class describes a card object. Each card has a value and a suit

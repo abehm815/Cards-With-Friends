@@ -1,5 +1,6 @@
-package data.User;
+package data.User.Stats;
 
+import data.User.AppUser;
 import jakarta.persistence.*;
 
 import java.util.HashMap;

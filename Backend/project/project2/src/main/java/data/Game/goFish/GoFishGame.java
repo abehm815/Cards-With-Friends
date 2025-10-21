@@ -1,6 +1,6 @@
 package data.Game.goFish;
 
-import data.User.MyCard;
+import data.Game.MyCard;
 
 import java.util.List;
 
