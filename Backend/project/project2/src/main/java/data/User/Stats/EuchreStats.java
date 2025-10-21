@@ -1,4 +1,4 @@
-package data.User;
+package data.User.Stats;
 
 import jakarta.persistence.*;
 

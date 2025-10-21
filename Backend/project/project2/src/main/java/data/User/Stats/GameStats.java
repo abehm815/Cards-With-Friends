@@ -1,4 +1,4 @@
-package data.User;
+package data.User.Stats;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

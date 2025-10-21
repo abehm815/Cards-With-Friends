@@ -1,8 +1,8 @@
 package data.Game.BlackJack;
 import data.User.AppUser;
 import data.User.AppUserRepository;
-import data.User.Lobby;
-import data.User.LobbyRepository;
+import data.Lobby.Lobby;
+import data.Lobby.LobbyRepository;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 

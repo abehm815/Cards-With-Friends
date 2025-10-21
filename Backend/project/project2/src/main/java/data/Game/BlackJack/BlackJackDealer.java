@@ -1,6 +1,6 @@
 package data.Game.BlackJack;
 
-import data.User.MyCard;
+import data.Game.MyCard;
 import java.util.ArrayList;
 import java.util.List;
 

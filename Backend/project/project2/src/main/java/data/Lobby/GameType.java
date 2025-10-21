@@ -1,4 +1,4 @@
-package data.User;
+package data.Lobby;
 
 public enum GameType {
     GO_FISH,

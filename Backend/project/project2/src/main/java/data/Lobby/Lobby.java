@@ -1,6 +1,7 @@
-package data.User;
+package data.Lobby;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import data.User.AppUser;
 import jakarta.persistence.*;
 
 import java.util.List;
