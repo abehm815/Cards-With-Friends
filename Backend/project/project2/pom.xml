@@ -45,7 +45,13 @@
           <artifactId>spring-websocket</artifactId>
       </dependency>
 
-      <!-- (Optional) H2 database, only if you want in-memory testing -->
+    <!-- Websocket -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-websocket</artifactId>
+    </dependency>
+
+    <!-- (Optional) H2 database, only if you want in-memory testing -->
     <!--
     <dependency>
         <groupId>com.h2database</groupId>

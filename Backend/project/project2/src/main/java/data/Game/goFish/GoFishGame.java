@@ -81,6 +81,14 @@ public class GoFishGame {
     }
 
     /**
+     * Returns all players in current game
+     * @return List of players
+     */
+    public List<GoFishPlayer> getPlayers() {
+        return players;
+    }
+
+    /**
      * Goes through all the players and sees which one has the most books collected
      * @return Winning player
      */
