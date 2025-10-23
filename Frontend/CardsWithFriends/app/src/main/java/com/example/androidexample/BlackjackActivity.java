@@ -21,7 +21,7 @@ public class BlackjackActivity extends AppCompatActivity {
         CardView card = new CardView(this);
         card.setId(View.generateViewId());
         card.setLayoutParams(new ConstraintLayout.LayoutParams(300, 400));
-        card.setCard("A", "H", true);
+        card.setCard("J", "C", true);
         root.addView(card);
 
         // Position the card slightly below center
