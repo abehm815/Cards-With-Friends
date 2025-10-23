@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 @RestController
 public class LobbyController {
@@ -96,6 +97,40 @@ public class LobbyController {
         LobbyListWebSocket.broadcastLobbyList(); // Notify WebSocket clients
         return savedLobby;
     }
+
+    @PostMapping(path = "/Lobby/joinCode/autogen/{username}")
+    public Lobby createLobbyWithautogen(@RequestBody Lobby lobby, @PathVariable String username) {
+        AppUser host = this.AppUserRepository.findByUsername(username);
+        if (host == null) {
+            // Handle if user not found (optional)
+            return null;
+        }
+        //set join code
+        String joinCode;
+        // Loop until a unique join code is found
+        do {
+            joinCode = String.valueOf(ThreadLocalRandom.current().nextInt(1000, 10000));
+        } while (this.LobbyRepository.existsByJoinCode(joinCode));
+
+        lobby.setJoinCode(joinCode);
+
+        // Create a list of users with the host
+        List<AppUser> users = new ArrayList<>();
+        users.add(host);
+
+        // Assign users to the lobby
+        lobby.setUsers(users);
+
+        // Assign lobby to user
+        host.setLobby(lobby);
+
+        // Save the lobby and return it
+        Lobby savedLobby = this.LobbyRepository.save(lobby);
+        this.AppUserRepository.save(host);
+        LobbyListWebSocket.broadcastLobbyList();
+        return  savedLobby;
+    }
+
 
     @PostMapping(path = "/Lobby/joinCode/{joinCode}/{username}")
     public Lobby createLobbyWithJoinCode(@RequestBody Lobby lobby, @PathVariable String username, @PathVariable String joinCode) {
@@ -295,3 +330,4 @@ public class LobbyController {
         return this.success;
     }
 }
+
