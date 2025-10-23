@@ -14,4 +14,5 @@ public interface LobbyRepository extends JpaRepository<Lobby, Long>  {
     @Transactional
     void deleteByJoinCode(String joinCode);
 
+    boolean existsByJoinCode(String joinCode);
 }
