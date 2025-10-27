@@ -5,6 +5,7 @@ import data.Game.goFish.GoFishGame;
 import data.Game.goFish.GoFishPlayer;
 import jakarta.websocket.*;
 import jakarta.websocket.server.ServerEndpoint;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
+@Component
 @ServerEndpoint("/gofish")
 public class GoFishServer {
     public static final Set<Session> sessions = new CopyOnWriteArraySet<>();
