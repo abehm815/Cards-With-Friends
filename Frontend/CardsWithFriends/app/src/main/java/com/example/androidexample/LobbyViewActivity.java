@@ -33,7 +33,6 @@ public class LobbyViewActivity extends AppCompatActivity {
     private TextView joinCodeTxt;
     private LinearLayout userListLayout;
     private Button deleteBtn;
-
     private Button leaveBtn;
 
     private static final String TAG = "LobbyViewActivity";
