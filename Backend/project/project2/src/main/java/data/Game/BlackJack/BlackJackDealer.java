@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class BlackJackDealer {
-    private List<MyCard> hand;
+    private List<BlackJackCard> hand;
     private boolean hitOnSoft17; // true = dealer hits on soft 17 (optional rule)
 
     public BlackJackDealer(boolean hitOnSoft17) {
@@ -19,12 +19,12 @@ public class BlackJackDealer {
     }
 
     /** Adds a card to the dealer's hand */
-    public void addCard(MyCard card) {
+    public void addCard(BlackJackCard card) {
         hand.add(card);
     }
 
     /** Gets the dealer's hand */
-    public List<MyCard> getHand() {
+    public List<BlackJackCard> getHand() {
         return hand;
     }
 
@@ -42,7 +42,7 @@ public class BlackJackDealer {
         int value = 0;
         int aceCount = 0;
 
-        for (MyCard card : hand) {
+        for (BlackJackCard card : hand) {
             int rank = card.getValue(); // 2–14 (J=11, Q=12, K=13, A=14)
             if (rank >= 11 && rank <= 13) {
                 value += 10;
@@ -67,7 +67,7 @@ public class BlackJackDealer {
         int value = 0;
         int aceCount = 0;
 
-        for (MyCard card : hand) {
+        for (BlackJackCard card : hand) {
             int rank = card.getValue();
             if (rank >= 11 && rank <= 13) {
                 value += 10;

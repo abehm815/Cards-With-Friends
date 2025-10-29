@@ -1,13 +1,17 @@
 package data.Game.BlackJack;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import data.User.AppUser;
 import data.User.AppUserRepository;
 import data.Lobby.Lobby;
 import data.Lobby.LobbyRepository;
-import org.antlr.v4.runtime.misc.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 
 public class BlackJackGame {
@@ -16,11 +20,21 @@ public class BlackJackGame {
     @Autowired
     AppUserRepository AppUserRepository;
 
+    private Consumer<String> broadcastFunction;
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    public void setBroadcastFunction(Consumer<String> broadcastFunction) {
+        this.broadcastFunction = broadcastFunction;
+    }
+
     private BlackJackDealer dealer;
     private BlackJackDeck deck;
     private List<BlackJackPlayer> players;
+    private String lobbyCode;
+    private int currentPlayerIndex = 0; // Track whose turn it is
+    private boolean roundInProgress = false;
 
-    public BlackJackGame() {
+    public BlackJackGame(String lobbyCode) {
         this.players = new ArrayList<>();
         deck = new BlackJackDeck(6);
         this.dealer = new BlackJackDealer();
@@ -33,6 +47,7 @@ public class BlackJackGame {
      * @param joinCode the joinCode of the lobby to load players from
      */
     public void initializeGameFromLobby(String joinCode) {
+        this.lobbyCode = joinCode;
         Lobby lobby = LobbyRepository.findByJoinCode(joinCode);
 
         if (lobby == null) {
@@ -55,24 +70,98 @@ public class BlackJackGame {
     public void startRound() {
         deck.shuffle();
         dealer.resetHand();
+        currentPlayerIndex = 0;
+        roundInProgress = true;
 
         // Clear all player hands
         for (BlackJackPlayer player : players) {
             player.getHand().clear();
+            player.setBetOnCurrentHand(0);
+            player.setHasStood(false);
         }
-        for (BlackJackPlayer player : players) {
-            boolean confirmed = false;
-            while(!confirmed) {
-                int value = 0;//TODO: get value of players bet from front end
-                takeBet(value, player);
-                confirmed = true; //TODO:get confirmed from front end after button press
+        System.out.println("New round started. Waiting for all players to place bets...");
+    }
+
+    public void handlePlayerBet(String username, int amount) {
+        BlackJackPlayer player = getPlayer(username);
+        if (player == null) return;
+
+        takeBet(amount, player);
+        player.setHasBet(true);
+        System.out.println(username + " placed a bet of " + amount);
+
+        // Check if all players have placed bets
+        boolean allBetsPlaced = players.stream().allMatch(BlackJackPlayer::getHasBet);
+
+        if (allBetsPlaced) {
+            System.out.println("All bets placed. Dealing cards...");
+            dealInitialCards();
+            notifyCurrentPlayerTurn();
+        }
+    }
+
+    public void handlePlayerDecision(String username, String decision) {
+        if (!roundInProgress) return;
+
+        BlackJackPlayer currentPlayer = players.get(currentPlayerIndex);
+
+        switch (decision.toUpperCase()) {
+            case "HIT":
+                playerHit(username);
+                if (currentPlayer.getHandValue() > 21) {
+                    System.out.println(username + " busts!");
+                    advanceTurn();
+                }
+                break;
+
+            case "STAND":
+                playerStand(currentPlayer.getUsername());
+                //currentPlayer.setHasStood(true);
+                System.out.println(username + " stands.");
+                advanceTurn();
+                break;
+
+            default:
+                System.out.println("Invalid decision: " + decision);
+        }
+    }
+    private void advanceTurn() {
+        currentPlayerIndex++;
+
+        // Skip players who already stood or busted
+        while (currentPlayerIndex < players.size() &&
+                (players.get(currentPlayerIndex).getHasStood() || players.get(currentPlayerIndex).getHandValue() > 21)) {
+            currentPlayerIndex++;
+        }
+
+        if (currentPlayerIndex >= players.size()) {
+            dealer.playTurn(deck);
+            compareHandsAndResolveBets();
+            roundInProgress = false;
+            System.out.println("Round complete. Results computed.");
+        } else {
+            notifyCurrentPlayerTurn();
+        }
+    }
+
+    private void notifyCurrentPlayerTurn() {
+        String username = players.get(currentPlayerIndex).getUsername();
+        System.out.println("It's now " + username + "'s turn.");
+
+        // Build JSON message
+        Map<String, Object> message = new HashMap<>();
+        message.put("type", "TURN_NOTIFICATION");
+        message.put("lobbyCode", lobbyCode);
+        message.put("currentTurn", username);
+
+        try {
+            String json = mapper.writeValueAsString(message);
+            if (broadcastFunction != null) {
+                broadcastFunction.accept(json);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        dealInitialCards();
-        // TODO: take inputs for players decidions to hit or stand
-        dealer.playTurn(deck);
-        //compare hands of players and dealer to decide who won
-        compareHandsAndResolveBets(dealer,players);
     }
 
     private void dealInitialCards() {
@@ -97,7 +186,45 @@ public class BlackJackGame {
             }
         }
 
-    private void compareHandsAndResolveBets(BlackJackDealer dealer, List<BlackJackPlayer> players) {
+    public void playerStand(String username) {
+        BlackJackPlayer player = getPlayer(username);
+        if (player == null || player.getHasStood() || !roundInProgress) return;
+
+        player.setHasStood(true);
+        System.out.println(username + " stands.");
+        nextTurn();
+    }
+
+    private void nextTurn() {
+        // Move to next player who hasn’t stood/busted
+        do {
+            currentPlayerIndex++;
+        } while (currentPlayerIndex < players.size() &&
+                (players.get(currentPlayerIndex).getHasStood() || players.get(currentPlayerIndex).getHandValue() > 21));
+
+        if (currentPlayerIndex >= players.size()) {
+            // All players done — dealer plays
+            dealer.playTurn(deck);
+            compareHandsAndResolveBets();
+            roundInProgress = false;
+        }
+    }
+
+    public void playerHit(String username) {
+        BlackJackPlayer player = getPlayer(username);
+        if (player == null || player.getHasStood() || !roundInProgress) return;
+
+        player.addCard(deck.dealCard(true));
+        System.out.println(username + " hits. Hand value: " + player.getHandValue());
+
+        if (player.getHandValue() > 21) {
+            System.out.println(username + " busts!");
+            nextTurn();
+        }
+    }
+
+    private void compareHandsAndResolveBets() {
+        dealer.getHand().forEach(card -> card.setIsShowing(true));
         int dealerValue = dealer.getHandValue();
         boolean dealerBust = dealerValue > 21;
 
@@ -125,6 +252,65 @@ public class BlackJackGame {
             }
         }
     }
-}
+
+    public BlackJackPlayer getPlayer(String username) {
+        for (BlackJackPlayer player : players) {
+            if (player.getUsername().equals(username)) {
+                return player;
+            }
+        }
+        return null; // no match found
+    }
+
+    public boolean isRoundInProgress() {
+        return roundInProgress;
+    }
+
+    public List<BlackJackPlayer> getPlayers() {
+        return players;
+    }
+
+    public BlackJackDealer getDealer() {
+        return dealer;
+    }
+
+    public String getLobbyCode() {
+        return lobbyCode;
+    }
+
+    public Map<String, Object> toDTO() {
+        Map<String, Object> dto = new HashMap<>();
+        dto.put("lobbyCode", lobbyCode);
+        dto.put("roundInProgress", roundInProgress);
+        dto.put("dealer", Map.of(
+                "hand", dealer.getHand(),
+                "handValue", dealer.getHandValue()
+        ));
+        dto.put("players", players.stream().map(p -> Map.of(
+                "username", p.getUsername(),
+                "chips", p.getChips(),
+                "hand", p.getHand(),
+                "handValue", p.getHandValue(),
+                "bet", p.getBetOnCurrentHand(),
+                "hasStood", p.getHasStood(),
+                "hasBet", p.getHasBet()
+        )).collect(Collectors.toList()));
+        dto.put("currentTurn", currentPlayerIndex < players.size()
+                ? players.get(currentPlayerIndex).getUsername()
+                : null);
+        return dto;
+    }
+    /*
+    When the front end sends messages:
+    game.startRound(); // Dealer starts new round
+    game.handlePlayerBet("Alice", 100);
+    game.handlePlayerBet("Bob", 200);
+    // -> Automatically deals when all have bet
+    game.handlePlayerDecision("Alice", "HIT");
+    game.handlePlayerDecision("Alice", "STAND");
+    game.handlePlayerDecision("Bob", "STAND");
+     */
+
+    }
 
 

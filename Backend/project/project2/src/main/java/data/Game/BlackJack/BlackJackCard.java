@@ -18,4 +18,10 @@ public class BlackJackCard extends MyCard {
     public void setIsShowing(boolean isShowing) {
         this.isShowing = isShowing;
     }
+
+    public boolean getIsShowing(){
+        return isShowing;
+    }
+
+
 }
