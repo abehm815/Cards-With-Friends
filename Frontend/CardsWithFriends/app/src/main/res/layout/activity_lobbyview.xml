@@ -87,4 +87,16 @@
 
     </ScrollView>
 
+    <ImageView
+        android:id="@+id/chat_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:src="@drawable/chaticon"
+        android:contentDescription="Chat Button"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginStart="24dp"
+        android:layout_marginBottom="24dp"
+        app:tint="@android:color/white" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>
