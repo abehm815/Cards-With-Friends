@@ -37,6 +37,12 @@ public class GoFishPlayer {
     }
 
     /**
+     * Gets hand size
+     * @return hand size
+     */
+    public int getHandSize() { return hand.size(); }
+
+    /**
      * Gets completed books
      * @return completedBooks
      */

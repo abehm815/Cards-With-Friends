@@ -78,6 +78,11 @@ public class GoFishServer {
         // Updated boolean
         gameStarted = true;
 
+        // Clean matches in hand
+        for (GoFishPlayer p : players) {
+            p.cleanMatchesInHand();
+        }
+
         // Send message that game has started
         broadcast("New game started with " + players.size() + " players.");
         broadcastGameState();
