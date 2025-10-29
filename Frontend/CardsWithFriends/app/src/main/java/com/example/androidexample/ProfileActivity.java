@@ -10,11 +10,9 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.android.volley.Request;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
-
-import org.json.JSONObject;
+import com.example.androidexample.services.BottomNavHelper;
+import com.example.androidexample.services.VolleySingleton;
 
 public class ProfileActivity extends AppCompatActivity {
 

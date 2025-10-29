@@ -1,10 +1,15 @@
-package com.example.androidexample;
+package com.example.androidexample.services;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.widget.ImageButton;
 import androidx.core.content.ContextCompat;
+
+import com.example.androidexample.HomeActivity;
+import com.example.androidexample.ProfileActivity;
+import com.example.androidexample.R;
+import com.example.androidexample.StatsActivity;
 
 public class BottomNavHelper {
 
