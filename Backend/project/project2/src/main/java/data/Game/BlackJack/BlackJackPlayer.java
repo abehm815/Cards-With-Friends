@@ -10,6 +10,8 @@ public class BlackJackPlayer {
     private List<MyCard> hand;
     private int chips;
     private int betOnCurrentHand;
+    private boolean hasStood;
+    private boolean hasBet;
 
     public BlackJackPlayer(String username,int chips) {
         this.username = username;
@@ -59,6 +61,21 @@ public class BlackJackPlayer {
     }
     public void setBetOnCurrentHand(int betOnCurrentHand) {
         this.betOnCurrentHand = betOnCurrentHand;
+    }
+
+    public boolean getHasStood() {
+        return hasStood;
+    }
+
+    public void setHasStood(boolean hasStood) {
+        this.hasStood = hasStood;
+    }
+
+    public boolean getHasBet() {
+        return hasBet;
+    }
+    public void setHasBet(boolean hasBet) {
+        this.hasBet = hasBet;
     }
 
     /**
