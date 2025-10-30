@@ -7,7 +7,7 @@ import java.util.List;
 
 public class BlackJackPlayer {
     private String username;
-    private List<MyCard> hand;
+    private List<BlackJackCard> hand;
     private int chips;
     private int betOnCurrentHand;
     private boolean hasStood;
@@ -31,7 +31,7 @@ public class BlackJackPlayer {
      * Gets hand
      * @return hand
      */
-    public List<MyCard> getHand() {
+    public List<BlackJackCard> getHand() {
         return hand;
     }
 
@@ -51,7 +51,7 @@ public class BlackJackPlayer {
      * Adds a card to the player's hand
      * @param card basic MyCard
      */
-    public void addCard(MyCard card) {
+    public void addCard(BlackJackCard card) {
         hand.add(card);
     }
 
@@ -87,7 +87,7 @@ public class BlackJackPlayer {
         int value = 0;
         int aceCount = 0;
 
-        for (MyCard card : hand) {
+        for (BlackJackCard card : hand) {
             int rank = card.getValue(); // assuming MyCard stores numeric ranks (2–14 where 11=J, 12=Q, 13=K, 14=A)
             if (rank >= 11 && rank <= 13) {
                 value += 10; // J, Q, K

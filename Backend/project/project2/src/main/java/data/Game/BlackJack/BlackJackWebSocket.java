@@ -1,17 +1,17 @@
 package data.Game.BlackJack;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import data.Lobby.LobbyRepository;
+import data.User.AppUserRepository;
 import jakarta.websocket.*;
 import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Consumer;
-
-import data.Game.BlackJack.BlackJackGame;
     /**
      * WebSocket endpoint for Blackjack game.
      * Example URI: ws://localhost:8080/ws/blackjack/{lobbyCode}
@@ -28,15 +28,31 @@ import data.Game.BlackJack.BlackJackGame;
 
         private final ObjectMapper mapper = new ObjectMapper();
 
+        // 🔹 Inject Spring-managed repositories
+        private static LobbyRepository lobbyRepository;
+        private static AppUserRepository appUserRepository;
+
+        @Autowired
+        public void setLobbyRepository(LobbyRepository repo) {
+            BlackJackWebSocket.lobbyRepository = repo;
+        }
+
+        @Autowired
+        public void setAppUserRepository(AppUserRepository repo) {
+            BlackJackWebSocket.appUserRepository = repo;
+        }
+
 
         @OnOpen
         public void onOpen(Session session, @PathParam("lobbyCode") String lobbyCode) {
             System.out.println("New connection: " + session.getId() + " in lobby " + lobbyCode);
 
-            // Create or get game and attach broadcast hook
+            //Create or retrieve a BlackJackGame and inject dependencies
             games.computeIfAbsent(lobbyCode, code -> {
                 BlackJackGame game = new BlackJackGame(code);
-                game.setBroadcastFunction(json -> broadcastToLobby(json, code)); // 🔗 link to game
+                game.setLobbyRepository(lobbyRepository);
+                game.setAppUserRepository(appUserRepository);
+                game.setBroadcastFunction(json -> broadcastToLobby(json, code));
                 return game;
             });
         }
@@ -61,7 +77,6 @@ import data.Game.BlackJack.BlackJackGame;
 
                 case "START":
                     game.initializeGameFromLobby(lobbyCode);
-                    game.startRound();
                     break;
 
                 case "BET":
@@ -71,8 +86,16 @@ import data.Game.BlackJack.BlackJackGame;
                 case "HIT":
                     game.handlePlayerDecision(player,action);
                     break;
+
                 case "STAND":
                     game.handlePlayerDecision(player, action);
+                    break;
+                case "DOUBLE":
+                    game.handlePlayerDecision(player, action);
+                    break;
+
+                case "STARTROUND":
+                    game.startRound();
                     break;
             }
 
