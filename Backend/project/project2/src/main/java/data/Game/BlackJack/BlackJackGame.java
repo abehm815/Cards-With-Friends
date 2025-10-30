@@ -48,7 +48,8 @@ public class BlackJackGame {
      */
     public void initializeGameFromLobby(String joinCode) {
         this.lobbyCode = joinCode;
-        Lobby lobby = LobbyRepository.findByJoinCode(joinCode);
+        //Lobby lobby = LobbyRepository.findByJoinCode(joinCode);
+        Lobby lobby = LobbyRepository.findByJoinCodeWithUsers(joinCode);
 
         if (lobby == null) {
             System.out.println("Lobby not found with join code: " +  joinCode );
@@ -112,14 +113,28 @@ public class BlackJackGame {
                     System.out.println(username + " busts!");
                     advanceTurn();
                 }
+                else if(currentPlayer.getHandValue() == 21) {
+                    currentPlayer.setHasStood(true);
+                    advanceTurn();
+                }
                 break;
 
             case "STAND":
                 playerStand(currentPlayer.getUsername());
-                //currentPlayer.setHasStood(true);
                 System.out.println(username + " stands.");
                 advanceTurn();
                 break;
+
+            case "DOUBLE":
+                playerDouble(currentPlayer.getUsername());
+                System.out.println(username + " doubles.");
+                advanceTurn();
+                break;
+/*
+            case "SPLIT":
+                playerSplit(currentPlayer.getUsername());
+
+ */
 
             default:
                 System.out.println("Invalid decision: " + decision);
@@ -127,12 +142,6 @@ public class BlackJackGame {
     }
     private void advanceTurn() {
         currentPlayerIndex++;
-
-        // Skip players who already stood or busted
-        while (currentPlayerIndex < players.size() &&
-                (players.get(currentPlayerIndex).getHasStood() || players.get(currentPlayerIndex).getHandValue() > 21)) {
-            currentPlayerIndex++;
-        }
 
         if (currentPlayerIndex >= players.size()) {
             dealer.playTurn(deck);
@@ -183,6 +192,7 @@ public class BlackJackGame {
             } else {
                 player.setBetOnCurrentHand(bet);
                 System.out.println(player.getUsername() + " bet " + bet + " chips.");
+                player.setChips(player.getChips() - bet);
             }
         }
 
@@ -192,17 +202,16 @@ public class BlackJackGame {
 
         player.setHasStood(true);
         System.out.println(username + " stands.");
-        nextTurn();
     }
 
     private void nextTurn() {
         // Move to next player who hasn’t stood/busted
         do {
             currentPlayerIndex++;
-        } while (currentPlayerIndex < players.size() &&
+        } while (currentPlayerIndex <= players.size() &&
                 (players.get(currentPlayerIndex).getHasStood() || players.get(currentPlayerIndex).getHandValue() > 21));
 
-        if (currentPlayerIndex >= players.size()) {
+        if (currentPlayerIndex > players.size()) {
             // All players done — dealer plays
             dealer.playTurn(deck);
             compareHandsAndResolveBets();
@@ -217,11 +226,24 @@ public class BlackJackGame {
         player.addCard(deck.dealCard(true));
         System.out.println(username + " hits. Hand value: " + player.getHandValue());
 
-        if (player.getHandValue() > 21) {
-            System.out.println(username + " busts!");
-            nextTurn();
-        }
     }
+    public void playerDouble(String username) {
+        BlackJackPlayer player = getPlayer(username);
+        if (player == null || player.getHasStood() || !roundInProgress) return;
+
+
+        player.setChips(player.getChips() - player.getBetOnCurrentHand());
+        player.setBetOnCurrentHand(player.getBetOnCurrentHand()*2);
+        player.addCard(deck.dealCard(true));
+        playerStand(username);
+    }
+
+    /*public void playerSplit(String username) {
+        BlackJackPlayer player = getPlayer(username);
+        player.getHand();
+        //TODO create split hand logic so player can have 2 hands
+    }
+     */
 
     private void compareHandsAndResolveBets() {
         dealer.getHand().forEach(card -> card.setIsShowing(true));
@@ -237,18 +259,18 @@ public class BlackJackGame {
             System.out.print(player.getUsername() + " (" + playerValue + "): ");
             if (playerBust) {
                 //player bust-loss
-                player.setChips(player.getChips() - player.getBetOnCurrentHand());
             } else if (dealerBust) {
                 //dealer bust-win
-                player.setChips(player.getChips() + player.getBetOnCurrentHand());
+                player.setChips(player.getChips() + 2*(player.getBetOnCurrentHand()));
             } else if (playerValue > dealerValue) {
                 //player hand better that dealer-win
-                player.setChips(player.getChips() + player.getBetOnCurrentHand());
+                player.setChips(player.getChips() + 2*(player.getBetOnCurrentHand()));
             } else if (playerValue == dealerValue) {
                 //dealer and player hand the same-tie
                 // no chip change
+                player.setChips(player.getChips() + player.getBetOnCurrentHand());
             } else {//dealer hand better than player-loss
-                player.setChips(player.getChips() - player.getBetOnCurrentHand());
+               // player.setChips(player.getChips() - player.getBetOnCurrentHand());
             }
         }
     }
@@ -300,16 +322,13 @@ public class BlackJackGame {
                 : null);
         return dto;
     }
-    /*
-    When the front end sends messages:
-    game.startRound(); // Dealer starts new round
-    game.handlePlayerBet("Alice", 100);
-    game.handlePlayerBet("Bob", 200);
-    // -> Automatically deals when all have bet
-    game.handlePlayerDecision("Alice", "HIT");
-    game.handlePlayerDecision("Alice", "STAND");
-    game.handlePlayerDecision("Bob", "STAND");
-     */
+    public void setLobbyRepository(LobbyRepository repo) {
+        this.LobbyRepository = repo;
+    }
+
+    public void setAppUserRepository(AppUserRepository repo) {
+        this.AppUserRepository = repo;
+    }
 
     }
 
