@@ -5,6 +5,16 @@
       <config />
     </shared>
     <layouts>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_host.xml">
+        <config>
+          <theme>@style/Theme.AndroidExample</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_lobby.xml">
+        <config>
+          <theme>@style/Theme.AndroidExample</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_lobbyview.xml">
         <config>
           <theme>@style/Theme.AndroidExample</theme>
@@ -28,6 +38,8 @@
   <component name="ChangeListManager">
     <list default="true" id="b105e4a7-8139-4580-a8fc-d9ed5517d7b4" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/LobbyViewActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/LobbyViewActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_lobby.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_lobby.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -182,12 +194,12 @@
       <map>
         <entry key="com.example.androidexample">
           <value>
-            <CheckInfo lastCheckTimestamp="1761709706905" />
+            <CheckInfo lastCheckTimestamp="1761923148485" />
           </value>
         </entry>
         <entry key="com.example.androidexample.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1761709706915" />
+            <CheckInfo lastCheckTimestamp="1761923148486" />
           </value>
         </entry>
       </map>
