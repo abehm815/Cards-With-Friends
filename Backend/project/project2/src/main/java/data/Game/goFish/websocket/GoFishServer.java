@@ -2,13 +2,13 @@ package data.Game.goFish.websocket;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import data.Game.goFish.GoFishGame;
-import data.Game.goFish.GoFishPlayer;
+import data.Game.goFish.GoFishService;
 import jakarta.websocket.*;
 import jakarta.websocket.server.ServerEndpoint;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,11 +17,16 @@ import java.util.concurrent.CopyOnWriteArraySet;
 @Component
 @ServerEndpoint("/gofish")
 public class GoFishServer {
+    // Set up service layer
+    private static GoFishService goFishService;
+
+    @Autowired
+    public void setGoFishService(GoFishService service) {
+        GoFishServer.goFishService = service;
+    }
+
     public static final Set<Session> sessions = new CopyOnWriteArraySet<>();
     private static final ObjectMapper mapper = new ObjectMapper();
-
-    private static GoFishGame game; // Shared game state
-    private static boolean gameStarted = false;
 
     @OnOpen
     public void onOpen(Session session) {
@@ -62,29 +67,10 @@ public class GoFishServer {
      * @param msg (Contains player names)
      */
     private void handleStart(Map<String, Object> msg) {
-        // Get usernames of players and put them into a list of new GoFishPlayers
         List<String> usernames = (List<String>) msg.get("players");
-        List<GoFishPlayer> players = new ArrayList<>();
-        for (String name : usernames) {
-            players.add(new GoFishPlayer(name));
-        }
-
-        // Start a new game with the players
-        game = new GoFishGame(players);
-
-        // Deal cards to all players
-        game.dealCards();
-
-        // Updated boolean
-        gameStarted = true;
-
-        // Clean matches in hand
-        for (GoFishPlayer p : players) {
-            p.cleanMatchesInHand();
-        }
-
+        GoFishGame game = goFishService.startGame(usernames);
         // Send message that game has started
-        broadcast("New game started with " + players.size() + " players.");
+        broadcast("New game started with " + game.getPlayers().size() + " players.");
         broadcastGameState();
     }
 
@@ -93,37 +79,15 @@ public class GoFishServer {
      * @param msg (askingPlayer, targetPlayer, value)
      */
     private void handleTurn(Map<String, Object> msg) {
-        // Makes sure game is active
-        if (!gameStarted) {
-            broadcast("Game not started yet!");
-            return;
-        }
-
         // Get all data from msg
         String asking = (String) msg.get("askingPlayer");
         String target = (String) msg.get("targetPlayer");
         int value = (int) msg.get("value");
 
-        // Get asking and target users
-        GoFishPlayer askingP = findPlayer(asking);
-        GoFishPlayer targetP = findPlayer(target);
-
-        // Make sure users are correct
-        if (askingP == null || targetP == null) {
-            broadcast("Invalid player(s)");
-            return;
-        }
-
         // Call takeTurn method and broadcast the result
-        String result = game.takeTurn(askingP, targetP, value);
+        String result = goFishService.processTurn(asking, target, value);
         broadcast(result);
-
-        // Check if game is over
-        if (game.isGameOver()) {
-            broadcast("Game over! Winner: " + game.getWinner().getUsername());
-        } else {
-            broadcastGameState();
-        }
+        broadcastGameState();
     }
 
     /**
@@ -131,25 +95,12 @@ public class GoFishServer {
      * @param session (session which state is required)
      */
     private void sendFullGameState(Session session) {
+        GoFishGame game = goFishService.getCurrentGame();
         if (game != null) {
             sendJson(session, game);
         } else {
             sendMessage(session, "No game running.");
         }
-    }
-
-    /**
-     * Finds players based off of username
-     * @param username (username of player)
-     * @return (GoFishPlayer
-     */
-    private GoFishPlayer findPlayer(String username) {
-        for (GoFishPlayer p : game.getPlayers()) {
-            if (p.getUsername().equals(username)) {
-                return p;
-            }
-        }
-        return null;
     }
 
     private void sendMessage(Session session, String message) {
@@ -187,6 +138,7 @@ public class GoFishServer {
      * Sends the game state to everyone in the game
      */
     private void broadcastGameState() {
+        GoFishGame game = goFishService.getCurrentGame();
         if (game != null) {
             String json;
             try {
