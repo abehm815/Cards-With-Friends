@@ -7,16 +7,22 @@ import java.util.List;
 
 public class BlackJackPlayer {
     private String username;
-    private List<BlackJackCard> hand;
+    private List<List<BlackJackCard>> hands;
+    private int currentHandIndex = 0;
     private int chips;
-    private int betOnCurrentHand;
-    private boolean hasStood;
+    private List<Integer> betOnCurrentHand;
+    private List<Boolean> hasStoodForHand;
     private boolean hasBet;
 
     public BlackJackPlayer(String username,int chips) {
         this.username = username;
-        this.hand = new ArrayList<>();
+        this.hands = new ArrayList<>();
+        this.hands.add(new ArrayList<>()); // first hand
         this.chips = chips;
+        this.betOnCurrentHand = new ArrayList<>();
+        this.betOnCurrentHand.add(0); // default bet for first hand
+        this.hasStoodForHand = new ArrayList<>();
+        this.hasStoodForHand.add(false); // first hand has not stood
     }
 
     /**
@@ -32,7 +38,11 @@ public class BlackJackPlayer {
      * @return hand
      */
     public List<BlackJackCard> getHand() {
-        return hand;
+        return hands.get(currentHandIndex);
+    }
+
+    public List<List<BlackJackCard>> getHands() {
+        return hands;
     }
 
     /**
@@ -52,23 +62,33 @@ public class BlackJackPlayer {
      * @param card basic MyCard
      */
     public void addCard(BlackJackCard card) {
-        hand.add(card);
+        hands.get(currentHandIndex).add(card);
     }
 
 
     public int  getBetOnCurrentHand() {
+        return betOnCurrentHand.get(currentHandIndex);
+    }
+    public void setBetOnCurrentHand(int bet) {
+        betOnCurrentHand.set(currentHandIndex, bet);
+    }
+
+    public void addHand(List<BlackJackCard> hand, int bet) {
+        hands.add(hand);
+        betOnCurrentHand.add(bet);
+        hasStoodForHand.add(false);
+    }
+
+    public List<Integer> getBets() {
         return betOnCurrentHand;
     }
-    public void setBetOnCurrentHand(int betOnCurrentHand) {
-        this.betOnCurrentHand = betOnCurrentHand;
+
+    public boolean getHasStoodForHand() {
+        return hasStoodForHand.get(currentHandIndex);
     }
 
-    public boolean getHasStood() {
-        return hasStood;
-    }
-
-    public void setHasStood(boolean hasStood) {
-        this.hasStood = hasStood;
+    public void setHasStood(Boolean hasStood) {
+        hasStoodForHand.set(currentHandIndex, hasStood);
     }
 
     public boolean getHasBet() {
@@ -78,12 +98,19 @@ public class BlackJackPlayer {
         this.hasBet = hasBet;
     }
 
+    public int getHandValue() {
+        return calculateHandValue(getHand());
+    }
+
+    public int getHandValue(List<BlackJackCard> hand) {
+        return calculateHandValue(hand);
+    }
     /**
      * Calculates the total Blackjack value of the player's hand.
      * Handles Aces as 1 or 11 optimally.
      * @return total hand value
      */
-    public int getHandValue() {
+    public int calculateHandValue(List<BlackJackCard> hand) {
         int value = 0;
         int aceCount = 0;
 
@@ -104,5 +131,20 @@ public class BlackJackPlayer {
             aceCount--;
         }
         return value;
+    }
+
+    public boolean canSplit() {
+        List<BlackJackCard> hand = getHand();
+        return hand.size() == 2 && ((hand.get(0).getValue())==(hand.get(1).getValue()));
+    }
+
+    public void moveToNextHand() {
+        if (currentHandIndex + 1 < hands.size()) {
+            currentHandIndex++;
+        }
+    }
+
+    public boolean isOnLastHand() {
+        return currentHandIndex >= hands.size() - 1;
     }
 }
