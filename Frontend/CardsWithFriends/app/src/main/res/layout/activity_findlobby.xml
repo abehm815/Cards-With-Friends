@@ -63,6 +63,27 @@
         app:layout_constraintTop_toBottomOf="@+id/find_lobby_title" />
 
     <!-- Scrollable list of lobbies -->
+    <ScrollView
+        android:id="@+id/lobby_scroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="24dp"
+        app:layout_constraintTop_toBottomOf="@id/find_lobby_join_btn"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        android:padding="16dp">
+
+        <LinearLayout
+            android:id="@+id/lobby_list_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="32dp" />
+    </ScrollView>
+
+
+    <!-- Scrollable list of lobbies -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/lobby_recycler_view"
         android:layout_width="0dp"
