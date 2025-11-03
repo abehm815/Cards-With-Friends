@@ -19,6 +19,8 @@
         <service android:name=".services.MusicService" />
 
         <!-- New Account Activity -->
+        <activity android:name=".LeaderboardActivity"
+            android:exported="false"/>
         <activity android:name=".GofishActivity"
             android:exported="false"/>
         <activity android:name=".BlackjackActivity"
