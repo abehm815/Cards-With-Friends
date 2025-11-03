@@ -1,6 +1,7 @@
 package data.Game.goFish;
 
 import data.Game.MyCard;
+import data.User.Stats.GoFishStats;
 
 import java.util.List;
 
@@ -41,6 +42,13 @@ public class GoFishGame {
      * @return (Message on if the asking player went fishing or found the card)
      */
     public String takeTurn(GoFishPlayer askingPlayer, GoFishPlayer targetPlayer, int value) {
+        // Get user's stats to allow for updates
+        GoFishStats askingPlayerStats = askingPlayer.getStats();
+        GoFishStats targetPlayerStats = targetPlayer.getStats();
+
+        // Question asked stat increment
+        if (askingPlayerStats != null) { askingPlayerStats.addQuestionAsked(); }
+
         // Search asking player's hand for a card of correct value
         // You cannot ask for a card you do not have
         if (askingPlayer.checkForCard(value) == null) {
@@ -59,13 +67,13 @@ public class GoFishGame {
             if (drawn == null) {
                 return askingPlayer.getUsername() + " went fishing, but the deck is empty!";
             }
-            // Add card to player's hand
-            askingPlayer.addCard(drawn);
 
-            // Check if a match was found
+            // Add card to player's hand and check for matches
+            askingPlayer.addCard(drawn);
             askingPlayer.cleanMatchesInHand();
 
-            // Increment Turn
+            // Increment Turn and add to went fishing stat
+            if (askingPlayerStats != null) { askingPlayerStats.addWentFishing(); }
             nextTurn();
             return askingPlayer.getUsername() + " went fishing and drew a " + drawn.toString();
         } else {
@@ -147,10 +155,19 @@ public class GoFishGame {
      * @return Winning player
      */
     public GoFishPlayer getWinner() {
-        GoFishPlayer winner = new GoFishPlayer("holder");
+        GoFishPlayer winner = players.get(0);
         for (GoFishPlayer player : players) {
             if (player.getCompletedBooks().size() > winner.getCompletedBooks().size()) {
                 winner = player;
+            }
+        }
+
+        // Update wins and games played stats
+        for (GoFishPlayer player : players) {
+            GoFishStats stats = player.getStats();
+            if (stats != null) {
+                stats.addGamePlayed();
+                if (player == winner) { stats.addGameWon(); }
             }
         }
         return winner;
