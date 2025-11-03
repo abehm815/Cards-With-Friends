@@ -1,6 +1,8 @@
 package data.Game.goFish;
 
 import data.Game.MyCard;
+import data.User.AppUser;
+import data.User.Stats.GoFishStats;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,15 +11,44 @@ public class GoFishPlayer {
     private String username;
     private List<MyCard> hand;
     private List<Integer> completedBooks;
+    private transient AppUser userRef;
 
     /**
-     * Constructor for a Go Fish Player for the game logic
-     * @param username (Username in SQL Database)
+     * Constructor for a Go Fish Player for the game logic does not keep stats
+     * @param username (Generic Username)
      */
     public GoFishPlayer(String username) {
         this.username = username;
         this.hand = new ArrayList<>();
         this.completedBooks = new ArrayList<>();
+    }
+
+    /**
+     * Constructor for a Go Fish Player using a given app user
+     * @param user (AppUser)
+     */
+    public GoFishPlayer(AppUser user) {
+        this.username = user.getUsername();
+        this.userRef = user;
+        this.hand = new ArrayList<>();
+        this.completedBooks = new ArrayList<>();
+    }
+
+    /**
+     * Gets userRef
+     * @return (userRef)
+     */
+    public AppUser getUserRef() { return userRef; }
+
+    /**
+     * Gets stats associated with user
+     * @return GoFishStats
+     */
+    public GoFishStats getStats() {
+        if (userRef != null && userRef.getUserStats() != null) {
+            return (GoFishStats) userRef.getUserStats().getGameStats("GoFish");
+        }
+        return null;
     }
 
     /**
@@ -105,6 +136,7 @@ public class GoFishPlayer {
 
                 // Add card rank pair to books collected
                 completedBooks.add(i);
+                if (userRef.getUserStats() != null) { this.getStats().addBookCollected(); }
             }
         }
     }
