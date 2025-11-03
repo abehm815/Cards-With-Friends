@@ -107,34 +107,57 @@ public class BlackJackGame {
         BlackJackPlayer currentPlayer = players.get(currentPlayerIndex);
 
         switch (decision.toUpperCase()) {
+
             case "HIT":
                 playerHit(username);
-                if (currentPlayer.getHandValue() > 21) {
+                if (currentPlayer.getHandValue() > 21 && currentPlayer.isOnLastHand()) {
                     System.out.println(username + " busts!");
                     advanceTurn();
                 }
-                else if(currentPlayer.getHandValue() == 21) {
+                else if(currentPlayer.getHandValue() > 21 && !currentPlayer.isOnLastHand()) {
+                    System.out.println(username + " busts!");
+                    currentPlayer.moveToNextHand();
+                }
+                else if(currentPlayer.getHandValue() == 21 &&  !currentPlayer.isOnLastHand()) {
+                    currentPlayer.setHasStood(true);
+                    currentPlayer.moveToNextHand();
+                }
+                else if(currentPlayer.getHandValue() == 21 && currentPlayer.isOnLastHand()) {
                     currentPlayer.setHasStood(true);
                     advanceTurn();
                 }
                 break;
 
             case "STAND":
-                playerStand(currentPlayer.getUsername());
-                System.out.println(username + " stands.");
-                advanceTurn();
+                if (currentPlayer.isOnLastHand()){
+                    playerStand(currentPlayer.getUsername());
+                    advanceTurn();
+                    System.out.println(username + " stands.");
+                }
+                else if (!currentPlayer.isOnLastHand()){
+                    playerStand(currentPlayer.getUsername());
+                    System.out.println(username + " stands.");
+                    currentPlayer.moveToNextHand();
+                }
                 break;
 
             case "DOUBLE":
-                playerDouble(currentPlayer.getUsername());
-                System.out.println(username + " doubles.");
-                advanceTurn();
+                if  (currentPlayer.isOnLastHand()) {
+                    playerDouble(currentPlayer.getUsername());
+                    System.out.println(username + " doubles.");
+                    advanceTurn();
+                }
+               else if(!currentPlayer.isOnLastHand()) {
+                    playerDouble(currentPlayer.getUsername());
+                    System.out.println(username + " doubles.");
+                    currentPlayer.moveToNextHand();
+                }
                 break;
-/*
+
+
             case "SPLIT":
                 playerSplit(currentPlayer.getUsername());
-
- */
+                break;
 
             default:
                 System.out.println("Invalid decision: " + decision);
@@ -198,7 +221,7 @@ public class BlackJackGame {
 
     public void playerStand(String username) {
         BlackJackPlayer player = getPlayer(username);
-        if (player == null || player.getHasStood() || !roundInProgress) return;
+        if (player == null || player.getHasStoodForHand() || !roundInProgress) return;
 
         player.setHasStood(true);
         System.out.println(username + " stands.");
@@ -209,7 +232,7 @@ public class BlackJackGame {
         do {
             currentPlayerIndex++;
         } while (currentPlayerIndex <= players.size() &&
-                (players.get(currentPlayerIndex).getHasStood() || players.get(currentPlayerIndex).getHandValue() > 21));
+                (players.get(currentPlayerIndex).getHasStoodForHand() || players.get(currentPlayerIndex).getHandValue() > 21));
 
         if (currentPlayerIndex > players.size()) {
             // All players done — dealer plays
@@ -221,7 +244,7 @@ public class BlackJackGame {
 
     public void playerHit(String username) {
         BlackJackPlayer player = getPlayer(username);
-        if (player == null || player.getHasStood() || !roundInProgress) return;
+        if (player == null || player.getHasStoodForHand() || !roundInProgress) return;
 
         player.addCard(deck.dealCard(true));
         System.out.println(username + " hits. Hand value: " + player.getHandValue());
@@ -229,7 +252,7 @@ public class BlackJackGame {
     }
     public void playerDouble(String username) {
         BlackJackPlayer player = getPlayer(username);
-        if (player == null || player.getHasStood() || !roundInProgress) return;
+        if (player == null || player.getHasStoodForHand() || !roundInProgress) return;
 
 
         player.setChips(player.getChips() - player.getBetOnCurrentHand());
@@ -238,14 +261,48 @@ public class BlackJackGame {
         playerStand(username);
     }
 
-    /*public void playerSplit(String username) {
+    public void playerSplit(String username) {
         BlackJackPlayer player = getPlayer(username);
-        player.getHand();
-        //TODO create split hand logic so player can have 2 hands
+        if (player == null || !roundInProgress) return;
+
+        List<BlackJackCard> hand = player.getHand();
+
+        if (!player.canSplit()) {
+            System.out.println(username + " cannot split — cards are not the same rank.");
+            return;
+        }
+
+        int originalBet = player.getBetOnCurrentHand();
+        if (player.getChips() < originalBet) {
+            System.out.println(username + " does not have enough chips to split.");
+            return;
+        }
+
+        // Deduct chips for second hand
+        player.setChips(player.getChips() - originalBet);
+
+        // Split cards into two hands
+        BlackJackCard firstCard = hand.get(0);
+        BlackJackCard secondCard = hand.get(1);
+
+        hand.clear();
+        hand.add(firstCard); // first hand keeps first card
+        hand.add(deck.dealCard(true));
+        player.setBetOnCurrentHand(originalBet); // original bet stays
+
+        // Create second hand
+        List<BlackJackCard> secondHand = new ArrayList<>();
+        secondHand.add(secondCard);
+        secondHand.add(deck.dealCard(true)); // deal one card to second hand
+        player.addHand(secondHand, originalBet); // second hand bet = original bet
+
+
+        System.out.println(username + " splits into two hands with separate bets.");
     }
-     */
+
 
     private void compareHandsAndResolveBets() {
+        // Reveal dealer cards
         dealer.getHand().forEach(card -> card.setIsShowing(true));
         int dealerValue = dealer.getHandValue();
         boolean dealerBust = dealerValue > 21;
@@ -253,27 +310,37 @@ public class BlackJackGame {
         System.out.println("Dealer hand value: " + dealerValue);
 
         for (BlackJackPlayer player : players) {
-            int playerValue = player.getHandValue();
-            boolean playerBust = playerValue > 21;
+            List<List<BlackJackCard>> hands = player.getHands();
+            List<Integer> bets = player.getBets();
 
-            System.out.print(player.getUsername() + " (" + playerValue + "): ");
-            if (playerBust) {
-                //player bust-loss
-            } else if (dealerBust) {
-                //dealer bust-win
-                player.setChips(player.getChips() + 2*(player.getBetOnCurrentHand()));
-            } else if (playerValue > dealerValue) {
-                //player hand better that dealer-win
-                player.setChips(player.getChips() + 2*(player.getBetOnCurrentHand()));
-            } else if (playerValue == dealerValue) {
-                //dealer and player hand the same-tie
-                // no chip change
-                player.setChips(player.getChips() + player.getBetOnCurrentHand());
-            } else {//dealer hand better than player-loss
-               // player.setChips(player.getChips() - player.getBetOnCurrentHand());
+            for (int i = 0; i < hands.size(); i++) {
+                List<BlackJackCard> hand = hands.get(i);
+                int bet = (bets != null && i < bets.size()) ? bets.get(i) : 0;
+                int playerValue = player.getHandValue(hand);
+                boolean playerBust = playerValue > 21;
+
+                System.out.print(player.getUsername() + " Hand " + (i + 1) + " (" + playerValue + "): ");
+
+                if (playerBust) {
+                    System.out.println("Bust! Lost bet of " + bet);
+                    // Loss: do nothing since chips already deducted when bet was placed
+                } else if (dealerBust) {
+                    System.out.println("Dealer bust! Won " + bet * 2);
+                    player.setChips(player.getChips() + 2 * bet);
+                } else if (playerValue > dealerValue) {
+                    System.out.println("Win! Won " + bet * 2);
+                    player.setChips(player.getChips() + 2 * bet);
+                } else if (playerValue == dealerValue) {
+                    System.out.println("Tie! Bet returned: " + bet);
+                    player.setChips(player.getChips() + bet);
+                } else {
+                    System.out.println("Loss! Lost bet of " + bet);
+
+                }
             }
         }
     }
+
 
     public BlackJackPlayer getPlayer(String username) {
         for (BlackJackPlayer player : players) {
@@ -304,24 +371,69 @@ public class BlackJackGame {
         Map<String, Object> dto = new HashMap<>();
         dto.put("lobbyCode", lobbyCode);
         dto.put("roundInProgress", roundInProgress);
+
+        // Dealer info
         dto.put("dealer", Map.of(
                 "hand", dealer.getHand(),
                 "handValue", dealer.getHandValue()
         ));
-        dto.put("players", players.stream().map(p -> Map.of(
-                "username", p.getUsername(),
-                "chips", p.getChips(),
-                "hand", p.getHand(),
-                "handValue", p.getHandValue(),
-                "bet", p.getBetOnCurrentHand(),
-                "hasStood", p.getHasStood(),
-                "hasBet", p.getHasBet()
-        )).collect(Collectors.toList()));
+
+        // Players info
+        dto.put("players", players.stream().map(player -> {
+            List<Map<String, Object>> playerHands = new ArrayList<>();
+            List<List<BlackJackCard>> hands = player.getHands();
+            List<Integer> bets = player.getBets();
+
+            int originalHandIndex = 0; // save original hand index
+            try {
+                java.lang.reflect.Field currentHandIndexField = BlackJackPlayer.class.getDeclaredField("currentHandIndex");
+                currentHandIndexField.setAccessible(true);
+                originalHandIndex = (int) currentHandIndexField.get(player);
+
+                for (int i = 0; i < hands.size(); i++) {
+                    // Temporarily set current hand index
+                    currentHandIndexField.set(player, i);
+
+                    List<BlackJackCard> hand = hands.get(i);
+                    int handValue = player.getHandValue(hand);
+                    int bet = (bets != null && i < bets.size()) ? bets.get(i) : 0;
+                    boolean hasStood = player.getHasStoodForHand();
+
+                    playerHands.add(Map.of(
+                            "handIndex", i,
+                            "hand", hand,
+                            "handValue", handValue,
+                            "bet", bet,
+                            "hasStood", hasStood
+                    ));
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            } finally {
+                // Restore original current hand index
+                try {
+                    java.lang.reflect.Field currentHandIndexField = BlackJackPlayer.class.getDeclaredField("currentHandIndex");
+                    currentHandIndexField.setAccessible(true);
+                    currentHandIndexField.set(player, originalHandIndex);
+                } catch (Exception ignored) {}
+            }
+
+            return Map.of(
+                    "username", player.getUsername(),
+                    "chips", player.getChips(),
+                    "hands", playerHands,
+                    "hasBet", player.getHasBet()
+            );
+        }).collect(Collectors.toList()));
+
+        // Current turn
         dto.put("currentTurn", currentPlayerIndex < players.size()
                 ? players.get(currentPlayerIndex).getUsername()
                 : null);
+
         return dto;
     }
+
     public void setLobbyRepository(LobbyRepository repo) {
         this.LobbyRepository = repo;
     }
@@ -331,5 +443,6 @@ public class BlackJackGame {
     }
 
     }
+
 
 
