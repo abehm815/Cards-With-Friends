@@ -90,6 +90,7 @@ import java.util.concurrent.ConcurrentHashMap;
                 case "STAND":
                     game.handlePlayerDecision(player, action);
                     break;
+
                 case "DOUBLE":
                     game.handlePlayerDecision(player, action);
                     break;
@@ -97,6 +98,13 @@ import java.util.concurrent.ConcurrentHashMap;
                 case "STARTROUND":
                     game.startRound();
                     break;
+
+                case"SPLIT":
+                    game.handlePlayerDecision(player,action);
+                    break;
+
+                default:
+                    game.handlePlayerDecision(player,action);
             }
 
             // Broadcast updated game state to all sessions in this lobby

@@ -18,8 +18,8 @@
         tools:targetApi="31">
         <service android:name=".services.MusicService" />
 
-
-        <activity android:name=".FindLobbyActivity"
+        <!-- New Account Activity -->
+        <activity android:name=".LeaderboardActivity"
             android:exported="false"/>
         <activity android:name=".GofishActivity"
             android:exported="false"/>

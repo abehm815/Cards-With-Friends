@@ -99,7 +99,7 @@ public class LobbyController {
     }
 
     @PostMapping(path = "/Lobby/joinCode/autogen/{username}")
-    public Lobby createLobbyWithautogen(@RequestBody Lobby lobby, @PathVariable String username) {
+    public String createLobbyWithautogen(@RequestBody Lobby lobby, @PathVariable String username) {
         AppUser host = this.AppUserRepository.findByUsername(username);
         if (host == null) {
             // Handle if user not found (optional)
@@ -128,7 +128,7 @@ public class LobbyController {
         Lobby savedLobby = this.LobbyRepository.save(lobby);
         this.AppUserRepository.save(host);
         LobbyListWebSocket.broadcastLobbyList();
-        return  savedLobby;
+        return  joinCode;
     }
 
 
