@@ -8,68 +8,73 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-public class LobbyActivity extends AppCompatActivity {
+import java.util.ArrayList;
+import java.util.List;
 
-    private TextView gameText;
+public class FindLobbyActivity extends AppCompatActivity {
+
+
+    String gameType;
+    String username;
     private Button backButton;
     private Button joinButton;
-    private Button hostButton;
-    private Button findButton;
-    private String gameType;
-    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lobby);
+        setContentView(R.layout.activity_findlobby);
 
         // Link UI
-        ConstraintLayout rootLayout = findViewById(R.id.lobby_root);
-        gameText = findViewById(R.id.lobby_title);
-        backButton = findViewById(R.id.lobby_back_btn);
-        joinButton = findViewById(R.id.lobby_join_btn);
-        hostButton = findViewById(R.id.lobby_host_btn);
-        findButton = findViewById(R.id.lobby_find_btn);
+        ConstraintLayout rootLayout = findViewById(R.id.find_lobby_root);
+        backButton = findViewById(R.id.find_lobby_back_btn);
+        joinButton = findViewById(R.id.find_lobby_join_btn);
 
         // Get intent data
         Intent intent = getIntent();
         gameType = intent.getStringExtra("GAMETYPE");
         username = intent.getStringExtra("USERNAME");
-        gameText.setText(gameType);
+
 
         // Set dynamic background gradient
         setDynamicBackground(rootLayout, gameType);
 
+        RecyclerView recyclerView = findViewById(R.id.lobby_recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+
+// Temporary dummy data (you can replace this later with backend results)
+        List<Lobby> testLobbies = new ArrayList<>();
+        testLobbies.add(new Lobby("Fun Table", 3));
+        testLobbies.add(new Lobby("Serious Players", 5));
+        testLobbies.add(new Lobby("Late Night Crew", 2));
+
+        LobbyAdapter adapter = new LobbyAdapter(testLobbies);
+        recyclerView.setAdapter(adapter);
+
+
         // Back button → return to home
         backButton.setOnClickListener(v -> {
-            Intent i = new Intent(LobbyActivity.this, HomeActivity.class);
+            Intent i = new Intent(FindLobbyActivity.this, LobbyActivity.class);
             i.putExtra("USERNAME", username);
+            i.putExtra("GAMETYPE", gameType);
             startActivity(i);
         });
 
         // Join button
         joinButton.setOnClickListener(v -> {
-            Intent i = new Intent(LobbyActivity.this, JoinActivity.class);
+            //Somehow need to get target game id from websocket and do some shit with it.
+            Intent i = new Intent(FindLobbyActivity.this, JoinActivity.class);
             i.putExtra("GAMETYPE", gameType);
             i.putExtra("USERNAME", username);
             startActivity(i);
         });
 
         // Host button
-        hostButton.setOnClickListener(v -> {
-            Intent i = new Intent(LobbyActivity.this, HostActivity.class);
-            i.putExtra("GAMETYPE", gameType);
-            i.putExtra("USERNAME", username);
-            startActivity(i);
-        });
 
-        findButton.setOnClickListener(v -> {
-           Intent i = new Intent(LobbyActivity.this, FindLobbyActivity.class);
-           i.putExtra("GAMETYPE", gameType);
-           i.putExtra("USERNAME", username);
-           startActivity(i);
-        });
+
+
     }
 
     /**
