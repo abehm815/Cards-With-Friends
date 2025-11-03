@@ -3,177 +3,163 @@ package com.example.androidexample;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AppCompatActivity;
-
+import androidx.core.content.res.ResourcesCompat;
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.androidexample.services.BottomNavHelper;
 import com.example.androidexample.services.VolleySingleton;
-
 import org.json.JSONObject;
+import java.util.ArrayList;
+import java.util.List;
 
 public class StatsActivity extends AppCompatActivity {
 
-    private Button euchreButton;
-    private Button blackJackButton;
-    private Button goFishButton;
-
-    private TextView stat1, stat2, stat3, stat4, stat5, stat6, stat7;
-
     private static final String DB_URL = "http://coms-3090-006.class.las.iastate.edu:8080";
+
+    private LinearLayout statsContainer;
+    private ImageButton refreshBtn;
+    private String username;
+
+    // cache
+    private JSONObject cachedStats = null;
+    private String currentGame = "Blackjack";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_stats);
 
-        // --- Get username from intent ---
         Intent intent = getIntent();
-        String username = intent.getStringExtra("USERNAME");
+        username = intent.getStringExtra("USERNAME");
 
-        // --- Setup bottom nav ---
         BottomNavHelper.setupBottomNav(this, username);
 
-        // --- Bind UI elements ---
-        euchreButton = findViewById(R.id.stats_euchre_btn);
-        blackJackButton = findViewById(R.id.stats_black_jack_btn);
-        goFishButton = findViewById(R.id.stats_go_fish_btn);
+        statsContainer = findViewById(R.id.stats_text_container);
+        refreshBtn = findViewById(R.id.refresh_button);
 
-        stat1 = findViewById(R.id.stat_1_text);
-        stat2 = findViewById(R.id.stat_2_text);
-        stat3 = findViewById(R.id.stat_3_text);
-        stat4 = findViewById(R.id.stat_4_text);
-        stat5 = findViewById(R.id.stat_5_text);
-        stat6 = findViewById(R.id.stat_6_text);
-        stat7 = findViewById(R.id.stat_7_text);
-
-        // --- Button Listeners ---
-        euchreButton.setOnClickListener(v -> {
-            clearStats();
-            stat1.setText("Loading Euchre stats...");
-            getUserID(username, "Euchre");
+        findViewById(R.id.stats_blackjack_btn).setOnClickListener(v -> {
+            currentGame = "Blackjack";
+            showGameStats();
+        });
+        findViewById(R.id.stats_euchre_btn).setOnClickListener(v -> {
+            currentGame = "Euchre";
+            showGameStats();
+        });
+        findViewById(R.id.stats_gofish_btn).setOnClickListener(v -> {
+            currentGame = "GoFish";
+            showGameStats();
         });
 
-        blackJackButton.setOnClickListener(v -> {
-            clearStats();
-            stat1.setText("Loading Blackjack stats...");
-            getUserID(username, "Blackjack");
-        });
+        refreshBtn.setOnClickListener(v -> fetchStats());
 
-        goFishButton.setOnClickListener(v -> {
-            clearStats();
-            stat1.setText("Loading Go Fish stats...");
-            getUserID(username, "GoFish");
-        });
+        fetchStats(); // load on open
     }
 
-    /** Clears all stat text fields before updating new stats. */
-    private void clearStats() {
-        stat1.setText("");
-        stat2.setText("");
-        stat3.setText("");
-        stat4.setText("");
-        stat5.setText("");
-        stat6.setText("");
-        stat7.setText("");
-    }
-
-    /** Gets the user ID from username, then fetches the corresponding stats. */
-    private void getUserID(String username, String game) {
+    private void fetchStats() {
         String url = DB_URL + "/AppUser/username/" + username;
 
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.GET,
-                url,
-                null,
-                response -> {
+        JsonObjectRequest userReq = new JsonObjectRequest(
+                Request.Method.GET, url, null,
+                userRes -> {
                     try {
-                        int userID = response.getInt("userID");
-                        getUserStats(userID, game);
+                        int userID = userRes.getInt("userID");
+                        String statsUrl = DB_URL + "/UserStats/" + userID;
+
+                        JsonObjectRequest statsReq = new JsonObjectRequest(
+                                Request.Method.GET, statsUrl, null,
+                                statsRes -> {
+                                    cachedStats = statsRes;
+                                    showGameStats();
+                                },
+                                err -> {
+                                    Toast.makeText(this, "Failed to load stats", Toast.LENGTH_SHORT).show();
+                                });
+
+                        VolleySingleton.getInstance(this).addToRequestQueue(statsReq);
                     } catch (Exception e) {
-                        Toast.makeText(this, "Error parsing user data", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Error parsing user info", Toast.LENGTH_SHORT).show();
                     }
                 },
-                error -> {
-                    Log.e("Volley", "Error fetching user: " + error);
-                    Toast.makeText(this, "Failed to load user info", Toast.LENGTH_SHORT).show();
-                }
+                err -> Toast.makeText(this, "Failed to fetch user", Toast.LENGTH_SHORT).show()
         );
 
-        VolleySingleton.getInstance(this).addToRequestQueue(request);
+        VolleySingleton.getInstance(this).addToRequestQueue(userReq);
     }
 
-    /** Fetches user stats for the given game and user ID. */
-    private void getUserStats(int userID, String game) {
-        String url = DB_URL + "/UserStats/" + userID;
+    private void showGameStats() {
+        statsContainer.removeAllViews();
+        if (cachedStats == null) {
+            addTextBox("No stats loaded yet.");
+            return;
+        }
 
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.GET,
-                url,
-                null,
-                response -> {
-                    try {
-                        JSONObject allStats = response.getJSONObject("allGameStats");
-                        JSONObject gameStats = allStats.getJSONObject(game);
+        try {
+            JSONObject allGameStats = cachedStats.getJSONObject("allGameStats");
+            JSONObject gameStats = allGameStats.optJSONObject(currentGame);
+            if (gameStats == null) {
+                addTextBox("No data for " + currentGame);
+                return;
+            }
 
-                        switch (game) {
-                            case "GoFish":
-                                populateGoFishStats(gameStats);
-                                break;
-                            case "Euchre":
-                                populateEuchreStats(gameStats);
-                                break;
-                            case "Blackjack":
-                                populateBlackjackStats(gameStats);
-                                break;
-                        }
+            List<String> lines = new ArrayList<>();
+            switch (currentGame) {
+                case "Blackjack":
+                    lines.add("Games played: " + gameStats.optInt("gamesPlayed"));
+                    lines.add("Money won: " + gameStats.optInt("moneyWon"));
+                    lines.add("Bets won: " + gameStats.optInt("betsWon"));
+                    lines.add("Times doubled down: " + gameStats.optInt("timesDoubledDown"));
+                    lines.add("Times split: " + gameStats.optInt("timesSplit"));
+                    lines.add("Times hit: " + gameStats.optInt("timesHit"));
+                    lines.add("Games won: " + gameStats.optInt("gamesWon"));
+                    break;
+                case "Euchre":
+                    lines.add("Games played: " + gameStats.optInt("gamesPlayed"));
+                    lines.add("Games won: " + gameStats.optInt("gamesWon"));
+                    lines.add("Tricks taken: " + gameStats.optInt("tricksTaken"));
+                    lines.add("Times picked up: " + gameStats.optInt("timesPickedUp"));
+                    lines.add("Times gone alone: " + gameStats.optInt("timesGoneAlone"));
+                    lines.add("Sweeps won: " + gameStats.optInt("sweepsWon"));
+                    break;
+                case "GoFish":
+                    lines.add("Games played: " + gameStats.optInt("gamesPlayed"));
+                    lines.add("Times went fishing: " + gameStats.optInt("timesWentFishing"));
+                    lines.add("Questions asked: " + gameStats.optInt("questionsAsked"));
+                    lines.add("Books collected: " + gameStats.optInt("booksCollected"));
+                    lines.add("Games won: " + gameStats.optInt("gamesWon"));
+                    break;
+            }
 
-                    } catch (Exception e) {
-                        Toast.makeText(this, "Error reading stats", Toast.LENGTH_SHORT).show();
-                    }
-                },
-                error -> {
-                    Log.e("Volley", "Error fetching user stats: " + error);
-                    Toast.makeText(this, "Cannot fetch stats right now", Toast.LENGTH_SHORT).show();
-                }
+            for (String line : lines) addTextBox(line);
+
+        } catch (Exception e) {
+            Log.e("Stats", "Error showing stats", e);
+            addTextBox("Error showing stats");
+        }
+    }
+
+    /** creates a grey box for each stat line **/
+    private void addTextBox(String text) {
+        TextView tv = new TextView(this);
+        tv.setText(text);
+        tv.setTextColor(getColor(android.R.color.white));
+        tv.setTextSize(20);
+        tv.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
+        tv.setBackgroundColor(getColor(R.color.my_grey));
+        tv.setPadding(20, 15, 20, 15);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
         );
+        params.setMargins(40, 12, 40, 0);
+        tv.setLayoutParams(params);
+        tv.setGravity(android.view.Gravity.CENTER);
 
-        VolleySingleton.getInstance(this).addToRequestQueue(request);
-    }
-
-    // --- Individual game stat renderers ---
-
-    private void populateGoFishStats(JSONObject stats) throws Exception {
-        stat1.setText("Games played: " + stats.getInt("gamesPlayed"));
-        stat2.setText("Times went fishing: " + stats.getInt("timesWentFishing"));
-        stat3.setText("Questions asked: " + stats.getInt("questionsAsked"));
-        stat4.setText("Books collected: " + stats.getInt("booksCollected"));
-        stat5.setText("Games won: " + stats.getInt("gamesWon"));
-        stat6.setText("");
-        stat7.setText("");
-    }
-
-    private void populateEuchreStats(JSONObject stats) throws Exception {
-        stat1.setText("Games played: " + stats.getInt("gamesPlayed"));
-        stat2.setText("Games won: " + stats.getInt("gamesWon"));
-        stat3.setText("Tricks taken: " + stats.getInt("tricksTaken"));
-        stat4.setText("Times picked up: " + stats.getInt("timesPickedUp"));
-        stat5.setText("Times gone alone: " + stats.getInt("timesGoneAlone"));
-        stat6.setText("Sweeps won: " + stats.getInt("sweepsWon"));
-        stat7.setText("");
-    }
-
-    private void populateBlackjackStats(JSONObject stats) throws Exception {
-        stat1.setText("Games played: " + stats.getInt("gamesPlayed"));
-        stat2.setText("Money won: " + stats.getInt("moneyWon"));
-        stat3.setText("Bets won: " + stats.getInt("betsWon"));
-        stat4.setText("Times doubled down: " + stats.getInt("timesDoubledDown"));
-        stat5.setText("Times split: " + stats.getInt("timesSplit"));
-        stat6.setText("Times hit: " + stats.getInt("timesHit"));
-        stat7.setText("Games won: " + stats.getInt("gamesWon"));
+        statsContainer.addView(tv);
     }
 }

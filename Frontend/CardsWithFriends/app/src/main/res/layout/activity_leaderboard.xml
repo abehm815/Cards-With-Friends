@@ -51,46 +51,49 @@
         <!-- Blackjack -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/leaderboard_blackjack_btn"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="110dp"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="70dp"
             android:layout_marginEnd="12dp"
+            android:paddingHorizontal="18dp"
             android:fontFamily="@font/inter_black"
             android:text="Blackjack"
-            android:textColor="@color/my_red"
+            android:textColor="@android:color/white"
             android:textSize="16sp"
-            app:cornerRadius="12dp"
-            app:strokeColor="@color/my_red"
-            app:strokeWidth="2dp" />
+            android:backgroundTint="@color/my_red"
+            android:gravity="center"
+            android:singleLine="true"
+            app:cornerRadius="12dp" />
 
         <!-- Euchre -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/leaderboard_euchre_btn"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="110dp"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="70dp"
             android:layout_marginEnd="12dp"
+            android:paddingHorizontal="18dp"
             android:fontFamily="@font/inter_black"
             android:text="Euchre"
-            android:textColor="@color/my_blue"
+            android:textColor="@android:color/white"
             android:textSize="16sp"
-            app:cornerRadius="12dp"
-            app:strokeColor="@color/my_blue"
-            app:strokeWidth="2dp" />
+            android:backgroundTint="@color/my_blue"
+            android:gravity="center"
+            android:singleLine="true"
+            app:cornerRadius="12dp" />
 
         <!-- Go Fish -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/leaderboard_gofish_btn"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="110dp"
-            android:layout_height="wrap_content"
+            android:layout_width="wrap_content"
+            android:layout_height="70dp"
+            android:paddingHorizontal="18dp"
             android:fontFamily="@font/inter_black"
             android:text="Go Fish"
-            android:textColor="@color/my_green"
+            android:textColor="@android:color/white"
             android:textSize="16sp"
-            app:cornerRadius="12dp"
-            app:strokeColor="@color/my_green"
-            app:strokeWidth="2dp" />
+            android:backgroundTint="@color/my_green"
+            android:gravity="center"
+            android:singleLine="true"
+            app:cornerRadius="12dp" />
     </LinearLayout>
 
     <!-- Scrollable Leaderboard Section -->

@@ -1,8 +1,10 @@
 package com.example.androidexample;
 
 import android.content.Intent;
+import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -10,6 +12,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 
 import com.android.volley.Request;
@@ -55,7 +58,6 @@ public class LeaderboardActivity extends AppCompatActivity {
         gofishBtn = findViewById(R.id.leaderboard_gofish_btn);
         refreshBtn = findViewById(R.id.refresh_button);
 
-        // Game button listeners
         blackjackBtn.setOnClickListener(v -> {
             currentGame = "Blackjack";
             displayLeaderboard(blackjackList);
@@ -71,12 +73,11 @@ public class LeaderboardActivity extends AppCompatActivity {
             displayLeaderboard(gofishList);
         });
 
-        // Refresh button listener
         refreshBtn.setOnClickListener(v -> {
-            getUserStats(); // Force re-fetch
+            getUserStats();
         });
 
-        // Load only once when page opens
+        // Load stats once initially
         getUserStats();
     }
 
@@ -121,7 +122,6 @@ public class LeaderboardActivity extends AppCompatActivity {
                 gofishList.add(new PlayerStat(name, calcWinPct(gf)));
             }
 
-            // Sort all three lists descending by win percentage
             blackjackList.sort((a, b) -> Double.compare(b.winPct, a.winPct));
             euchreList.sort((a, b) -> Double.compare(b.winPct, a.winPct));
             gofishList.sort((a, b) -> Double.compare(b.winPct, a.winPct));
@@ -169,18 +169,74 @@ public class LeaderboardActivity extends AppCompatActivity {
 
         int rank = 1;
         for (PlayerStat p : list) {
-            TextView tv = new TextView(this);
-            tv.setTextColor(getColor(android.R.color.white));
-            tv.setTextSize(20);
-            tv.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
-            tv.setText(rank + ". " + p.username + " — " + String.format("%.2f", p.winPct) + "%");
-            tv.setPadding(0, 10, 0, 10);
-            leaderboardContainer.addView(tv);
+            // Create outer block
+            LinearLayout block = new LinearLayout(this);
+            block.setOrientation(LinearLayout.HORIZONTAL);
+            block.setPadding(30, 25, 30, 25);
+            block.setGravity(Gravity.CENTER_VERTICAL);
+
+            // Light grey rounded background
+            GradientDrawable bg = new GradientDrawable();
+            bg.setColor(ContextCompat.getColor(this, R.color.my_grey));
+            bg.setCornerRadius(25);
+            block.setBackground(bg);
+
+            LinearLayout.LayoutParams blockParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            blockParams.setMargins(0, 12, 0, 12);
+            block.setLayoutParams(blockParams);
+
+            // Rank circle
+            TextView rankCircle = new TextView(this);
+            rankCircle.setText(String.valueOf(rank));
+            rankCircle.setTextColor(ContextCompat.getColor(this, android.R.color.black));
+            rankCircle.setTextSize(18);
+            rankCircle.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
+            rankCircle.setGravity(Gravity.CENTER);
+
+            GradientDrawable circleBg = new GradientDrawable();
+            circleBg.setShape(GradientDrawable.OVAL);
+            circleBg.setColor(ContextCompat.getColor(this, android.R.color.white));
+            circleBg.setSize(80, 80);
+            rankCircle.setBackground(circleBg);
+
+            LinearLayout.LayoutParams circleParams = new LinearLayout.LayoutParams(80, 80);
+            circleParams.setMargins(0, 0, 30, 0);
+            rankCircle.setLayoutParams(circleParams);
+
+            // Username
+            TextView nameView = new TextView(this);
+            nameView.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
+            nameView.setTextColor(ContextCompat.getColor(this, android.R.color.white));
+            nameView.setTextSize(20);
+            nameView.setText(p.username);
+
+            // Spacer
+            View spacer = new View(this);
+            LinearLayout.LayoutParams spacerParams = new LinearLayout.LayoutParams(
+                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1
+            );
+            spacer.setLayoutParams(spacerParams);
+
+            // Score
+            TextView scoreView = new TextView(this);
+            scoreView.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
+            scoreView.setTextColor(ContextCompat.getColor(this, android.R.color.white));
+            scoreView.setTextSize(20);
+            scoreView.setText(String.format("%.2f%%", p.winPct));
+
+            block.addView(rankCircle);
+            block.addView(nameView);
+            block.addView(spacer);
+            block.addView(scoreView);
+
+            leaderboardContainer.addView(block);
             rank++;
         }
     }
 
-    /** Simple player record **/
     public static class PlayerStat {
         String username;
         double winPct;
