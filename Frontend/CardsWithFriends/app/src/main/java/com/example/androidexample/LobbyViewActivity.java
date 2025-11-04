@@ -47,6 +47,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
     private LinearLayout userListLayout;
     private android.widget.Button deleteBtn;
     private android.widget.Button leaveBtn;
+    private android.widget.Button startBtn;
     private int unreadMessages;
     private final List<Message> chat = new ArrayList<>();
     private final ArrayList<String> currentUsers = new ArrayList<>();
@@ -66,8 +67,9 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         gameTypeTxt = findViewById(R.id.lobbyview_type_txt);
         joinCodeTxt = findViewById(R.id.lobbyview_code_txt);
         userListLayout = findViewById(R.id.lobbyview_user_list);
-        deleteBtn = findViewById(R.id.lobbyview_delete_btn);
+        deleteBtn = findViewById(R.id.lobbyview_close_btn);
         leaveBtn = findViewById(R.id.lobbyview_leave_btn);
+        startBtn = findViewById(R.id.lobbyview_start_btn);
 
         Intent intent = getIntent();
         gameType = intent.getStringExtra("GAMETYPE");
@@ -84,6 +86,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
 
         ImageView chatBtn = findViewById(R.id.chat_button);
         chatBtn.setOnClickListener(v -> openChatSheet());
+        startBtn.setOnClickListener(v -> startGame());
 
         unreadMessages = 0;
     }
@@ -129,16 +132,28 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                         break;
 
                     case "MESSAGE":
-                        unreadMessages += 1;
-                        Message newMessage = new Message(user, msgText, System.currentTimeMillis());
-                        chat.add(newMessage);
-                        if (chatDialog != null && chatDialog.isShowing()) {
-                            addMessageBubble(user, msgText);
+                        if (msgText.equals("/start")){
+                            if (gameType.equals("BLACKJACK")) {
+                                Intent i = new Intent(LobbyViewActivity.this, BlackjackActivity.class);
+                                i.putExtra("GAMETYPE", gameType);
+                                i.putExtra("USERNAME", username);
+                                i.putExtra("JOINCODE", joinCode);
+                                i.putStringArrayListExtra("PLAYERS", currentUsers);
+                                startActivity(i);
+                            }
+                            //TODO IMPLEMENT THE STARTING OF OTHER GAMES
                         }
-                        Log.d("Chat", "Received chat message: " + msgText);
-                        break;
+                        else {
+                            unreadMessages += 1;
+                            Message newMessage = new Message(user, msgText, System.currentTimeMillis());
+                            chat.add(newMessage);
+                            if (chatDialog != null && chatDialog.isShowing()) {
+                                addMessageBubble(user, msgText);
+                            }
+                            Log.d("Chat", "Received chat message: " + msgText);
+                            break;
+                        }
                 }
-
             } catch (JSONException e) {
                 Log.e(TAG, "Bad JSON from WebSocket: " + message, e);
             }
@@ -247,7 +262,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                 url,
                 null,
                 response -> {
-                    Toast.makeText(getApplicationContext(), "Deleted Lobby!", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getApplicationContext(), "Closed Lobby", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(this, JoinActivity.class);
                     intent.putExtra("USERNAME", username);
                     intent.putExtra("GAMETYPE", gameType);
@@ -345,5 +360,9 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         if (chatScroll != null) {
             chatScroll.post(() -> chatScroll.fullScroll(View.FOCUS_DOWN));
         }
+    }
+
+    private void startGame(){
+        WebSocketManager.getInstance().sendMessage("/start");
     }
 }
