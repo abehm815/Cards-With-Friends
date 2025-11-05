@@ -1,85 +1,197 @@
 package com.example.androidexample;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.core.content.res.ResourcesCompat;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.example.androidexample.services.WebSocketListener;
+import com.example.androidexample.services.WebSocketManager;
+import com.google.android.material.card.MaterialCardView;
 
-public class FindLobbyActivity extends AppCompatActivity {
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+public class FindLobbyActivity extends AppCompatActivity implements WebSocketListener {
 
-    String gameType;
-    String username;
+    private static final String TAG = "FindLobbyActivity";
+    private LinearLayout lobbyListLayout;
+
     private Button backButton;
     private Button joinButton;
+    private String gameType;
+    private String username;
+    private TextView gameTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_findlobby);
-
-        // Link UI
         ConstraintLayout rootLayout = findViewById(R.id.find_lobby_root);
+
+        //setDynamicBackground(rootLayout, gameType);
+
+        lobbyListLayout = findViewById(R.id.lobby_list_layout);
         backButton = findViewById(R.id.find_lobby_back_btn);
         joinButton = findViewById(R.id.find_lobby_join_btn);
+        gameTitle = findViewById(R.id.find_lobby_title);
 
-        // Get intent data
+
         Intent intent = getIntent();
         gameType = intent.getStringExtra("GAMETYPE");
         username = intent.getStringExtra("USERNAME");
 
-
-        // Set dynamic background gradient
         setDynamicBackground(rootLayout, gameType);
 
-        RecyclerView recyclerView = findViewById(R.id.lobby_recycler_view);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
+        gameTitle.setText(gameType + "\nlobbies");
 
-// Temporary dummy data (you can replace this later with backend results)
-        List<Lobby> testLobbies = new ArrayList<>();
-        testLobbies.add(new Lobby("Fun Table", 3));
-        testLobbies.add(new Lobby("Serious Players", 5));
-        testLobbies.add(new Lobby("Late Night Crew", 2));
-
-        LobbyAdapter adapter = new LobbyAdapter(testLobbies);
-        recyclerView.setAdapter(adapter);
-
-
-        // Back button → return to home
-        backButton.setOnClickListener(v -> {
-            Intent i = new Intent(FindLobbyActivity.this, LobbyActivity.class);
-            i.putExtra("USERNAME", username);
-            i.putExtra("GAMETYPE", gameType);
-            startActivity(i);
-        });
-
-        // Join button
         joinButton.setOnClickListener(v -> {
-            //Somehow need to get target game id from websocket and do some shit with it.
             Intent i = new Intent(FindLobbyActivity.this, JoinActivity.class);
             i.putExtra("GAMETYPE", gameType);
             i.putExtra("USERNAME", username);
             startActivity(i);
         });
 
-        // Host button
-
+        backButton.setOnClickListener(v -> {
+           Intent i = new Intent(FindLobbyActivity.this, LobbyActivity.class);
+           i.putExtra("GAMETYPE", gameType);
+           i.putExtra("USERNAME", username);
+           startActivity(i);
+        });
 
 
     }
 
-    /**
-     * Dynamically sets gradient background based on game type.
-     */
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        // Connect to your WebSocket that sends lobby updates
+        String wsUrl = "ws://coms-3090-006.class.las.iastate.edu:8080/ws/lobbies";
+        WebSocketManager.getInstance().connectWebSocket(wsUrl);
+        WebSocketManager.getInstance().setWebSocketListener(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        WebSocketManager.getInstance().disconnectWebSocket();
+    }
+
+    // ----------------------- WEBSOCKET CALLBACKS -----------------------
+
+    @Override
+    public void onWebSocketOpen(ServerHandshake handshakedata) {
+        Log.d(TAG, "Connected to lobby WebSocket");
+    }
+
+    @Override
+    public void onWebSocketMessage(String message) {
+        Log.d(TAG, "Received message: " + message);
+
+        runOnUiThread(() -> {
+            try {
+                JSONObject json = new JSONObject(message);
+                if (!json.has("type") || !json.getString("type").equals("LOBBY_LIST")) {
+                    Log.d(TAG, "Ignoring non-lobby message");
+                    return;
+                }
+
+                JSONArray lobbies = json.getJSONArray("lobbies");
+                lobbyListLayout.removeAllViews(); // clear before redrawing
+
+                for (int i = 0; i < lobbies.length(); i++) {
+
+                    JSONObject lobby = lobbies.getJSONObject(i);
+
+                    String joinCode = lobby.getString("joinCode");
+                    String game = lobby.getString("gameType");
+                    JSONArray users = lobby.getJSONArray("usernames");
+                    int playerCount = users.length();
+                    if(gameType.equals(game) || (game.equals("GO_FISH") && gameType.equals("GOFISH"))){
+                        addLobbyCard(joinCode, game, playerCount, users);
+                    }
+                }
+
+            } catch (JSONException e) {
+                Log.e(TAG, "Error parsing JSON", e);
+            }
+        });
+    }
+
+    @Override
+    public void onWebSocketClose(int code, String reason, boolean remote) {
+        Log.d(TAG, "WebSocket closed: " + reason);
+    }
+
+    @Override
+    public void onWebSocketError(Exception ex) {
+        Log.e(TAG, "WebSocket error", ex);
+    }
+
+    // ----------------------- UI: LOBBY CARD CREATION -----------------------
+
+    private void addLobbyCard(String joinCode, String gameType, int playerCount, JSONArray users) {
+        MaterialCardView card = new MaterialCardView(this);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(0, 16, 0, 16);
+        card.setLayoutParams(params);
+        card.setRadius(20f);
+        card.setCardElevation(8f);
+        card.setCardBackgroundColor(Color.WHITE);
+        card.setClickable(true);
+        card.setFocusable(true);
+
+        // Build player list text
+        StringBuilder playerList = new StringBuilder();
+        for (int i = 0; i < users.length(); i++) {
+            try {
+                playerList.append(users.getString(i));
+                if (i < users.length() - 1) playerList.append(", ");
+            } catch (JSONException ignored) {}
+        }
+
+        // Create info view
+        TextView info = new TextView(this);
+        info.setText(String.format(
+                "Game: %s\nJoin Code: %s\nPlayers: %d\n[%s]",
+                gameType,
+                joinCode,
+                playerCount,
+                playerList
+        ));
+        info.setTextColor(Color.BLACK);
+        info.setTextSize(18);
+        info.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
+        info.setPadding(40, 40, 40, 40);
+
+        card.addView(info);
+
+        // Click → Go to lobby
+        card.setOnClickListener(v -> {
+            Intent intent = new Intent(FindLobbyActivity.this, LobbyViewActivity.class);
+            intent.putExtra("JOINCODE", joinCode);
+            intent.putExtra("GAMETYPE", gameType);
+            intent.putExtra("USERNAME", username);
+            startActivity(intent);
+        });
+
+        lobbyListLayout.addView(card);
+    }
+
     private void setDynamicBackground(ConstraintLayout layout, String gameType) {
         int[] colors;
 

@@ -19,6 +19,8 @@
         <service android:name=".services.MusicService" />
 
         <!-- New Account Activity -->
+        <activity android:name=".FindLobbyActivity"
+            android:exported="false"/>
         <activity android:name=".LeaderboardActivity"
             android:exported="false"/>
         <activity android:name=".FindLobbyActivity"
@@ -61,7 +63,7 @@
             android:name=".ProfileActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".GofishActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

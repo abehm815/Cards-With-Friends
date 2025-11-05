@@ -1,184 +1,265 @@
 package com.example.androidexample;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.constraintlayout.widget.ConstraintSet;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import com.example.androidexample.services.CardView;
+import com.example.androidexample.services.WebSocketListener;
+import com.example.androidexample.services.WebSocketManager;
 
-import java.util.Arrays;
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
-public class GofishActivity extends AppCompatActivity {
+public class GofishActivity extends AppCompatActivity implements WebSocketListener {
+
+    private static final String[] CARD_VALUES = {"A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "K", "Q"};
+    private static final String[] SUIT_VALUES = {"S", "C", "H", "D"};
+
+    private static final float CENTER_X_BIAS = 0.5f;
+    private static final float CENTER_Y_BIAS = 0.75f;
+    private static final float RADIUS_BIAS = 1.4f;
+    private static final float TOTAL_SPREAD = 30f;
+
+    private static final int CARD_WIDTH = 150;
+    private static final int CARD_HEIGHT = 200;
+    private static final int INITIAL_CARD_COUNT = 7;
+
+    private String gameType;
+    private String username;
+    private CardView selectedCard = null;
+    private ConstraintLayout rootLayout;
+    private List<CardView> cards;
+    private String TAG = "yo ts a tag foo: ";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_gofish);
 
-        ConstraintLayout root = findViewById(R.id.rootLayout);
-        Button flipBtn = findViewById(R.id.flipButton);
+        initializeViews();
+        retrieveIntentData();
+        initializeCards();
+        setupCardLayout();
+        animateCardsIntroduction();
+        setupFlipButton();
+    }
 
-        // Create and add card
-        /*
+    private void initializeViews() {
+        rootLayout = findViewById(R.id.rootLayout);
+        cards = new ArrayList<>();
+    }
+
+    private void retrieveIntentData() {
+        Intent intent = getIntent();
+        gameType = intent.getStringExtra("GAMETYPE");
+        username = intent.getStringExtra("USERNAME");
+        username = "bigDon"; // for testing, will be dynamic later on
+    }
+
+    private void initializeCards() {
+        Random rand = new Random(10);
+
+        for (int i = 0; i < INITIAL_CARD_COUNT; i++) {
+            CardView card = createCard(rand);
+            rootLayout.addView(card);
+            cards.add(card);
+        }
+    }
+
+    private CardView createCard(Random rand) {
         CardView card = new CardView(this);
         card.setId(View.generateViewId());
-        card.setLayoutParams(new ConstraintLayout.LayoutParams(300, 400));
-        card.setCard("J", "C", true);
-        root.addView(card);
+        card.setLayoutParams(new ConstraintLayout.LayoutParams(CARD_WIDTH, CARD_HEIGHT));
+        card.setClickable(true);
+        card.setFocusable(true);
 
-        // Position the card slightly below center
+        int cardValueIndex = rand.nextInt(CARD_VALUES.length);
+        int suitValueIndex = rand.nextInt(SUIT_VALUES.length);
+        card.setCard(CARD_VALUES[cardValueIndex], SUIT_VALUES[suitValueIndex], true);
+
+        return card;
+    }
+
+    private void setupCardLayout() {
         ConstraintSet set = new ConstraintSet();
-        set.clone(root);
-        set.connect(card.getId(), ConstraintSet.LEFT, root.getId(), ConstraintSet.LEFT, 0);
-        set.connect(card.getId(), ConstraintSet.RIGHT, root.getId(), ConstraintSet.RIGHT, 0);
-        set.connect(card.getId(), ConstraintSet.TOP, root.getId(), ConstraintSet.TOP, 0);
-        set.connect(card.getId(), ConstraintSet.BOTTOM, root.getId(), ConstraintSet.BOTTOM, 0);
+        set.clone(rootLayout);
+        applyArcConstraints(set, cards);
+        set.applyTo(rootLayout);
+    }
 
-        // Bias it toward the bottom (0.0 = top, 1.0 = bottom)
-        set.setVerticalBias(card.getId(), 0.75f); // 75% down the screen
-        set.applyTo(root);
+    private void applyArcConstraints(ConstraintSet set, List<CardView> cardList) {
+        int n = cardList.size();
+        if (n == 0) return;
 
-        // Flip animation
-        flipBtn.setOnClickListener(v -> card.flipCard());
-
-        */
-
-        CardView card1 = new CardView(this);
-        card1.setId(View.generateViewId());
-        card1.setLayoutParams(new ConstraintLayout.LayoutParams(150,200));
-        card1.setCard("4", "C", true);
-        root.addView(card1);
-
-        CardView card2 = new CardView(this);
-        card2.setId(View.generateViewId());
-        card2.setLayoutParams(new ConstraintLayout.LayoutParams(150,200));
-        card2.setCard("4", "S", true);
-        root.addView(card2);
-
-        CardView card3 = new CardView(this);
-        card3.setId(View.generateViewId());
-        card3.setLayoutParams(new ConstraintLayout.LayoutParams(150,200));
-        card3.setCard("4", "H", true);
-        root.addView(card3);
-
-        CardView card4 = new CardView(this);
-        card4.setId(View.generateViewId());
-        card4.setLayoutParams(new ConstraintLayout.LayoutParams(150,200));
-        card4.setCard("4", "D", true);
-        root.addView(card4);
-
-        CardView card5 = new CardView(this);
-        card5.setId(View.generateViewId());
-        card5.setLayoutParams(new ConstraintLayout.LayoutParams(150,200));
-        card5.setCard("4", "H", true);
-        root.addView(card5);
-
-        CardView card6 = new CardView(this);
-        card6.setId(View.generateViewId());
-        card6.setLayoutParams(new ConstraintLayout.LayoutParams(150,200));
-        card6.setCard("4", "D", true);
-        root.addView(card6);
-
-        CardView card7 = new CardView(this);
-        card7.setId(View.generateViewId());
-        card7.setLayoutParams(new ConstraintLayout.LayoutParams(150,200));
-        card7.setCard("4", "H", true);
-        root.addView(card7);
-
-
-
-        // ---------- Dynamic fan layout (replace your ConstraintSet loop) ----------
-        ConstraintSet set = new ConstraintSet();
-        set.clone(root);
-
-// Put your cards into an array (works for any length)
-        CardView[] cards = { card1, card2, card3, card4, card5, card6, card7};
-
-        int n = cards.length;
-        if (n == 0) return; // nothing to do
-
-// Horizontal bias start and spacing (tweak to taste)
-        float startBias = 0.2f;    // leftmost bias
-        float endBias   = 0.8f;    // rightmost bias
-
-// Total angular spread in degrees (tweak: bigger = wider fan)
-        float totalSpread = 40f; // degrees; spread across all cards
-
-// Compute bias step so cards spread evenly across the available range
-        float biasStep = (n == 1) ? 0f : (endBias - startBias) / (n - 1);
-
-// If you want rotation to be symmetric about center, compute per-card angle:
-// For n==1 -> 0 degrees. For n>1 -> angles from -totalSpread/2 to +totalSpread/2
-        float angleStep = (n == 1) ? 0f : totalSpread / (n - 1);
-        float firstAngle = -totalSpread / 2f;
-
-        int midN = n / 2;
-        float verticalOffset = 0.05f / midN;
-
+        float startAngle = -TOTAL_SPREAD / 2f;
+        float angleStep = (n == 1) ? 0f : TOTAL_SPREAD / (n - 1);
 
         for (int i = 0; i < n; i++) {
-
-
-            CardView card = cards[i];
+            CardView card = cardList.get(i);
             int id = card.getId();
 
-            // Connect to parent's edges so bias applies (centered within parent)
-            set.connect(id, ConstraintSet.LEFT, root.getId(), ConstraintSet.LEFT, 0);
-            set.connect(id, ConstraintSet.RIGHT, root.getId(), ConstraintSet.RIGHT, 0);
-            set.connect(id, ConstraintSet.TOP, root.getId(), ConstraintSet.TOP, 0);
-            set.connect(id, ConstraintSet.BOTTOM, root.getId(), ConstraintSet.BOTTOM, 0);
+            // Connect card to parent edges
+            set.connect(id, ConstraintSet.LEFT, rootLayout.getId(), ConstraintSet.LEFT, 0);
+            set.connect(id, ConstraintSet.RIGHT, rootLayout.getId(), ConstraintSet.RIGHT, 0);
+            set.connect(id, ConstraintSet.TOP, rootLayout.getId(), ConstraintSet.TOP, 0);
+            set.connect(id, ConstraintSet.BOTTOM, rootLayout.getId(), ConstraintSet.BOTTOM, 0);
 
-            // Vertical placement: near bottom
-            if(i < midN){
-                set.setVerticalBias(id, 0.80f - (i % midN * verticalOffset));
-            } else if(i > midN) {
-                set.setVerticalBias(id, 0.75f + (i % (midN + 1) * verticalOffset));
-            } else if(i == midN){
-                set.setVerticalBias(id, 0.75f);
-            }
+            // Calculate arc position
+            float angle = startAngle + i * angleStep;
+            double rad = Math.toRadians(angle);
+            float xBias = (float) (CENTER_X_BIAS + RADIUS_BIAS * Math.sin(rad));
+            float yBias = (float) (CENTER_Y_BIAS + RADIUS_BIAS * (1 - Math.cos(rad)));
 
+            // Clamp values to valid range
+            xBias = Math.max(0f, Math.min(1f, xBias));
+            yBias = Math.max(0f, Math.min(1f, yBias));
 
-            // Horizontal bias spaced across startBias...endBias
-            set.setHorizontalBias(id, startBias + i * biasStep);
+            set.setHorizontalBias(id, xBias);
+            set.setVerticalBias(id, yBias);
         }
+    }
 
-// Apply constraints first so cards have a measured size when we rotate
-        set.applyTo(root);
+    private void animateCardsIntroduction() {
+        int n = cards.size();
+        float startAngle = -TOTAL_SPREAD / 2f;
+        float angleStep = (n == 1) ? 0f : TOTAL_SPREAD / (n - 1);
 
-// Now set pivots + rotation AFTER layout pass so width/height are available.
-// Use post() to run after layout. Also add optional animation.
         for (int i = 0; i < n; i++) {
-            final CardView card = cards[i];
-            final float targetAngle = firstAngle + i * angleStep; // computed angle
+            final CardView card = cards.get(i);
+            final float targetAngle = startAngle + i * angleStep;
+            final int index = i;
+
             card.post(() -> {
-                // pivot is bottom-center so cards rotate like a hand
                 card.setPivotX(card.getWidth() / 2f);
                 card.setPivotY(card.getHeight());
+                card.setRotation(0f);
 
-                // instantly set rotation:
-                card.setRotation(targetAngle);
-
-                // — optional: animate instead of instantly set —
-                // uncomment the block below to animate the fan opening
-
-        card.setRotation(0f); // start flat (or some initial)
-        int index = Arrays.asList(cards).indexOf(card); // or capture i in outer scope
-        long delay = index * 80L; // stagger (ms)
-        card.animate()
-            .rotation(targetAngle)
-            .setStartDelay(delay)
-            .setDuration(350)
-            .start();
-
+                card.animate()
+                        .rotation(targetAngle)
+                        .setStartDelay(index * 80L)
+                        .setDuration(350)
+                        .start();
             });
         }
+    }
 
+    private void setupFlipButton() {
+        Button flipBtn = findViewById(R.id.flipButton);
+        flipBtn.setOnClickListener(v -> removeFirstCard());
+    }
 
+    private void removeFirstCard() {
+        if (cards.isEmpty()) return;
 
-        flipBtn.setOnClickListener(v -> card7.flipCard());
+        CardView cardToDelete = cards.get(0);
 
+        cardToDelete.animate()
+                .alpha(0f)
+                .translationY(-150f)
+                .setDuration(250)
+                .withEndAction(() -> {
+                    rootLayout.removeView(cardToDelete);
+                    cards.remove(cardToDelete);
+                    selectedCard = null;
+                    relayoutHand(cards, rootLayout);
+                })
+                .start();
+    }
+
+    private void relayoutHand(List<CardView> cardList, ConstraintLayout root) {
+        int n = cardList.size();
+        if (n == 0) return;
+
+        ConstraintSet set = new ConstraintSet();
+        set.clone(root);
+        applyArcConstraints(set, cardList);
+
+        // Animate movement between constraints
+        androidx.transition.TransitionManager.beginDelayedTransition(root);
+        set.applyTo(root);
+
+        // Animate rotation back into fan shape
+        animateCardRotations(cardList);
+    }
+
+    private void animateCardRotations(List<CardView> cardList) {
+        int n = cardList.size();
+        float startAngle = -TOTAL_SPREAD / 2f;
+        float angleStep = (n == 1) ? 0f : TOTAL_SPREAD / (n - 1);
+
+        for (int i = 0; i < n; i++) {
+            final CardView card = cardList.get(i);
+            final float targetAngle = startAngle + i * angleStep;
+            final int index = i;
+
+            card.post(() -> {
+                card.setPivotX(card.getWidth() / 2f);
+                card.setPivotY(card.getHeight());
+                card.animate()
+                        .rotation(targetAngle)
+                        .setStartDelay(index * 60L)
+                        .setDuration(250)
+                        .start();
+            });
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        // Connect to your WebSocket that sends lobby updates
+        String wsUrl = "ws://coms-3090-006.class.las.iastate.edu:8080/ws/gofish";
+        WebSocketManager.getInstance().connectWebSocket(wsUrl);
+        WebSocketManager.getInstance().setWebSocketListener(this);
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        WebSocketManager.getInstance().disconnectWebSocket();
+    }
+
+    // ----------------------- WEBSOCKET CALLBACKS -----------------------
+
+    @Override
+    public void onWebSocketOpen(ServerHandshake handshakedata) {
+        Log.d(TAG, "Connected to lobby WebSocket");
+    }
+
+    @Override
+    public void onWebSocketMessage(String message) {
+        Log.d(TAG, "Received message: " + message);
+
+        runOnUiThread(() -> {
+            try {
+                JSONObject json = new JSONObject(message);
+
+            } catch (JSONException e) {
+                Log.e(TAG, "Error parsing JSON", e);
+            }
+        });
+    }
+
+    @Override
+    public void onWebSocketClose(int code, String reason, boolean remote) {
+        Log.d(TAG, "WebSocket closed: " + reason);
+    }
+
+    @Override
+    public void onWebSocketError(Exception ex) {
+        Log.e(TAG, "WebSocket error", ex);
     }
 }

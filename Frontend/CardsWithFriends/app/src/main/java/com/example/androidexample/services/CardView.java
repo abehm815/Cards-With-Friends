@@ -7,6 +7,7 @@ import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.graphics.*;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
@@ -41,6 +42,8 @@ public class CardView extends View {
 
         // Enable hardware acceleration for smoother 3D rotation
         setLayerType(LAYER_TYPE_HARDWARE, null);
+
+
     }
 
     public void setCard(String rank, String suit, boolean faceUp) {
@@ -49,6 +52,65 @@ public class CardView extends View {
         this.faceUp = faceUp;
         invalidate();
     }
+
+    private float dX, dY;
+    private float startX, startY;
+    private float startRotation; // store original rotation
+
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                // Remember original position and rotation
+                startX = getX();
+                startY = getY();
+                startRotation = getRotation();
+
+                // Record offset between touch and card position
+                dX = event.getRawX() - getX();
+                dY = event.getRawY() - getY();
+
+                // Straighten and "lift" the card
+                animate()
+                        .rotation(0f)         // straighten to vertical
+                        .scaleX(1.15f)
+                        .scaleY(1.15f)
+                        .setDuration(150)
+                        .start();
+                setElevation(25f);
+                return true;
+
+            case MotionEvent.ACTION_MOVE:
+                // Move with finger
+                float newX = event.getRawX() - dX;
+                float newY = event.getRawY() - dY;
+                setX(newX);
+                setY(newY);
+                return true;
+
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                // Animate back to original position and rotation
+                animate()
+                        .x(startX)
+                        .y(startY)
+                        .rotation(startRotation)
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .setDuration(350)
+                        .withEndAction(() -> setElevation(0f))
+                        .start();
+                return true;
+        }
+
+        return super.onTouchEvent(event);
+    }
+
+
+
+
+
 
     /** flip animation */
     public void flipCard() {
