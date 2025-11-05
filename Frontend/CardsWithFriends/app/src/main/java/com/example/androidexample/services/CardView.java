@@ -187,12 +187,24 @@ public class CardView extends View {
     }
 
     private String formatRank(String rank) {
-        switch (rank) {
-            case "a": return "A";
-            case "k": return "K";
-            case "q": return "Q";
-            case "j": return "J";
-            default:  return rank.toUpperCase();
+        try {
+            int value = Integer.parseInt(rank);
+            switch (value) {
+                case 11: return "J";
+                case 12: return "Q";
+                case 13: return "K";
+                case 14: return "A";
+                default: return String.valueOf(value);
+            }
+        } catch (NumberFormatException e) {
+            // fallback in case rank isn’t numeric
+            switch (rank.toLowerCase()) {
+                case "a": return "A";
+                case "k": return "K";
+                case "q": return "Q";
+                case "j": return "J";
+                default:  return rank.toUpperCase();
+            }
         }
     }
 

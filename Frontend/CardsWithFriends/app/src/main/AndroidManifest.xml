@@ -23,7 +23,9 @@
             android:exported="false"/>
         <activity android:name=".LeaderboardActivity"
             android:exported="false"/>
-        <activity android:name=".MainActivity"
+        <activity android:name=".FindLobbyActivity"
+            android:exported="false"/>
+        <activity android:name=".GofishActivity"
             android:exported="false"/>
         <activity android:name=".BlackjackActivity"
             android:exported="false"/>

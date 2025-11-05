@@ -11,7 +11,7 @@ public class GoFishStats extends GameStats {
     private int booksCollected;
     private int gamesWon;
 
-    protected GoFishStats() { }
+    public GoFishStats() { }
 
     public GoFishStats(int fishing, int questionsAsked, int books, int gamesWon) {
         this.timesWentFishing = fishing;

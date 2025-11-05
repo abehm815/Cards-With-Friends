@@ -72,12 +72,37 @@ public class LobbyWebSocket {
                           @PathParam("username") String username,
                           String message) throws IOException {
 
-        // Optionally validate user here again or trust previous validation
-        broadcastJson(joinCode, Map.of(
-                "type", "MESSAGE",
-                "username", username,
-                "message", message
-        ));
+        Map<String, Object> msg = mapper.readValue(message, Map.class);
+        String type = (String) msg.get("type");
+
+        if (type == null) {
+            return;
+        }
+
+        switch (type.toUpperCase()) {
+            case "START":
+                // Broadcast start event
+                broadcastJson(joinCode, Map.of(
+                        "type", "START",
+                        "username", username,
+                        "message", username + " has started the game."
+                ));
+                System.out.println("Game started by " + username + " in lobby " + joinCode);
+                break;
+
+            case "MESSAGE":
+                // Regular chat message
+                broadcastJson(joinCode, Map.of(
+                        "type", "MESSAGE",
+                        "username", username,
+                        "message", msg.get("message")
+                ));
+                break;
+
+            default:
+                System.out.println("Unknown message type: " + type);
+                break;
+        }
     }
 
     @OnClose
