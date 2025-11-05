@@ -76,9 +76,13 @@ public class BlackJackGame {
 
         // Clear all player hands
         for (BlackJackPlayer player : players) {
-            player.getHand().clear();
-            player.setBetOnCurrentHand(0);
+            for (List<BlackJackCard> hand : player.getHands()) {
+                hand.clear();
+            }
+            player.setHasBet(false);
             player.setHasStood(false);
+            player.resetAllBets();
+            player.resetAllHasStood();
         }
         System.out.println("New round started. Waiting for all players to place bets...");
     }
@@ -97,6 +101,13 @@ public class BlackJackGame {
         if (allBetsPlaced) {
             System.out.println("All bets placed. Dealing cards...");
             dealInitialCards();
+            for(BlackJackPlayer user : players){
+                if(user.calculateHandValue(user.getHand())==21){
+                    user.setHasStood(true);
+                }
+            }
+            currentPlayerIndex--;
+            advanceTurn();
             notifyCurrentPlayerTurn();
         }
     }
@@ -164,8 +175,12 @@ public class BlackJackGame {
         }
     }
     private void advanceTurn() {
-        currentPlayerIndex++;
+        // Move to next player who hasn't stood yet
+        do {
+            currentPlayerIndex++;
+        } while (currentPlayerIndex < players.size() && players.get(currentPlayerIndex).getHasStoodForHand());
 
+        // If all players are done, let dealer play and end round
         if (currentPlayerIndex >= players.size()) {
             dealer.playTurn(deck);
             compareHandsAndResolveBets();
@@ -227,20 +242,6 @@ public class BlackJackGame {
         System.out.println(username + " stands.");
     }
 
-    private void nextTurn() {
-        // Move to next player who hasn’t stood/busted
-        do {
-            currentPlayerIndex++;
-        } while (currentPlayerIndex <= players.size() &&
-                (players.get(currentPlayerIndex).getHasStoodForHand() || players.get(currentPlayerIndex).getHandValue() > 21));
-
-        if (currentPlayerIndex > players.size()) {
-            // All players done — dealer plays
-            dealer.playTurn(deck);
-            compareHandsAndResolveBets();
-            roundInProgress = false;
-        }
-    }
 
     public void playerHit(String username) {
         BlackJackPlayer player = getPlayer(username);
@@ -398,13 +399,15 @@ public class BlackJackGame {
                     int handValue = player.getHandValue(hand);
                     int bet = (bets != null && i < bets.size()) ? bets.get(i) : 0;
                     boolean hasStood = player.getHasStoodForHand();
+                    boolean canSplit = player.canSplit();
 
                     playerHands.add(Map.of(
                             "handIndex", i,
                             "hand", hand,
                             "handValue", handValue,
                             "bet", bet,
-                            "hasStood", hasStood
+                            "hasStood", hasStood,
+                            "canSplit", canSplit
                     ));
                 }
             } catch (Exception e) {

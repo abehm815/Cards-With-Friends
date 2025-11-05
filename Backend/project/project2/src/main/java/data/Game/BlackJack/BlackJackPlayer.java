@@ -14,7 +14,7 @@ public class BlackJackPlayer {
     private List<Boolean> hasStoodForHand;
     private boolean hasBet;
 
-    public BlackJackPlayer(String username,int chips) {
+    public BlackJackPlayer(String username, int chips) {
         this.username = username;
         this.hands = new ArrayList<>();
         this.hands.add(new ArrayList<>()); // first hand
@@ -27,6 +27,7 @@ public class BlackJackPlayer {
 
     /**
      * Gets username
+     *
      * @return username
      */
     public String getUsername() {
@@ -35,6 +36,7 @@ public class BlackJackPlayer {
 
     /**
      * Gets hand
+     *
      * @return hand
      */
     public List<BlackJackCard> getHand() {
@@ -45,8 +47,13 @@ public class BlackJackPlayer {
         return hands;
     }
 
+    public int getCurrentHandIndex() {
+        return currentHandIndex;
+    }
+
     /**
      * Gets chips
+     *
      * @return chips
      */
     public int getChips() {
@@ -59,6 +66,7 @@ public class BlackJackPlayer {
 
     /**
      * Adds a card to the player's hand
+     *
      * @param card basic MyCard
      */
     public void addCard(BlackJackCard card) {
@@ -66,9 +74,10 @@ public class BlackJackPlayer {
     }
 
 
-    public int  getBetOnCurrentHand() {
+    public int getBetOnCurrentHand() {
         return betOnCurrentHand.get(currentHandIndex);
     }
+
     public void setBetOnCurrentHand(int bet) {
         betOnCurrentHand.set(currentHandIndex, bet);
     }
@@ -87,6 +96,7 @@ public class BlackJackPlayer {
         return hasStoodForHand.get(currentHandIndex);
     }
 
+
     public void setHasStood(Boolean hasStood) {
         hasStoodForHand.set(currentHandIndex, hasStood);
     }
@@ -94,6 +104,7 @@ public class BlackJackPlayer {
     public boolean getHasBet() {
         return hasBet;
     }
+
     public void setHasBet(boolean hasBet) {
         this.hasBet = hasBet;
     }
@@ -105,9 +116,11 @@ public class BlackJackPlayer {
     public int getHandValue(List<BlackJackCard> hand) {
         return calculateHandValue(hand);
     }
+
     /**
      * Calculates the total Blackjack value of the player's hand.
      * Handles Aces as 1 or 11 optimally.
+     *
      * @return total hand value
      */
     public int calculateHandValue(List<BlackJackCard> hand) {
@@ -135,7 +148,7 @@ public class BlackJackPlayer {
 
     public boolean canSplit() {
         List<BlackJackCard> hand = getHand();
-        return hand.size() == 2 && ((hand.get(0).getValue())==(hand.get(1).getValue()));
+        return hand.size() == 2 && ((hand.get(0).getValue()) == (hand.get(1).getValue()));
     }
 
     public void moveToNextHand() {
@@ -146,5 +159,16 @@ public class BlackJackPlayer {
 
     public boolean isOnLastHand() {
         return currentHandIndex >= hands.size() - 1;
+    }
+
+    public void resetAllBets() {
+        for (int i = 0; i < betOnCurrentHand.size(); i++) {
+            betOnCurrentHand.set(i, 0);
+        }
+    }
+    public void resetAllHasStood() {
+        for (int i = 0; i < hasStoodForHand.size(); i++) {
+            hasStoodForHand.set(i, false);
+        }
     }
 }
