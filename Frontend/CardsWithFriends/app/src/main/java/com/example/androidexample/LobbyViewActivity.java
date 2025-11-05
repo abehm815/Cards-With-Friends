@@ -42,6 +42,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
     private String gameType;
     private String joinCode;
     private String username;
+    private Boolean isHost;
     private TextView gameTypeTxt;
     private TextView joinCodeTxt;
     private LinearLayout userListLayout;
@@ -54,6 +55,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
 
     // Chat UI
     private LinearLayout chatMessagesLayout;
+    private TextView chatUnreadLabel;
     private ScrollView chatScroll;
     private BottomSheetDialog chatDialog;
 
@@ -70,11 +72,19 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         deleteBtn = findViewById(R.id.lobbyview_close_btn);
         leaveBtn = findViewById(R.id.lobbyview_leave_btn);
         startBtn = findViewById(R.id.lobbyview_start_btn);
+        chatUnreadLabel = findViewById(R.id.chat_unread_label);
 
         Intent intent = getIntent();
         gameType = intent.getStringExtra("GAMETYPE");
         username = intent.getStringExtra("USERNAME");
         joinCode = intent.getStringExtra("JOINCODE");
+
+
+        isHost = intent.getBooleanExtra("HOST", false);
+        if (!isHost) {
+            startBtn.setVisibility(View.GONE);
+            deleteBtn.setVisibility(View.GONE);
+        }
 
         gameTypeTxt.setText(gameType);
         joinCodeTxt.setText(joinCode);
@@ -103,7 +113,6 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
     protected void onStop() {
         super.onStop();
         if (chatDialog != null && chatDialog.isShowing()) chatDialog.dismiss();
-        WebSocketManager.getInstance().disconnectWebSocket();
     }
 
     // -----------------------WEBSOCKET METHODS--------------------
@@ -138,6 +147,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                                 i.putExtra("GAMETYPE", gameType);
                                 i.putExtra("USERNAME", username);
                                 i.putExtra("JOINCODE", joinCode);
+                                i.putExtra("HOST", isHost);
                                 i.putStringArrayListExtra("PLAYERS", currentUsers);
                                 startActivity(i);
                             }
@@ -145,6 +155,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                         }
                         else {
                             unreadMessages += 1;
+                            updateUnreadLabel();
                             Message newMessage = new Message(user, msgText, System.currentTimeMillis());
                             chat.add(newMessage);
                             if (chatDialog != null && chatDialog.isShowing()) {
@@ -187,6 +198,15 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
 
         card.addView(userText);
         return card;
+    }
+    private void updateUnreadLabel() {
+        if (chatUnreadLabel == null) return;
+        if (unreadMessages > 0) {
+            chatUnreadLabel.setText(unreadMessages + " unread");
+            chatUnreadLabel.setVisibility(View.VISIBLE);
+        } else {
+            chatUnreadLabel.setVisibility(View.GONE);
+        }
     }
 
     private void addUserCard(String username) { userListLayout.addView(createUserCard(username)); }
@@ -326,6 +346,9 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         });
 
         chatDialog.show();
+
+        unreadMessages = 0;
+        updateUnreadLabel();
 
         // Hook up views
         chatMessagesLayout = sheetView.findViewById(R.id.chat_messages_layout);
