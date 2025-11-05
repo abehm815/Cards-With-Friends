@@ -163,13 +163,16 @@ public class GoFishGame {
         }
 
         // Update wins and games played stats
-        for (GoFishPlayer player : players) {
-            GoFishStats stats = player.getStats();
-            if (stats != null) {
-                stats.addGamePlayed();
-                if (player == winner) { stats.addGameWon(); }
+        if(this.isGameOver()) {
+            for (GoFishPlayer player : players) {
+                GoFishStats stats = player.getStats();
+                if (stats != null) {
+                    stats.addGamePlayed();
+                    if (player == winner) { stats.addGameWon(); }
+                }
             }
         }
+
         return winner;
     }
 }
