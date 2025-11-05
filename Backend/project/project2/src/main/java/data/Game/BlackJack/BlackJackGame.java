@@ -106,6 +106,7 @@ public class BlackJackGame {
                     user.setHasStood(true);
                 }
             }
+            currentPlayerIndex--;
             advanceTurn();
             notifyCurrentPlayerTurn();
         }
