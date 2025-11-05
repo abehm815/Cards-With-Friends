@@ -23,7 +23,7 @@
             android:exported="false"/>
         <activity android:name=".LeaderboardActivity"
             android:exported="false"/>
-        <activity android:name=".GofishActivity"
+        <activity android:name=".MainActivity"
             android:exported="false"/>
         <activity android:name=".BlackjackActivity"
             android:exported="false"/>
@@ -61,7 +61,7 @@
             android:name=".ProfileActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".GofishActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

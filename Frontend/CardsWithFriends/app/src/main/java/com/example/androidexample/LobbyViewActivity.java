@@ -272,7 +272,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                     try {
                         if (response.getString("message").equals("success")) {
                             Toast.makeText(getApplicationContext(), "Lobby left!", Toast.LENGTH_SHORT).show();
-                            Intent intent = new Intent(this, JoinActivity.class);
+                            Intent intent = new Intent(this, LobbyActivity.class);
                             intent.putExtra("USERNAME", username);
                             intent.putExtra("GAMETYPE", gameType);
                             startActivity(intent);

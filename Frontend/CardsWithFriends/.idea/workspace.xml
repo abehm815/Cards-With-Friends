@@ -2,7 +2,17 @@
 <project version="4">
   <component name="AndroidLayouts">
     <layouts>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_findlobby.xml">
+        <config>
+          <theme>@style/Theme.AndroidExample</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_leaderboard.xml">
+        <config>
+          <theme>@style/Theme.AndroidExample</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_lobby.xml">
         <config>
           <theme>@style/Theme.AndroidExample</theme>
         </config>
@@ -20,15 +30,19 @@
     </layouts>
   </component>
   <component name="AutoImportSettings">
-    <option name="autoReloadType" value="SELECTIVE" />
+    <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b105e4a7-8139-4580-a8fc-d9ed5517d7b4" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/deviceStreaming.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/FindLobbyActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/FindLobbyActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_findlobby.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_findlobby.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/GofishActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/GofishActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/LobbyViewActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/LobbyViewActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/services/CardView.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/services/CardView.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/reports/problems/problems-report.html" beforeDir="false" afterPath="$PROJECT_DIR$/build/reports/problems/problems-report.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/local.properties" beforeDir="false" afterPath="$PROJECT_DIR$/local.properties" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +52,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=C:\Users\alexb\.android\avd\Medium_Phone.avd), DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=C:\Users\alexb\.android\avd\Pixel_5.avd)]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=C:\Users\elihe\.android\avd\Pixel_4a.avd)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -144,6 +158,13 @@
     </configuration>
   </component>
   <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b105e4a7-8139-4580-a8fc-d9ed5517d7b4" name="Changes" comment="" />
+      <created>1762223328772</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1762223328772</updated>
+    </task>
     <servers />
   </component>
   <component name="play_dynamic_filters_status">
@@ -151,12 +172,12 @@
       <map>
         <entry key="com.example.androidexample">
           <value>
-            <CheckInfo lastCheckTimestamp="1762138574556" />
+            <CheckInfo lastCheckTimestamp="1762380562658" />
           </value>
         </entry>
         <entry key="com.example.androidexample.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1762138574555" />
+            <CheckInfo lastCheckTimestamp="1762380562658" />
           </value>
         </entry>
       </map>
