@@ -107,6 +107,9 @@ public class GoFishServer {
             return;
         }
 
+        String currentTurn = game.getCurrentPlayerUsername();
+        broadcast(lobbyCode, "It is now " + currentTurn + "'s turn.");
+
         broadcastGameState(lobbyCode);
     }
 
@@ -169,9 +172,16 @@ public class GoFishServer {
     private void broadcastGameState(String lobbyCode) {
         GoFishGame game = goFishService.getGame(lobbyCode);
         if (game != null) {
-            String json;
             try {
-                json = mapper.writeValueAsString(game);
+                // Create a JSON object that includes the game and the current turn
+                Map<String, Object> state = Map.of(
+                        "type", "gameState",
+                        "currentTurn", game.getCurrentPlayerUsername(),
+                        "game", game
+                );
+
+                String json = mapper.writeValueAsString(state);
+
                 for (Session s : lobbySessions.getOrDefault(lobbyCode, Set.of())) {
                     s.getBasicRemote().sendText(json);
                 }
