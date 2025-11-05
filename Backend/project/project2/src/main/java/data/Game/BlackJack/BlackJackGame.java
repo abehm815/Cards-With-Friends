@@ -76,9 +76,13 @@ public class BlackJackGame {
 
         // Clear all player hands
         for (BlackJackPlayer player : players) {
-            player.getHand().clear();
-            player.setBetOnCurrentHand(0);
+            for (List<BlackJackCard> hand : player.getHands()) {
+                hand.clear();
+            }
+            player.setHasBet(false);
             player.setHasStood(false);
+            player.resetAllBets();
+            player.resetAllHasStood();
         }
         System.out.println("New round started. Waiting for all players to place bets...");
     }
