@@ -97,6 +97,12 @@ public class BlackJackGame {
         if (allBetsPlaced) {
             System.out.println("All bets placed. Dealing cards...");
             dealInitialCards();
+            for(BlackJackPlayer user : players){
+                if(user.calculateHandValue(user.getHand())==21){
+                    user.setHasStood(true);
+                }
+            }
+            advanceTurn();
             notifyCurrentPlayerTurn();
         }
     }
@@ -164,8 +170,12 @@ public class BlackJackGame {
         }
     }
     private void advanceTurn() {
-        currentPlayerIndex++;
+        // Move to next player who hasn't stood yet
+        do {
+            currentPlayerIndex++;
+        } while (currentPlayerIndex < players.size() && players.get(currentPlayerIndex).getHasStoodForHand());
 
+        // If all players are done, let dealer play and end round
         if (currentPlayerIndex >= players.size()) {
             dealer.playTurn(deck);
             compareHandsAndResolveBets();
@@ -227,20 +237,6 @@ public class BlackJackGame {
         System.out.println(username + " stands.");
     }
 
-    private void nextTurn() {
-        // Move to next player who hasn’t stood/busted
-        do {
-            currentPlayerIndex++;
-        } while (currentPlayerIndex <= players.size() &&
-                (players.get(currentPlayerIndex).getHasStoodForHand() || players.get(currentPlayerIndex).getHandValue() > 21));
-
-        if (currentPlayerIndex > players.size()) {
-            // All players done — dealer plays
-            dealer.playTurn(deck);
-            compareHandsAndResolveBets();
-            roundInProgress = false;
-        }
-    }
 
     public void playerHit(String username) {
         BlackJackPlayer player = getPlayer(username);
@@ -398,13 +394,15 @@ public class BlackJackGame {
                     int handValue = player.getHandValue(hand);
                     int bet = (bets != null && i < bets.size()) ? bets.get(i) : 0;
                     boolean hasStood = player.getHasStoodForHand();
+                    boolean canSplit = player.canSplit();
 
                     playerHands.add(Map.of(
                             "handIndex", i,
                             "hand", hand,
                             "handValue", handValue,
                             "bet", bet,
-                            "hasStood", hasStood
+                            "hasStood", hasStood,
+                            "canSplit", canSplit
                     ));
                 }
             } catch (Exception e) {
