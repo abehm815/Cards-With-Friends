@@ -108,6 +108,7 @@ public class JoinActivity extends AppCompatActivity {
                                         intent.putExtra("USERNAME", username);
                                         intent.putExtra("GAMETYPE", gameType);
                                         intent.putExtra("JOINCODE", code);
+                                        intent.putExtra("HOST", false);
                                         startActivity(intent);
                                     }
                                     else {

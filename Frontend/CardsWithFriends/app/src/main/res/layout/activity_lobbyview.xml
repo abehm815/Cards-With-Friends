@@ -108,17 +108,37 @@
             android:gravity="center_horizontal" />
     </ScrollView>
 
-    <!-- Chat Button -->
-    <ImageView
-        android:id="@+id/chat_button"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:src="@drawable/chaticon"
-        android:contentDescription="Chat Button"
+    <!-- Chat Button + Unread Label -->
+    <LinearLayout
+        android:id="@+id/chat_button_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_marginStart="24dp"
-        android:layout_marginBottom="24dp"
-        app:tint="@android:color/white" />
+        android:layout_marginBottom="24dp">
+
+        <ImageView
+            android:id="@+id/chat_button"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/chaticon"
+            android:contentDescription="Chat Button"
+            app:tint="@android:color/white" />
+
+        <TextView
+            android:id="@+id/chat_unread_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@android:color/white"
+            android:textSize="13sp"
+            android:gravity="center"
+            android:visibility="gone"
+            android:layout_marginTop="4dp" />
+    </LinearLayout>
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
