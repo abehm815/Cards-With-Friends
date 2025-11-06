@@ -80,6 +80,8 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         joinCode = intent.getStringExtra("JOINCODE");
 
 
+
+
         isHost = intent.getBooleanExtra("HOST", false);
         if (!isHost) {
             startBtn.setVisibility(View.GONE);
@@ -150,8 +152,23 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                                 i.putExtra("HOST", isHost);
                                 i.putStringArrayListExtra("PLAYERS", currentUsers);
                                 startActivity(i);
+                            } else if (gameType.equals("GOFISH") || gameType.equals("GO FISH")) {
+                                Intent i = new Intent(LobbyViewActivity.this, GofishActivity.class);
+                                i.putExtra("GAMETYPE", gameType);
+                                i.putExtra("USERNAME", username);
+                                i.putExtra("JOINCODE", joinCode);
+                                i.putExtra("HOST", isHost);
+                                i.putStringArrayListExtra("PLAYERS", currentUsers);
+                                startActivity(i);
+                            } else if(gameType.equals("EUCHRE")){
+                                Intent i = new Intent(LobbyViewActivity.this, GofishActivity.class); //CHANGE THIS SHIT
+                                i.putExtra("GAMETYPE", gameType);
+                                i.putExtra("USERNAME", username);
+                                i.putExtra("JOINCODE", joinCode);
+                                i.putExtra("HOST", isHost);
+                                i.putStringArrayListExtra("PLAYERS", currentUsers);
+                                startActivity(i);
                             }
-                            //TODO IMPLEMENT THE STARTING OF OTHER GAMES
                         }
                         else {
                             unreadMessages += 1;

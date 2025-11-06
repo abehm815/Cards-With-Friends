@@ -15,8 +15,11 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.androidexample.services.VolleySingleton;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import android.util.Log;
+
 
 public class HostActivity extends AppCompatActivity {
 
@@ -41,6 +44,9 @@ public class HostActivity extends AppCompatActivity {
         Intent intent = getIntent();
         gameType = intent.getStringExtra("GAMETYPE");
         username = intent.getStringExtra("USERNAME");
+        Log.d("HELLO", gameType); //TESTING DELETE LATER
+        Log.d("HELLO", username);
+        Log.d("HELLO","WORK PLEASE");
 
         backButton = findViewById(R.id.host_back_btn);
         createLobbyButton = findViewById(R.id.host_create_btn);
@@ -95,13 +101,40 @@ public class HostActivity extends AppCompatActivity {
         createLobbyButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                // If you don't have a code, either require the user to enter one or use autogen endpoint
+                if (code == null || code.isEmpty()) {
+                    Toast.makeText(HostActivity.this, "Please enter a join code or use autogen", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
                 String url = "http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/" + code + "/" + username;
 
-                JSONObject body = new JSONObject();
+                // Normalize gameType to what the backend expects
+                String normalizedGameType = gameType;
+                if (gameType != null) {
+                    // map common client strings to server enum tokens
+                    if ("GOFISH".equalsIgnoreCase(gameType) || "GO FISH".equalsIgnoreCase(gameType) || "GoFish".equalsIgnoreCase(gameType)) {
+                        normalizedGameType = "GO_FISH";
+                    } else {
+                        // keep original upper-case token for other games
+                        normalizedGameType = gameType.toUpperCase();
+                    }
+                } else {
+                    normalizedGameType = "UNKNOWN";
+                }
 
+                JSONObject body = new JSONObject();
                 try {
-                    body.put("gameType", gameType);
+                    body.put("gameType", normalizedGameType);
+
+                    // Add Go Fish specific fields if needed
+                    if ("GO_FISH".equals(normalizedGameType)) {
+                        body.put("users", new JSONArray()); // empty users array is OK; server will add host
+                        body.put("maxPlayers", 4);          // adjust if your backend expects something else
+                        body.put("initialHandSize", 5);     // adjust to match server defaults/requirements
+                    }
                 } catch (JSONException e) {
+                    Log.e("HostActivity", "Failed to build request body", e);
                     Toast.makeText(getApplicationContext(), "Error Creating Request", Toast.LENGTH_LONG).show();
                     return;
                 }
@@ -113,6 +146,7 @@ public class HostActivity extends AppCompatActivity {
                         new Response.Listener<JSONObject>() {
                             @Override
                             public void onResponse(JSONObject response) {
+                                Log.d("HostActivity","Lobby created successfully: " + response.toString());
                                 Toast.makeText(getApplicationContext(), "Lobby Created", Toast.LENGTH_SHORT).show();
                                 Intent intent = new Intent(HostActivity.this, LobbyViewActivity.class);
                                 intent.putExtra("USERNAME", username);
@@ -125,7 +159,21 @@ public class HostActivity extends AppCompatActivity {
                         new Response.ErrorListener() {
                             @Override
                             public void onErrorResponse(VolleyError error) {
-                                Toast.makeText(getApplicationContext(), "Lobby Failed", Toast.LENGTH_LONG).show();
+                                // Detailed logging so we can see what the server returned
+                                if (error.networkResponse != null) {
+                                    int statusCode = error.networkResponse.statusCode;
+                                    String data = "";
+                                    try {
+                                        data = new String(error.networkResponse.data, "UTF-8");
+                                    } catch (Exception ex) {
+                                        data = "Could not decode response body";
+                                    }
+                                    Log.e("HostActivity", "Lobby creation failed. Status: " + statusCode + " Body: " + data);
+                                    Toast.makeText(getApplicationContext(), "Lobby Failed: " + statusCode, Toast.LENGTH_LONG).show();
+                                } else {
+                                    Log.e("HostActivity", "Volley error (no networkResponse): " + error.toString());
+                                    Toast.makeText(getApplicationContext(), "Lobby Failed (network error)", Toast.LENGTH_LONG).show();
+                                }
                             }
                         }
                 );
@@ -133,6 +181,7 @@ public class HostActivity extends AppCompatActivity {
                 VolleySingleton.getInstance(HostActivity.this).addToRequestQueue(postRequest);
             }
         });
+
 
     }
     private void handleCode(Button b) {
