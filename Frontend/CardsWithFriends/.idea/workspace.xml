@@ -61,6 +61,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="resourceFile" />
+        <option value="Class" />
       </list>
     </option>
   </component>
@@ -180,12 +181,12 @@
       <map>
         <entry key="com.example.androidexample">
           <value>
-            <CheckInfo lastCheckTimestamp="1762380562658" />
+            <CheckInfo lastCheckTimestamp="1762375603920" />
           </value>
         </entry>
         <entry key="com.example.androidexample.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1762380562658" />
+            <CheckInfo lastCheckTimestamp="1762375603919" />
           </value>
         </entry>
       </map>
