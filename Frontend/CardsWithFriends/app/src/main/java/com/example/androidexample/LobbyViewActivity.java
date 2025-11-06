@@ -161,6 +161,16 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                             i.putExtra("HOST", isHost);
                             i.putStringArrayListExtra("PLAYERS", currentUsers);
                             startActivity(i);
+                        } else if(gameType.equals("GOFISH")){
+                            Intent i = new Intent(LobbyViewActivity.this, GofishActivity.class);
+                            i.putExtra("GAMETYPE", gameType);
+                            i.putExtra("USERNAME", username);
+                            i.putExtra("JOINCODE", joinCode);
+                            i.putExtra("HOST", isHost);
+                            i.putStringArrayListExtra("PLAYERS", currentUsers);
+                            startActivity(i);
+                        } else if(gameType.equals("EUCHRE")){
+                            //TODO
                         }
                 }
             } catch (JSONException e) {
@@ -284,6 +294,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                     Intent intent = new Intent(this, JoinActivity.class);
                     intent.putExtra("USERNAME", username);
                     intent.putExtra("GAMETYPE", gameType);
+                    WebSocketManager.getInstance().disconnectWebSocket();
                     startActivity(intent);
                 },
                 error -> {
@@ -308,6 +319,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                             Intent intent = new Intent(this, LobbyActivity.class);
                             intent.putExtra("USERNAME", username);
                             intent.putExtra("GAMETYPE", gameType);
+                            WebSocketManager.getInstance().disconnectWebSocket();
                             startActivity(intent);
                         } else {
                             Toast.makeText(getApplicationContext(), "Can't leave lobby", Toast.LENGTH_SHORT).show();

@@ -8,11 +8,15 @@ import android.util.Log;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.content.res.ResourcesCompat;
 
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.services.VolleySingleton;
 import com.example.androidexample.services.WebSocketListener;
 import com.example.androidexample.services.WebSocketManager;
 import com.google.android.material.card.MaterialCardView;
@@ -85,7 +89,7 @@ public class FindLobbyActivity extends AppCompatActivity implements WebSocketLis
     @Override
     protected void onStop() {
         super.onStop();
-        WebSocketManager.getInstance().disconnectWebSocket();
+        //WebSocketManager.getInstance().disconnectWebSocket();
     }
 
     // ----------------------- WEBSOCKET CALLBACKS -----------------------
@@ -181,13 +185,54 @@ public class FindLobbyActivity extends AppCompatActivity implements WebSocketLis
         card.addView(info);
 
         // Click → Go to lobby
+        // inside addLobbyCard(...) replace existing setOnClickListener with this:
         card.setOnClickListener(v -> {
-            Intent intent = new Intent(FindLobbyActivity.this, LobbyViewActivity.class);
-            intent.putExtra("JOINCODE", joinCode);
-            intent.putExtra("GAMETYPE", gameType);
-            intent.putExtra("USERNAME", username);
-            startActivity(intent);
+            String joinUrl = "http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/" + joinCode + "/" + username;
+            Log.d(TAG, "Attempting to join via: " + joinUrl);
+
+            JsonObjectRequest joinRequest = new JsonObjectRequest(
+                    Request.Method.PUT,
+                    joinUrl,
+                    null,
+                    response -> {
+                        try {
+                            String message = response.getString("message");
+                            if ("success".equalsIgnoreCase(message)) {
+                                // clean up the lobby-list websocket first (important)
+                                WebSocketManager.getInstance().disconnectWebSocket();
+
+                                // start LobbyViewActivity (only on successful join)
+                                Intent intent = new Intent(FindLobbyActivity.this, LobbyViewActivity.class);
+                                intent.putExtra("JOINCODE", joinCode);
+                                Log.d("HElLO",joinCode);
+                                Log.d("HElLO",username);
+                                Log.d("HELLO",gameType);
+                                intent.putExtra("GAMETYPE", gameType);
+                                intent.putExtra("USERNAME", username);
+                                intent.putExtra("HOST", false);
+                                WebSocketManager.getInstance().disconnectWebSocket();
+                                startActivity(intent);
+                            } else {
+                                Log.e(TAG, "Join failed: " + message);
+                                Toast.makeText(FindLobbyActivity.this, "Failed to join lobby: " + message, Toast.LENGTH_SHORT).show();
+                            }
+
+                        } catch (JSONException e) {
+                            Log.e(TAG, "Error parsing join response", e);
+                            Toast.makeText(FindLobbyActivity.this, "Unexpected server response", Toast.LENGTH_SHORT).show();
+                        }
+                    },
+                    error -> {
+                        Log.e(TAG, "Volley join error", error);
+                        Toast.makeText(FindLobbyActivity.this, "Failed to join lobby (network)", Toast.LENGTH_SHORT).show();
+                    }
+            );
+
+            VolleySingleton.getInstance(FindLobbyActivity.this).addToRequestQueue(joinRequest);
         });
+
+
+
 
         lobbyListLayout.addView(card);
     }
