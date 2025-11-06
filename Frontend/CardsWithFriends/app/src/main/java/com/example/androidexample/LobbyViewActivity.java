@@ -1,6 +1,5 @@
 package com.example.androidexample;
 
-import android.app.Dialog;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -21,6 +20,7 @@ import androidx.core.content.res.ResourcesCompat;
 import com.android.volley.Request;
 import com.android.volley.Response;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.blackjack.BlackjackActivity;
 import com.example.androidexample.services.Message;
 import com.example.androidexample.services.VolleySingleton;
 import com.example.androidexample.services.WebSocketListener;
@@ -141,28 +141,24 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                         break;
 
                     case "MESSAGE":
-                        if (msgText.equals("/start")){
-                            if (gameType.equals("BLACKJACK")) {
-                                Intent i = new Intent(LobbyViewActivity.this, BlackjackActivity.class);
-                                i.putExtra("GAMETYPE", gameType);
-                                i.putExtra("USERNAME", username);
-                                i.putExtra("JOINCODE", joinCode);
-                                i.putExtra("HOST", isHost);
-                                i.putStringArrayListExtra("PLAYERS", currentUsers);
-                                startActivity(i);
-                            }
-                            //TODO IMPLEMENT THE STARTING OF OTHER GAMES
+                        unreadMessages += 1;
+                        updateUnreadLabel();
+                        Message newMessage = new Message(user, msgText, System.currentTimeMillis());
+                        chat.add(newMessage);
+                        if (chatDialog != null && chatDialog.isShowing()) {
+                            addMessageBubble(user, msgText);
                         }
-                        else {
-                            unreadMessages += 1;
-                            updateUnreadLabel();
-                            Message newMessage = new Message(user, msgText, System.currentTimeMillis());
-                            chat.add(newMessage);
-                            if (chatDialog != null && chatDialog.isShowing()) {
-                                addMessageBubble(user, msgText);
-                            }
-                            Log.d("Chat", "Received chat message: " + msgText);
-                            break;
+                        Log.d("Chat", "Received chat message: " + msgText);
+                        break;
+                    case "START":
+                        if (gameType.equals("BLACKJACK")) {
+                            Intent i = new Intent(LobbyViewActivity.this, BlackjackActivity.class);
+                            i.putExtra("GAMETYPE", gameType);
+                            i.putExtra("USERNAME", username);
+                            i.putExtra("JOINCODE", joinCode);
+                            i.putExtra("HOST", isHost);
+                            i.putStringArrayListExtra("PLAYERS", currentUsers);
+                            startActivity(i);
                         }
                 }
             } catch (JSONException e) {
@@ -363,10 +359,13 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         sendBtn.setOnClickListener(v -> {
             String text = input.getText().toString().trim();
             if (!text.isEmpty()) {
-                WebSocketManager.getInstance().sendMessage(text);
+                String jsonMsg = "{\"type\":\"MESSAGE\",\"message\":\"" + text + "\"}";
+                Log.d(TAG, "Sending: " + jsonMsg);
+                WebSocketManager.getInstance().sendMessage(jsonMsg);
                 input.setText("");
             }
         });
+
     }
 
     private void addMessageBubble(String sender, String text) {
@@ -386,6 +385,6 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
     }
 
     private void startGame(){
-        WebSocketManager.getInstance().sendMessage("/start");
+        WebSocketManager.getInstance().sendMessage("{\"type\": \"START\"}");
     }
 }

@@ -6,6 +6,7 @@ import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.cardview.widget.CardView;
 
+import com.example.androidexample.blackjack.BlackjackActivity;
 import com.example.androidexample.services.BottomNavHelper;
 
 public class HomeActivity extends AppCompatActivity {
