@@ -22,6 +22,14 @@ public class GoFishGame {
     }
 
     /**
+     * Gets the current player by the currentPlayerIndex
+     * @return username
+     */
+    public String getCurrentPlayerUsername() {
+        return players.get(currentPlayerIndex).getUsername();
+    }
+
+    /**
      * Deals cards to all players in game, hand size changes depending on number
      * of players
      */
