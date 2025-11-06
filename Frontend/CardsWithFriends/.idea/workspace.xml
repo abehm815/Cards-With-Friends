@@ -2,7 +2,17 @@
 <project version="4">
   <component name="AndroidLayouts">
     <layouts>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_findlobby.xml">
+        <config>
+          <theme>@style/Theme.AndroidExample</theme>
+        </config>
+      </layout>
       <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_leaderboard.xml">
+        <config>
+          <theme>@style/Theme.AndroidExample</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/layout/activity_lobby.xml">
         <config>
           <theme>@style/Theme.AndroidExample</theme>
         </config>
@@ -46,7 +56,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=C:\Users\alexb\.android\avd\Medium_Phone.avd), DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=C:\Users\alexb\.android\avd\Pixel_5.avd)]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=C:\Users\elihe\.android\avd\Pixel_4a.avd)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -64,9 +74,9 @@
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
   <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 8
+  &quot;associatedIndex&quot;: 5
 }</component>
-  <component name="ProjectId" id="34yV68mEW5NouucXW54Q6MnwxdJ" />
+  <component name="ProjectId" id="34TVGXXguuXzFZIKQp0XlgHsQlU" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
@@ -160,11 +170,11 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="02c7d3eb-299c-41a1-9327-901c165d83d5" name="Changes" comment="" />
-      <created>1762185622755</created>
+      <changelist id="b105e4a7-8139-4580-a8fc-d9ed5517d7b4" name="Changes" comment="" />
+      <created>1762223328772</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1762185622755</updated>
+      <updated>1762223328772</updated>
     </task>
     <servers />
   </component>
