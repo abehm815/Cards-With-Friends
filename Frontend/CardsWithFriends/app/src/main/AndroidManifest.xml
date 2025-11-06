@@ -25,7 +25,7 @@
             android:exported="false"/>
         <activity android:name=".GofishActivity"
             android:exported="false"/>
-        <activity android:name=".BlackjackActivity"
+        <activity android:name=".blackjack.BlackjackActivity"
             android:exported="false"/>
         <activity android:name=".StatsActivity"
             android:exported="false"/>
