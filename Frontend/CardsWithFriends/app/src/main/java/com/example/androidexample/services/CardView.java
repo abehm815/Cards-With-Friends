@@ -42,8 +42,6 @@ public class CardView extends View {
 
         // Enable hardware acceleration for smoother 3D rotation
         setLayerType(LAYER_TYPE_HARDWARE, null);
-
-
     }
 
     public void setCard(String rank, String suit, boolean faceUp) {
@@ -53,10 +51,21 @@ public class CardView extends View {
         invalidate();
     }
 
+    public String getCardValue() {
+        return rank;
+    }
+
+    public String getCardSuit() {
+        return suit;
+    }
+
+    public boolean isFaceUp() {
+        return faceUp;
+    }
+
     private float dX, dY;
     private float startX, startY;
     private float startRotation; // store original rotation
-
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
@@ -106,11 +115,6 @@ public class CardView extends View {
 
         return super.onTouchEvent(event);
     }
-
-
-
-
-
 
     /** flip animation */
     public void flipCard() {
@@ -197,7 +201,7 @@ public class CardView extends View {
                 default: return String.valueOf(value);
             }
         } catch (NumberFormatException e) {
-            // fallback in case rank isn’t numeric
+            // fallback in case rank isn't numeric
             switch (rank.toLowerCase()) {
                 case "a": return "A";
                 case "k": return "K";

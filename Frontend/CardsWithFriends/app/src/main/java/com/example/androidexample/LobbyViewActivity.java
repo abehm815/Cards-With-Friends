@@ -80,6 +80,8 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         joinCode = intent.getStringExtra("JOINCODE");
 
 
+
+
         isHost = intent.getBooleanExtra("HOST", false);
         if (!isHost) {
             startBtn.setVisibility(View.GONE);

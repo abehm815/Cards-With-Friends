@@ -63,7 +63,7 @@
             android:name=".ProfileActivity"
             android:exported="false" />
         <activity
-            android:name=".GofishActivity"
+            android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
