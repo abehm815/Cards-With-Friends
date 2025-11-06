@@ -27,6 +27,12 @@ public class AppUser {
     private String lastName;
     private String age;
 
+    @Column(nullable = false)
+    private boolean isModerator = false;
+
+    @Column(nullable = false)
+    private boolean isAdmin = false;
+
     @Transient
     private boolean inLobby = false;
 
@@ -119,6 +125,15 @@ public class AppUser {
 
     public UserStats getUserStats() { return userStats; }
     public void setUserStats(UserStats stats) { this.userStats = stats; }
+
+    public boolean isModerator() { return isModerator; }
+    public void setModerator(boolean moderator) { this.isModerator = moderator; }
+
+    public boolean isAdmin() { return isAdmin; }
+    public void setAdmin(boolean admin) { this.isAdmin = admin; }
+
+    public boolean isInLobby() { return inLobby; }
+    public void setInLobby(boolean lobby) { this.inLobby = lobby; }
 
     @Override
     public String toString() {
