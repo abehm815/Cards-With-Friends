@@ -9,41 +9,40 @@
     android:background="@drawable/bg_gradient_green"
     tools:context=".GofishActivity">
 
-<!--
-    <ImageView
-        android:id="@+id/tableImage"
-        android:layout_width="wrap_content"
+    <!-- Player List Container at Top -->
+    <ScrollView
+        android:id="@+id/playerListContainer"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:src="@drawable/bj_table_ribbon"
+        android:maxHeight="150dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:adjustViewBounds="true"
-        android:scaleType="centerInside" />
--->
+        android:layout_marginTop="16dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp">
 
-    <!-- Flip button -->
-    <Button
-        android:id="@+id/flipButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Flip Card"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp" />
-        <!--app:layout_constraintTop_toBottomOf="@id/tableImage"-->
+        <LinearLayout
+            android:id="@+id/playerList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="8dp" />
+    </ScrollView>
 
+    <!-- Ask Button at Bottom Center -->
     <Button
         android:id="@+id/gofish_ask_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Flip Card"
+        android:text="Ask"
+        android:textSize="18sp"
+        android:paddingStart="32dp"
+        android:paddingEnd="32dp"
+        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp" />
-
+        android:layout_marginBottom="32dp" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
