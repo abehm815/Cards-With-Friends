@@ -7,7 +7,7 @@
     android:background="@drawable/bg_gradient"
     android:padding="24dp">
 
-    <!-- Leave Button (Top Left, outlined style) -->
+    <!-- Leave Button (keep as Material outlined) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/lobbyview_leave_btn"
         android:layout_width="wrap_content"
@@ -23,7 +23,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 
-    <!-- Game Type Value -->
+    <!-- Game Type -->
     <TextView
         android:id="@+id/lobbyview_type_txt"
         android:layout_width="wrap_content"
@@ -37,7 +37,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="24dp" />
 
-    <!-- Join Code Value -->
+    <!-- Join Code -->
     <TextView
         android:id="@+id/lobbyview_code_txt"
         android:layout_width="wrap_content"
@@ -51,7 +51,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Action Buttons Row -->
+    <!-- Action Buttons -->
     <LinearLayout
         android:id="@+id/lobbyview_action_row"
         android:layout_width="wrap_content"
@@ -64,7 +64,7 @@
         app:layout_constraintEnd_toEndOf="parent">
 
         <!-- Start Game -->
-        <com.google.android.material.button.MaterialButton
+        <TextView
             android:id="@+id/lobbyview_start_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -72,12 +72,16 @@
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:fontFamily="@font/inter_bold"
-            android:backgroundTint="@color/my_green"
-            app:cornerRadius="12dp"
-            android:layout_marginEnd="16dp" />
+            android:gravity="center"
+            android:background="@drawable/btn_green"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp"
+            android:layout_marginEnd="16dp"
+            android:clickable="true"
+            android:focusable="true" />
 
-        <!-- End Lobby -->
-        <com.google.android.material.button.MaterialButton
+        <!-- Close Lobby -->
+        <TextView
             android:id="@+id/lobbyview_close_btn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -85,11 +89,15 @@
             android:textColor="@android:color/white"
             android:textSize="18sp"
             android:fontFamily="@font/inter_bold"
-            android:backgroundTint="@color/my_red"
-            app:cornerRadius="12dp" />
+            android:gravity="center"
+            android:background="@drawable/btn_red"
+            android:paddingHorizontal="24dp"
+            android:paddingVertical="12dp"
+            android:clickable="true"
+            android:focusable="true" />
     </LinearLayout>
 
-    <!-- Scrollable list of users -->
+    <!-- User List -->
     <ScrollView
         android:id="@+id/lobbyview_user_scroll"
         android:layout_width="0dp"
@@ -105,10 +113,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center_horizontal" />
+            android:gravity="center_horizontal"
+            android:paddingBottom="16dp" />
     </ScrollView>
 
-    <!-- Chat Button + Unread Label -->
+    <!-- Chat Button -->
     <LinearLayout
         android:id="@+id/chat_button_container"
         android:layout_width="wrap_content"
@@ -120,13 +129,16 @@
         android:layout_marginStart="24dp"
         android:layout_marginBottom="24dp">
 
-        <ImageView
+        <ImageButton
             android:id="@+id/chat_button"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:src="@drawable/chaticon"
-            android:contentDescription="Chat Button"
-            app:tint="@android:color/white" />
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            android:background="@drawable/btn_blue"
+            android:src="@drawable/icon_chat"
+            app:tint="@android:color/white"
+            android:scaleType="centerInside"
+            android:padding="12dp"
+            android:contentDescription="Chat Button" />
 
         <TextView
             android:id="@+id/chat_unread_label"
@@ -134,11 +146,10 @@
             android:layout_height="wrap_content"
             android:textColor="@android:color/white"
             android:textSize="13sp"
+            android:fontFamily="@font/inter_bold"
             android:gravity="center"
             android:visibility="gone"
             android:layout_marginTop="4dp" />
     </LinearLayout>
-
-
 
 </androidx.constraintlayout.widget.ConstraintLayout>

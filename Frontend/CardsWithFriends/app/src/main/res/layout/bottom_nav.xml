@@ -25,7 +25,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="18dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/playingcards"
+            android:src="@drawable/icon_cards"
             app:tint="@android:color/white"
             android:contentDescription="Home" />
 
@@ -38,7 +38,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="18dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/stats"
+            android:src="@drawable/icon_stats"
             app:tint="@android:color/white"
             android:contentDescription="Stats" />
 
@@ -50,7 +50,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="18dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/leaderboard"
+            android:src="@drawable/icon_leaderboard"
             app:tint="@android:color/white"
             android:contentDescription="Leaderboard" />
 
@@ -63,7 +63,7 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:padding="18dp"
             android:scaleType="fitCenter"
-            android:src="@drawable/person"
+            android:src="@drawable/icon_profile"
             app:tint="@android:color/white"
             android:contentDescription="Profile" />
     </LinearLayout>

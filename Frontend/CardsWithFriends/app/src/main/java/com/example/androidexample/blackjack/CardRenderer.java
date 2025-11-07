@@ -241,7 +241,7 @@ public class CardRenderer {
         tv.setPadding(dp(24), dp(8), dp(24), dp(8));
 
         // Use reusable rounded background drawable
-        tv.setBackgroundResource(R.drawable.bg_hand_value_pill);
+        tv.setBackgroundResource(R.drawable.bj_hand_value_pill);
 
         // Adjust transparency for secondary UI elements
         tv.setAlpha(alpha);

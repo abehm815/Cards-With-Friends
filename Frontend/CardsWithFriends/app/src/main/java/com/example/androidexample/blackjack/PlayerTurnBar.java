@@ -52,7 +52,7 @@ public class PlayerTurnBar {
             chip.setTextColor(Color.WHITE);
             chip.setGravity(Gravity.CENTER);
             chip.setPadding(48, 24, 48, 24);
-            chip.setBackgroundResource(R.drawable.player_chip_bg);
+            chip.setBackgroundResource(R.drawable.bj_player_chip_bg);
 
             GradientDrawable bg = (GradientDrawable) chip.getBackground().mutate();
 

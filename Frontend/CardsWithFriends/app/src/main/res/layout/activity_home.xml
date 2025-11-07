@@ -40,7 +40,7 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/blackjack_card"
+            android:src="@drawable/home_card_bj"
             android:scaleType="fitXY" />
     </androidx.cardview.widget.CardView>
 
@@ -61,7 +61,7 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/gofish_card"
+            android:src="@drawable/home_card_gofish"
             android:scaleType="fitXY" />
     </androidx.cardview.widget.CardView>
 
@@ -82,7 +82,7 @@
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:src="@drawable/euchre_card"
+            android:src="@drawable/home_card_euchre"
             android:scaleType="fitXY" />
     </androidx.cardview.widget.CardView>
 
