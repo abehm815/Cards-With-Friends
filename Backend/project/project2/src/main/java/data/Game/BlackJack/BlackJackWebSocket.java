@@ -3,10 +3,12 @@ package data.Game.BlackJack;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import data.Lobby.LobbyRepository;
 import data.User.AppUserRepository;
+import data.User.Stats.UserStatsRepository;
 import jakarta.websocket.*;
 import jakarta.websocket.server.PathParam;
 import jakarta.websocket.server.ServerEndpoint;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
@@ -33,6 +35,7 @@ public class BlackJackWebSocket {
     // 🔹 Spring-managed repositories
     private static LobbyRepository lobbyRepository;
     private static AppUserRepository appUserRepository;
+    private static UserStatsRepository userStatsRepository;
 
     @Autowired
     public void setLobbyRepository(LobbyRepository repo) {
@@ -44,19 +47,29 @@ public class BlackJackWebSocket {
         BlackJackWebSocket.appUserRepository = repo;
     }
 
+    @Autowired
+    public void setUserStatsRepository(UserStatsRepository repo) {
+        BlackJackWebSocket.userStatsRepository = repo;
+    }
+
+    @Autowired
+    private ApplicationContext applicationContext;
+
+
     @OnOpen
     public void onOpen(Session session, @PathParam("lobbyCode") String lobbyCode) {
         System.out.println("New connection: " + session.getId() + " in lobby " + lobbyCode);
 
         // Create or retrieve a BlackJackGame for this lobby
+
         games.computeIfAbsent(lobbyCode, code -> {
             BlackJackGame game = new BlackJackGame(code);
             game.setLobbyRepository(lobbyRepository);
             game.setAppUserRepository(appUserRepository);
+            game.setUserStatsRepository(userStatsRepository);
             game.setBroadcastFunction(json -> broadcastToLobby(json, code));
             return game;
         });
-
         // Add this session to the lobby
         lobbySessions.computeIfAbsent(lobbyCode, k -> ConcurrentHashMap.newKeySet()).add(session);
     }

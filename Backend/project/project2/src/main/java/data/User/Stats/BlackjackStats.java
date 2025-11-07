@@ -6,7 +6,7 @@ import jakarta.persistence.*;
 @DiscriminatorValue("BLACKJACK")
 public class BlackjackStats extends GameStats {
 
-    private double moneyWon;
+    private int moneyWon;
     private int betsWon;
     private int timesDoubledDown;
     private int timesSplit;
@@ -14,16 +14,10 @@ public class BlackjackStats extends GameStats {
     @Column(nullable = false)
     private int gamesWon;
 
-    protected BlackjackStats() {
-        moneyWon = 0;
-        betsWon = 0;
-        timesDoubledDown = 0;
-        timesSplit = 0;
-        timesHit = 0;
-        gamesWon = 0;
-    }
+    public BlackjackStats() {}
 
-    public BlackjackStats(double moneyWon, int betsWon, int timesDoubledDown, int timesSplit, int timesHit, int gamesWon) {
+
+    public BlackjackStats(int moneyWon, int betsWon, int timesDoubledDown, int timesSplit, int timesHit, int gamesWon) {
         this.moneyWon = moneyWon;
         this.betsWon = betsWon;
         this.timesDoubledDown = timesDoubledDown;
@@ -33,7 +27,7 @@ public class BlackjackStats extends GameStats {
     }
 
     // Increment Methods
-    public void addMoneyWon(double moneyWon) { this.moneyWon += moneyWon; }
+    public void addMoneyWon(int moneyWon) { this.moneyWon += moneyWon; }
     public void addBetWon() { betsWon++; }
     public void addTimeDoubledDown() { timesDoubledDown++; }
     public void addTimeSplit() { timesSplit++; }
@@ -41,14 +35,14 @@ public class BlackjackStats extends GameStats {
     public void addGameWon() { gamesWon++; }
 
     // Getters and Setters
-    public double getMoneyWon() { return moneyWon; }
+    public int getMoneyWon() { return moneyWon; }
     public int getBetsWon() { return betsWon; }
     public int getTimesDoubledDown() { return timesDoubledDown; }
     public int getTimesSplit() { return timesSplit; }
     public int getTimesHit() { return timesHit; }
     public int getGamesWon() { return gamesWon; }
 
-    public void setMoneyWon(double moneyWon) { this.moneyWon = moneyWon; }
+    public void setMoneyWon(int moneyWon) { this.moneyWon = moneyWon; }
     public void setBetsWon(int betsWon) { this.betsWon = betsWon; }
     public void setTimesDoubledDown(int timesDoubledDown) { this.timesDoubledDown = timesDoubledDown; }
     public void setTimesSplit(int timesSplit) { this.timesSplit = timesSplit; }
