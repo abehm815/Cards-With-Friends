@@ -5,6 +5,8 @@ import android.graphics.Color;
 import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.core.content.res.ResourcesCompat;
 
@@ -51,55 +53,55 @@ public class CardRenderer {
      * @param player    The player whose hands should be rendered.
      */
     public void renderPlayerHands(LinearLayout container, PlayerState player) {
-        // Clear any existing views first so we don’t append duplicates
         container.removeAllViews();
-
-        // Stop early if there's no valid player or hands
         if (player == null || player.hands == null) return;
 
-        // Player hands stacked vertically (one LinearLayout per hand)
-        container.setOrientation(LinearLayout.VERTICAL);
+        container.setOrientation(LinearLayout.HORIZONTAL);
+        container.setGravity(Gravity.CENTER_HORIZONTAL);
 
-        for (HandState hand : player.hands) {
-            // Skip empty hands
+        int totalHands = player.hands.size();
+        boolean isSplit = totalHands > 1;
+
+        for (int h = 0; h < totalHands; h++) {
+            HandState hand = player.hands.get(h);
             if (hand.hand == null || hand.hand.isEmpty()) continue;
 
-            // Create a vertical container for this single hand
             LinearLayout handContainer = new LinearLayout(context);
+            handContainer.setClipChildren(false);
+            handContainer.setClipToPadding(false);
             handContainer.setOrientation(LinearLayout.VERTICAL);
             handContainer.setGravity(Gravity.CENTER_HORIZONTAL);
             handContainer.setPadding(0, dp(12), 0, dp(12));
 
-            // Horizontal row for cards (placed FIRST so pills don’t constrain width)
             LinearLayout handRow = new LinearLayout(context);
+            handRow.setClipChildren(false);
+            handRow.setClipToPadding(false);
             handRow.setOrientation(LinearLayout.HORIZONTAL);
             handRow.setGravity(Gravity.CENTER_HORIZONTAL);
 
-            // Loop through each card and render it visually
-            for (int i = 0; i < hand.hand.size(); i++) {
-                CardState card = hand.hand.get(i);
+            int cardCount = hand.hand.size();
 
-                // Skip cards that should not be shown (face-down, etc.)
+            // Default overlap (normal hand)
+            int overlap = -dp(Math.min(12 + (cardCount - 2) * 6, 40));
+
+            // If split, cards should overlap more tightly (reduce visible gap)
+            if (isSplit) overlap = (int)(overlap * 1.5f);
+
+            for (int i = 0; i < cardCount; i++) {
+                CardState card = hand.hand.get(i);
                 if (!card.isShowing) continue;
 
-                // Create a CardView (custom visual class) for each card
                 CardView cv = new CardView(context);
                 LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(70), dp(105));
-
-                // Overlap cards slightly (negative left margin after the first)
-                if (i > 0) p.setMargins(dp(-30), 0, 0, 0);
+                if (i > 0) p.setMargins(overlap, 0, 0, 0);
                 cv.setLayoutParams(p);
-
-                // Set card visuals (value, suit, visibility)
                 cv.setCard(String.valueOf(card.value), card.suit, card.isShowing);
                 handRow.addView(cv);
             }
 
-            // Only add this hand to the layout if it has visible cards
             if (handRow.getChildCount() > 0) {
-                handContainer.addView(handRow); // add card row first
+                handContainer.addView(handRow);
 
-                // Create the value pill (hand total)
                 TextView valuePill = makePillText(
                         String.valueOf(hand.handValue),
                         R.font.inter_bold,
@@ -107,8 +109,6 @@ public class CardRenderer {
                         Color.WHITE,
                         0.95f
                 );
-
-                // Position slightly below the cards
                 LinearLayout.LayoutParams valueParams = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
@@ -117,7 +117,6 @@ public class CardRenderer {
                 valuePill.setLayoutParams(valueParams);
                 handContainer.addView(valuePill);
 
-                // Create the bet pill (shows the wager on this hand)
                 TextView betPill = makePillText(
                         "$" + hand.bet,
                         R.font.inter_regular,
@@ -125,8 +124,6 @@ public class CardRenderer {
                         Color.LTGRAY,
                         0.8f
                 );
-
-                // Add slight spacing below the value pill
                 LinearLayout.LayoutParams betParams = new LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
@@ -135,7 +132,16 @@ public class CardRenderer {
                 betPill.setLayoutParams(betParams);
                 handContainer.addView(betPill);
 
-                // Add this entire hand (cards + pills) to the main container
+                LinearLayout.LayoutParams handParams = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+
+                // Make gap between split hands much larger
+                int spacing = isSplit ? dp(40) : dp(16);
+                handParams.setMargins(spacing, 0, spacing, 0);
+
+                handContainer.setLayoutParams(handParams);
                 container.addView(handContainer);
             }
         }
@@ -149,14 +155,10 @@ public class CardRenderer {
      * @param container The LinearLayout to place the dealer's hand in.
      * @param dealer    The dealer state object containing cards and hand value.
      */
-    public void renderDealer(LinearLayout container, DealerState dealer) {
-        // Remove any old dealer cards first
+    public void renderDealer(LinearLayout container, DealerState dealer, boolean isRoundOver) {
         container.removeAllViews();
-
-        // Stop early if no valid dealer or empty hand
         if (dealer == null || dealer.hand == null || dealer.hand.isEmpty()) return;
 
-        // Vertical container for the dealer’s section
         LinearLayout dealerLayout = new LinearLayout(context);
         dealerLayout.setOrientation(LinearLayout.VERTICAL);
         dealerLayout.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -164,46 +166,51 @@ public class CardRenderer {
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         ));
+        dealerLayout.setClipChildren(false);
+        dealerLayout.setClipToPadding(false);
 
-        // Horizontal row of cards (centered)
         LinearLayout row = new LinearLayout(context);
         row.setOrientation(LinearLayout.HORIZONTAL);
         row.setGravity(Gravity.CENTER_HORIZONTAL);
+        row.setClipChildren(false);
+        row.setClipToPadding(false);
 
-        // Loop through dealer cards and add them visually
-        for (CardState card : dealer.hand) {
+        for (int i = 0; i < dealer.hand.size(); i++) {
+            CardState card = dealer.hand.get(i);
             CardView cv = new CardView(context);
             LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(80), dp(120));
-            p.setMargins(dp(6), 0, dp(6), 0); // small gap between cards
+
+            if (isRoundOver && i > 0) {
+                int overlap = Math.max(-dp(90 / dealer.hand.size()), -dp(45));
+                p.setMargins(overlap, 0, 0, 0);
+            } else {
+                p.setMargins(dp(6), 0, dp(6), 0);
+            }
+
             cv.setLayoutParams(p);
             cv.setCard(String.valueOf(card.value), card.suit, card.isShowing);
             row.addView(cv);
         }
 
-        // Add the card row to the dealer layout
         dealerLayout.addView(row);
 
-        // Create a value pill for the dealer’s total
-        TextView valuePill = makePillText(
-                String.valueOf(dealer.handValue),
-                R.font.inter_bold,
-                18,
-                Color.WHITE,
-                0.95f
-        );
+        if (isRoundOver) {
+            TextView valuePill = makePillText(
+                    String.valueOf(dealer.handValue),
+                    R.font.inter_bold,
+                    18,
+                    Color.WHITE,
+                    0.95f
+            );
+            LinearLayout.LayoutParams valueParams = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            valueParams.topMargin = dp(8);
+            valuePill.setLayoutParams(valueParams);
+            dealerLayout.addView(valuePill);
+        }
 
-        // Add spacing between cards and pill
-        LinearLayout.LayoutParams valueParams = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.WRAP_CONTENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        valueParams.topMargin = dp(8);
-        valuePill.setLayoutParams(valueParams);
-
-        // Add pill below cards
-        dealerLayout.addView(valuePill);
-
-        // Finally add the dealer layout to the container
         container.addView(dealerLayout);
     }
 
@@ -253,4 +260,67 @@ public class CardRenderer {
         // Multiply by density and round down to nearest pixel
         return (int) (v * density);
     }
+    /**
+     * Animates all cards on screen out of view — used at end of round.
+     * Cards lift up, drift toward the top-left, and fade out.
+     * Should be called before starting the next round (e.g., during countdown).
+     *
+     * @param containerRoot The parent layout that holds card groups (e.g., cardContainer or dealerCardContainer).
+     */
+    public void animateAllCardsOut(LinearLayout containerRoot) {
+        if (containerRoot == null) return;
+
+        // Recursively animate all CardViews within this layout
+        animateGroupCardsOut(containerRoot);
+    }
+
+    /**
+     * Recursively traverses a layout and animates all CardView children out of view.
+     */
+    private void animateGroupCardsOut(ViewGroup group) {
+        // fade out all value/bet TextViews but preserve layout space
+        for (int i = 0; i < group.getChildCount(); i++) {
+            View child = group.getChildAt(i);
+
+            if (child instanceof TextView) {
+                child.animate()
+                        .alpha(0f)
+                        .translationYBy(-40f)
+                        .setDuration(400)
+                        .withEndAction(() -> child.setVisibility(View.INVISIBLE))
+                        .start();
+
+            } else if (child instanceof ViewGroup) {
+                animateGroupCardsOut((ViewGroup) child);
+            }
+        }
+
+        // after a delay, animate cards directly off-screen (top-left corner)
+        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+            int screenWidth = group.getResources().getDisplayMetrics().widthPixels;
+            int screenHeight = group.getResources().getDisplayMetrics().heightPixels;
+
+            for (int i = 0; i < group.getChildCount(); i++) {
+                View child = group.getChildAt(i);
+
+                if (child instanceof CardView) {
+                    // Move far enough up and left to guarantee it’s off screen
+                    float targetX = -screenWidth * 0.8f;
+                    float targetY = -screenHeight * 0.8f;
+
+                    child.animate()
+                            .translationXBy(targetX)
+                            .translationYBy(targetY)
+                            .rotationBy(-15f)
+                            .setDuration(800)
+                            .withEndAction(() -> {
+                                ViewGroup parent = (ViewGroup) child.getParent();
+                                if (parent != null) parent.removeView(child);
+                            })
+                            .start();
+                }
+            }
+        }, 450);
+    }
+
 }

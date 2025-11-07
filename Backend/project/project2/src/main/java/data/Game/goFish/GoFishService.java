@@ -81,6 +81,11 @@ public class GoFishService {
         if (sessions != null) sessions.remove(session);
     }
 
+    /**
+     * Retrieves the current game
+     * @param lobbyCode (lobbyCode of game)
+     * @return GoFishGame
+     */
     public GoFishGame getGame(String lobbyCode) {
         return activeGames.get(lobbyCode);
     }
@@ -97,7 +102,6 @@ public class GoFishService {
         for (GoFishPlayer player : game.getPlayers()) {
             AppUser detached = player.getUserRef(); // the instance in the game
             if (detached == null) continue;
-            System.out.println("HELLO FROM LINE 113");
             // load the managed user from DB
             AppUser managed = appUserRepository.findById(detached.getUserID());
             if (managed == null) continue;
@@ -125,11 +129,9 @@ public class GoFishService {
 
             // persist managed user (cascades to userStats -> gameStats)
             appUserRepository.save(managed);
-            System.out.println("I just saved the lobby!");
         }
 
         activeGames.remove(lobbyCode);
-        System.out.println("And I just removed it!");
     }
 
     // helper method
@@ -164,8 +166,13 @@ public class GoFishService {
         String result = game.takeTurn(asking, target, value);
 
         if (game.isGameOver()) {
+            // Determine the winner first, which triggers the stats increment
+            String winnerName = game.getWinner().getUsername();
+
+            // Now persist those updated stats
             endGame(lobbyCode);
-            result += " | Game over! Winner: " + game.getWinner().getUsername();
+
+            result += " | Game over! Winner: " + winnerName;
         }
 
         return result;
