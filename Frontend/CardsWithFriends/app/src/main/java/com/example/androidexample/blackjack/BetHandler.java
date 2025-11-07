@@ -100,16 +100,16 @@ public class BetHandler {
      * @param selectedPlayer  The username of the player currently being viewed.
      */
     public void updateBalanceUI(GameState gameState, String selectedPlayer) {
-        //Figure out who we are viewing
+        // Figure out who we are viewing
         PlayerState viewedPlayer = getPlayer(gameState.players, selectedPlayer);
 
-        //Makes sure the player we are currently viewing is actually in the lobby
+        // Makes sure the player we are currently viewing is actually in the lobby
         if (viewedPlayer == null) {
             balanceText.setText("Balance: --");
             return;
         }
 
-        //Shows the balance of either your or another person (Depending on who we are viewing)
+        // Shows the balance of either your or another person (Depending on who we are viewing)
         String label = viewedPlayer.username.equals(username)
                 ? "Your Balance"
                 : viewedPlayer.username + "'s Balance";
@@ -118,15 +118,43 @@ public class BetHandler {
         boolean isSelf = selectedPlayer.equals(username);
         int totalBet = 0;
 
-        //Change the amount we have bet locally
+        // Change the amount we have bet locally
         if (isSelf) {
             for (HandState h : viewedPlayer.hands) totalBet += h.bet;
         }
 
         // Shows Bet UI only if we are viewing ourself and we have not made a bet
         boolean canShowBetUI = isSelf && totalBet == 0;
-        betInput.setVisibility(canShowBetUI ? View.VISIBLE : View.GONE);
-        betButton.setVisibility(canShowBetUI ? View.VISIBLE : View.GONE);
+
+        if (canShowBetUI) {
+            // Fade + slide in animation
+            if (betInput.getVisibility() != View.VISIBLE) {
+                for (View v : new View[]{balanceText, betInput, betButton}) {
+                    v.setAlpha(0f);
+                    v.setTranslationY(40f);
+                    v.setVisibility(View.VISIBLE);
+                    v.animate()
+                            .alpha(1f)
+                            .translationY(0f)
+                            .setDuration(350)
+                            .start();
+                }
+            }
+        } else {
+            // Fade + slide out animation
+            if (betInput.getVisibility() == View.VISIBLE) {
+                for (View v : new View[]{balanceText, betInput, betButton}) {
+                    v.animate()
+                            .alpha(0f)
+                            .translationY(40f)
+                            .setDuration(300)
+                            .withEndAction(() -> {
+                                if (v != balanceText) v.setVisibility(View.GONE);
+                            })
+                            .start();
+                }
+            }
+        }
     }
 
     /**
