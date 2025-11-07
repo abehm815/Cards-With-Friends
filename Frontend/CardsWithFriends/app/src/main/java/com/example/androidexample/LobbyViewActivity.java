@@ -118,6 +118,8 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
     }
 
     // -----------------------WEBSOCKET METHODS--------------------
+    // Replace the onWebSocketMessage method in LobbyViewActivity with this:
+
     @Override
     public void onWebSocketMessage(String message) {
         runOnUiThread(() -> {
@@ -152,7 +154,12 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                         }
                         Log.d("Chat", "Received chat message: " + msgText);
                         break;
+
                     case "START":
+                        // IMPORTANT: Disconnect from lobby WebSocket BEFORE starting game activity
+                        Log.d(TAG, "START message received, disconnecting lobby WebSocket...");
+                        WebSocketManager.getInstance().disconnectWebSocket();
+
                         if (gameType.equals("BLACKJACK")) {
                             Intent i = new Intent(LobbyViewActivity.this, BlackjackActivity.class);
                             i.putExtra("GAMETYPE", gameType);
@@ -172,6 +179,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                         } else if(gameType.equals("EUCHRE")){
                             //TODO
                         }
+                        break;
                 }
             } catch (JSONException e) {
                 Log.e(TAG, "Bad JSON from WebSocket: " + message, e);
