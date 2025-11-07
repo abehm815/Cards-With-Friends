@@ -55,6 +55,8 @@ public class BlackjackActivity extends AppCompatActivity implements WebSocketLis
     private String selectedPlayer;
     private GameState gameState = new GameState();
 
+    private GameState previousGameState = null;
+
     // Helpers
     private CardRenderer cardRenderer;
     private BetHandler betHandler;
@@ -85,6 +87,7 @@ public class BlackjackActivity extends AppCompatActivity implements WebSocketLis
         dealerCardContainer = findViewById(R.id.dealerCardContainer);
 
         selectedPlayer = username;
+
 
         // Initialize helpers
         cardRenderer = new CardRenderer(this, getResources().getDisplayMetrics().density);
@@ -130,13 +133,20 @@ public class BlackjackActivity extends AppCompatActivity implements WebSocketLis
     // -------------------------------------------------------------------
     @Override
     public void onWebSocketOpen(ServerHandshake handshakedata) {
+        runOnUiThread(() -> showCountdownToNextRound(3));
+
+        new android.os.Handler(android.os.Looper.getMainLooper())
+                .postDelayed(() -> runOnUiThread(() -> findViewById(R.id.bettingPanel).setVisibility(View.VISIBLE)), 4000);
+
         if (isHost) {
-            //Send START and STARTROUND commands to the backend
-            String startMsg = "{ \"action\": \"START\", \"player\": \"" + username + "\" }";
-            String startRoundMsg = "{ \"action\": \"STARTROUND\", \"player\": \"" + username + "\" }";
-            Log.d("WebSocket", "Host started new round");
-            WebSocketManager.getInstance().sendMessage(startMsg);
-            WebSocketManager.getInstance().sendMessage(startRoundMsg);
+            new android.os.Handler(android.os.Looper.getMainLooper())
+                    .postDelayed(() -> {
+                        String startMsg = "{ \"action\": \"START\", \"player\": \"" + username + "\" }";
+                        String startRoundMsg = "{ \"action\": \"STARTROUND\", \"player\": \"" + username + "\" }";
+                        Log.d("WebSocket", "Host started new round after countdown");
+                        WebSocketManager.getInstance().sendMessage(startMsg);
+                        WebSocketManager.getInstance().sendMessage(startRoundMsg);
+                    }, 4000);
         }
     }
 
@@ -202,75 +212,41 @@ public class BlackjackActivity extends AppCompatActivity implements WebSocketLis
                     playerTurnBar.updateFromGameState(gameState, selectedPlayer);
                     updateBalanceUI();
                     updateCardUI();
-                    updateDealerCardsUI();
+                    updateDealerCardsUI(isRoundOver);
                     updateActionButtonsUI();
 
                 }, viewSwitchDelay);
+
+                //TODO change so that backend sends a notification when the round is over (This is a wierd check)
+                boolean isRoundOver = gameState.currentTurn == null || gameState.currentTurn.equals("null");
 
                 // Immediate refresh too
                 playerTurnBar.updateFromGameState(gameState, selectedPlayer);
                 updateBalanceUI();
                 updateCardUI();
-                updateDealerCardsUI();
+                updateDealerCardsUI(isRoundOver);
                 updateActionButtonsUI();
 
-                //TODO change so that backend sends a notification when the round is over (This is a wierd check)
-                boolean isRoundOver = gameState.currentTurn == null || gameState.currentTurn.equals("null");
-
-                // -------------------------------------------------------------------
-                // SHOW RESULT TEXT
-                // -------------------------------------------------------------------
-                long resultDelay = 3000;
-                String turn = gameState.currentTurn;
+                long newRoundDelay = 3000;
+                long countDownDelay = 3500;
                 if (isRoundOver) {
                     new android.os.Handler(android.os.Looper.getMainLooper())
                             .postDelayed(() -> {
-                                PlayerState me = null;
-                                for (PlayerState p : gameState.players) {
-                                    if (p.username.equals(username)) {
-                                        me = p;
-                                        break;
-                                    }
+                                showCountdownToNextRound((int) (newRoundDelay / 1000));
+                                // Animate cards out of view
+                                cardRenderer.animateAllCardsOut(cardContainer);
+                                cardRenderer.animateAllCardsOut(dealerCardContainer);
+                                // Host automatically restarts
+                                if (isHost) {
+                                    new android.os.Handler(android.os.Looper.getMainLooper())
+                                            .postDelayed(() -> {
+                                                String startRoundMsg = "{ \"action\": \"STARTROUND\", \"player\": \"" + username + "\" }";
+                                                WebSocketManager.getInstance().sendMessage(startRoundMsg);
+                                                Log.d("WebSocket", "Auto STARTROUND message sent after countdown");
+                                            }, newRoundDelay);
                                 }
-                                if (me != null && me.hands != null && !me.hands.isEmpty()) {
-                                    int dealerValue = gameState.dealer != null ? gameState.dealer.handValue : 0;
-                                    int playerValue = me.hands.get(0).handValue;
-                                    String result;
-                                    //Determine what result text to show
-                                    if (playerValue == 21 && me.hands.get(0).hand.size() == 2) {
-                                        result = "Win";
-                                    } else if (playerValue > 21 || (dealerValue <= 21 && dealerValue > playerValue)) {
-                                        result = "Loss";
-                                    } else if (playerValue == dealerValue) {
-                                        result = "Push";
-                                    } else {
-                                        result = "Win";
-                                    }
-                                    showRoundResult(result);
-                                }
-                            }, resultDelay);
-
-                    // -------------------------------------------------------------------
-                    // Show the "NEW ROUND BUTTON" to host
-                    // -------------------------------------------------------------------
-                    long roundButtonDelay = 6000;
-                    if (isHost) {
-                        new android.os.Handler(android.os.Looper.getMainLooper())
-                                .postDelayed(() -> {
-                                    startNewRoundBtn.setVisibility(View.VISIBLE);
-                                    startNewRoundBtn.setAlpha(0f);
-                                    startNewRoundBtn.setTranslationY(100f);
-                                    startNewRoundBtn.animate()
-                                            .translationY(0f)
-                                            .alpha(1f)
-                                            .setDuration(500)
-                                            .start();
-                                }, roundButtonDelay);
-                    }
-                } else {
-                    startNewRoundBtn.setVisibility(View.GONE);
+                            }, countDownDelay);
                 }
-
             } catch (JSONException e) {
                 Log.e("WebSocket", "Failed to parse message: " + message, e);
             }
@@ -316,12 +292,12 @@ public class BlackjackActivity extends AppCompatActivity implements WebSocketLis
         cardRenderer.renderPlayerHands(cardContainer, player);
     }
 
-    private void updateDealerCardsUI() {
-        cardRenderer.renderDealer(dealerCardContainer, gameState.dealer);
+    private void updateDealerCardsUI(boolean isRoundOver) {
+        cardRenderer.renderDealer(dealerCardContainer, gameState.dealer, isRoundOver);
     }
 
     // -------------------------------------------------------------------
-    // Action buttons + round result
+    // Action buttons
     // -------------------------------------------------------------------
     private void updateActionButtonsUI() {
         boolean showButtons = false;
@@ -367,54 +343,65 @@ public class BlackjackActivity extends AppCompatActivity implements WebSocketLis
 
         splitBtn.setVisibility(canSplit ? View.VISIBLE : View.GONE);
     }
+    private void showCountdownToNextRound(int seconds) {
+        TextView countdownText = new TextView(this);
+        countdownText.setTextSize(72);
+        countdownText.setTypeface(ResourcesCompat.getFont(this, R.font.inter_black));
+        countdownText.setGravity(Gravity.CENTER);
+        countdownText.setTextColor(Color.WHITE);
+        countdownText.setShadowLayer(25f, 0f, 0f, Color.BLACK);
+        countdownText.setAlpha(0f);
+        countdownText.setElevation(9999f);
 
-    /**
-     * Show end-of-round result text (WIN / LOSS / PUSH)
-     */
-    private void showRoundResult(String resultType) {
-        TextView resultText = new TextView(this);
-        resultText.setText(resultType.toUpperCase());
-        resultText.setTextSize(56);
-        resultText.setTypeface(ResourcesCompat.getFont(this, R.font.inter_black));
-        resultText.setGravity(Gravity.CENTER);
-        resultText.setAlpha(0f);
-        resultText.setElevation(1000f); // render above everything
-        resultText.setShadowLayer(20f, 0f, 0f, Color.BLACK);
-
-        int color;
-        switch (resultType.toLowerCase()) {
-            case "win":
-                color = ContextCompat.getColor(this, R.color.my_green);
-                break;
-            case "push":
-                color = ContextCompat.getColor(this, R.color.my_orange);
-                break;
-            default:
-                color = ContextCompat.getColor(this, R.color.my_red);
-                break;
-        }
-        resultText.setTextColor(color);
-
-        addContentView(resultText, new LinearLayout.LayoutParams(
+        addContentView(countdownText, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.MATCH_PARENT
         ));
 
-        resultText.animate()
-                .alpha(1f)
-                .translationYBy(-40)
-                .setDuration(700)
-                .withEndAction(() -> {
-                    resultText.animate()
-                            .alpha(0f)
-                            .setStartDelay(1800)
-                            .setDuration(700)
-                            .withEndAction(() -> {
-                                ViewGroup parent = (ViewGroup) resultText.getParent();
-                                if (parent != null) parent.removeView(resultText);
-                            })
+        final int[] timeLeft = {seconds};
+        android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
+
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (timeLeft[0] <= 0) {
+                    // Show "BET" instead of removing the view
+                    countdownText.setText("BET");
+                    countdownText.setAlpha(0f);
+                    countdownText.animate()
+                            .alpha(1f)
+                            .scaleX(1.3f)
+                            .scaleY(1.3f)
+                            .setDuration(500)
+                            .withEndAction(() -> countdownText.animate()
+                                    .alpha(0f)
+                                    .setDuration(600)
+                                    .setStartDelay(600)
+                                    .withEndAction(() -> {
+                                        ViewGroup parent = (ViewGroup) countdownText.getParent();
+                                        if (parent != null) parent.removeView(countdownText);
+                                    })
+                                    .start())
                             .start();
-                })
-                .start();
+                    return;
+                }
+
+                countdownText.setText(String.valueOf(timeLeft[0]));
+                countdownText.setAlpha(1f);
+                countdownText.setScaleX(1f);
+                countdownText.setScaleY(1f);
+                countdownText.animate()
+                        .alpha(0f)
+                        .scaleX(1.4f)
+                        .scaleY(1.4f)
+                        .setDuration(900)
+                        .start();
+
+                timeLeft[0]--;
+                handler.postDelayed(this, 1000);
+            }
+        };
+
+        handler.post(runnable);
     }
 }
