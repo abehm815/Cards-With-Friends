@@ -4,7 +4,13 @@ import data.User.AppUser;
 import data.User.AppUserRepository;
 import data.Lobby.Lobby;
 import data.Lobby.LobbyRepository;
+import data.User.Stats.BlackjackStats;
+import data.User.Stats.GameStats;
+import data.User.Stats.UserStats;
+import data.User.Stats.UserStatsRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -19,6 +25,10 @@ public class BlackJackGame {
     LobbyRepository LobbyRepository;
     @Autowired
     AppUserRepository AppUserRepository;
+    @Autowired
+    UserStatsRepository userStatsRepository;
+
+
 
     private Consumer<String> broadcastFunction;
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -34,11 +44,13 @@ public class BlackJackGame {
     private int currentPlayerIndex = 0; // Track whose turn it is
     private boolean roundInProgress = false;
 
+
     public BlackJackGame(String lobbyCode) {
         this.players = new ArrayList<>();
         deck = new BlackJackDeck(6);
         this.dealer = new BlackJackDealer();
     }
+
 
     /**
      * Initializes a blackjack game by loading all users from the specified lobby
@@ -48,25 +60,43 @@ public class BlackJackGame {
      */
     public void initializeGameFromLobby(String joinCode) {
         this.lobbyCode = joinCode;
-        //Lobby lobby = LobbyRepository.findByJoinCode(joinCode);
+
         Lobby lobby = LobbyRepository.findByJoinCodeWithUsers(joinCode);
+
+       //lobby lobby = LobbyRepository.findByJoinCodeWithUsersAndBlackJackStats(joinCode);
 
         if (lobby == null) {
             System.out.println("Lobby not found with join code: " +  joinCode );
             return;
         }
 
+        List <AppUser> users = lobby.getUsers();
+        List <String> userNames = new ArrayList<>();
+        for  (AppUser user : users) {
+            userNames.add(user.getUsername());
+        }
+
         // Clear any existing players before reloading
         players.clear();
 
         // Loop through all users in the lobby and create player objects
+        /*
         for (AppUser user : lobby.getUsers()) {
-            BlackJackPlayer player = new BlackJackPlayer(user.getUsername(), 1000); // starting chips
+            BlackjackStats bjStats = (BlackjackStats) user.getUserStats().getGameStats("BlackJack");
+            BlackJackPlayer player = new BlackJackPlayer(user, 1000);
             players.add(player);
+        }
+
+         */
+        //use jakes query to add users to blackjack game
+        for (String name : userNames) {
+            AppUser user = AppUserRepository.findByUsernameWithStats(name);
+            players.add(new BlackJackPlayer(user,1000));
         }
 
         System.out.println("Initialized game with " + players.size() + " players.");
     }
+
 
     public void startRound() {
         deck.shuffle();
@@ -116,11 +146,16 @@ public class BlackJackGame {
         if (!roundInProgress) return;
 
         BlackJackPlayer currentPlayer = players.get(currentPlayerIndex);
+        BlackjackStats currentPlayerStats = currentPlayer.getBlackJackStats();
 
+        if(currentPlayerStats == null) {
+            System.out.println("Current player stats is null");
+            return;}
         switch (decision.toUpperCase()) {
 
             case "HIT":
                 playerHit(username);
+                currentPlayerStats.addTimeHit();
                 if (currentPlayer.getHandValue() > 21 && currentPlayer.isOnLastHand()) {
                     System.out.println(username + " busts!");
                     advanceTurn();
@@ -140,6 +175,7 @@ public class BlackJackGame {
                 break;
 
             case "STAND":
+                //currentPlayerStats.addTimestood();
                 if (currentPlayer.isOnLastHand()){
                     playerStand(currentPlayer.getUsername());
                     advanceTurn();
@@ -153,6 +189,7 @@ public class BlackJackGame {
                 break;
 
             case "DOUBLE":
+                currentPlayerStats.addTimeDoubledDown();
                 if  (currentPlayer.isOnLastHand()) {
                     playerDouble(currentPlayer.getUsername());
                     System.out.println(username + " doubles.");
@@ -168,6 +205,7 @@ public class BlackJackGame {
 
             case "SPLIT":
                 playerSplit(currentPlayer.getUsername());
+                currentPlayerStats.addTimeSplit();
                 break;
 
             default:
@@ -313,6 +351,7 @@ public class BlackJackGame {
         for (BlackJackPlayer player : players) {
             List<List<BlackJackCard>> hands = player.getHands();
             List<Integer> bets = player.getBets();
+            BlackjackStats playerStats = player.getBlackJackStats();
 
             for (int i = 0; i < hands.size(); i++) {
                 List<BlackJackCard> hand = hands.get(i);
@@ -324,20 +363,29 @@ public class BlackJackGame {
 
                 if (playerBust) {
                     System.out.println("Bust! Lost bet of " + bet);
+                    playerStats.addMoneyWon(-bet);
                     // Loss: do nothing since chips already deducted when bet was placed
                 } else if (dealerBust) {
                     System.out.println("Dealer bust! Won " + bet * 2);
                     player.setChips(player.getChips() + 2 * bet);
+                    playerStats.addMoneyWon(bet);
+                    playerStats.addBetWon();
+                    playerStats.addGameWon();
                 } else if (playerValue > dealerValue) {
                     System.out.println("Win! Won " + bet * 2);
                     player.setChips(player.getChips() + 2 * bet);
+                    playerStats.addMoneyWon(bet);
+                    playerStats.addBetWon();
+                    playerStats.addGameWon();
                 } else if (playerValue == dealerValue) {
                     System.out.println("Tie! Bet returned: " + bet);
                     player.setChips(player.getChips() + bet);
                 } else {
                     System.out.println("Loss! Lost bet of " + bet);
-
+                    playerStats.addMoneyWon(-bet);
                 }
+                playerStats.addGamePlayed();
+                updateStatsBlackjack();
             }
         }
     }
@@ -445,7 +493,53 @@ public class BlackJackGame {
         this.AppUserRepository = repo;
     }
 
+    public void setUserStatsRepository(UserStatsRepository repo) {
+        this.userStatsRepository = repo;
     }
+
+    @Transactional
+    public void updateStatsBlackjack() {
+        for (BlackJackPlayer player : players) {
+            AppUser detached = player.getUserRef(); // in-memory player object
+            if (detached == null) continue;
+
+            // Load managed user from DB
+            AppUser managed = AppUserRepository.findByIdWithStats(detached.getUserID());
+            if (managed == null) continue;
+
+            // Ensure managed user has UserStats
+            if (managed.getUserStats() == null) {
+                managed.setUserStats(new UserStats());
+                managed.getUserStats().setAppUser(managed);
+            }
+
+            // Get or create BlackjackStats
+            GameStats detachedStats = detached.getUserStats().getGameStats("Blackjack");
+            GameStats managedStats = managed.getUserStats().getGameStats("Blackjack");
+
+            if (detachedStats instanceof BlackjackStats && managedStats instanceof BlackjackStats) {
+                copyBlackjackStats((BlackjackStats) detachedStats, (BlackjackStats) managedStats);
+            } else if (detachedStats instanceof BlackjackStats && managedStats == null) {
+                BlackjackStats newStats = new BlackjackStats();
+                copyBlackjackStats((BlackjackStats) detachedStats, newStats);
+                newStats.setUserStats(managed.getUserStats());
+                managed.getUserStats().addGameStats("Blackjack", newStats);
+            }
+            AppUserRepository.save(managed);
+        }
+    }
+
+    private void copyBlackjackStats(BlackjackStats src, BlackjackStats dst) {
+        dst.setGamesPlayed(src.getGamesPlayed());
+        dst.setGamesWon(src.getGamesWon());
+        dst.setMoneyWon(src.getMoneyWon());
+        dst.setBetsWon(src.getBetsWon());
+        dst.setTimesHit(src.getTimesHit());
+        dst.setTimesDoubledDown(src.getTimesDoubledDown());
+        dst.setTimesSplit(src.getTimesSplit());
+        // add any other fields your BlackjackStats has
+    }
+}
 
 
 

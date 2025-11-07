@@ -1,6 +1,8 @@
 package data.Game.BlackJack;
 
-import data.Game.MyCard;
+import data.Game.BlackJack.BlackJackCard;
+import data.User.AppUser;
+import data.User.Stats.BlackjackStats;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,6 +15,7 @@ public class BlackJackPlayer {
     private List<Integer> betOnCurrentHand;
     private List<Boolean> hasStoodForHand;
     private boolean hasBet;
+    private transient AppUser userRef;
 
     public BlackJackPlayer(String username, int chips) {
         this.username = username;
@@ -23,6 +26,29 @@ public class BlackJackPlayer {
         this.betOnCurrentHand.add(0); // default bet for first hand
         this.hasStoodForHand = new ArrayList<>();
         this.hasStoodForHand.add(false); // first hand has not stood
+    }
+
+    public BlackJackPlayer(AppUser appUser, int chips) {
+        this.username = appUser.getUsername();
+        this.hands = new ArrayList<>();
+        this.hands.add(new ArrayList<>()); // first hand
+        this.chips = chips;
+        this.betOnCurrentHand = new ArrayList<>();
+        this.betOnCurrentHand.add(0); // default bet for first hand
+        this.hasStoodForHand = new ArrayList<>();
+        this.hasStoodForHand.add(false); // first hand has not stood
+        this.userRef = appUser;
+    }
+
+    public BlackjackStats getBlackJackStats() {
+        if (userRef != null && userRef.getUserStats() != null) {
+            return (BlackjackStats) userRef.getUserStats().getGameStats("Blackjack");
+        }
+        return null;
+    }
+
+    public AppUser getUserRef() {
+        return userRef;
     }
 
     /**

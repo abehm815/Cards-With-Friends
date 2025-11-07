@@ -23,4 +23,10 @@ public interface AppUserRepository extends JpaRepository<AppUser, Long> {
                 "LEFT JOIN FETCH us.gameStats " +
                 "WHERE u.username = :username")
         AppUser findByUsernameWithStats(@Param("username") String username);
+
+        @Query("SELECT u FROM AppUser u " +
+                "LEFT JOIN FETCH u.userStats us " +
+                "LEFT JOIN FETCH us.gameStats " +
+                "WHERE u.id = :id")
+        AppUser findByIdWithStats(@Param("id") Long id);
     }
