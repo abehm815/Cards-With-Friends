@@ -72,11 +72,11 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_margin="6dp"
-            android:background="@drawable/btn_hit_gradient"
+            android:background="@drawable/btn_green"
             android:scaleType="centerInside"
             android:padding="8dp"
-            android:src="@drawable/hit"
-            app:tint="@color/my_green"
+            android:src="@drawable/icon_hit"
+            app:tint="@android:color/white"
             android:contentDescription="Hit"
             android:foreground="?attr/selectableItemBackgroundBorderless" />
 
@@ -86,11 +86,11 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_margin="6dp"
-            android:background="@drawable/btn_stand_gradient"
+            android:background="@drawable/btn_red"
             android:scaleType="centerInside"
             android:padding="8dp"
-            android:src="@drawable/stand"
-            app:tint="@color/my_red"
+            android:src="@drawable/icon_stand"
+            app:tint="@android:color/white"
             android:contentDescription="Stand"
             android:foreground="?attr/selectableItemBackgroundBorderless" />
 
@@ -100,11 +100,11 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_margin="6dp"
-            android:background="@drawable/btn_split_gradient"
+            android:background="@drawable/btn_blue"
             android:scaleType="centerInside"
             android:padding="8dp"
-            android:src="@drawable/split"
-            app:tint="@color/my_blue"
+            android:src="@drawable/icon_split"
+            app:tint="@android:color/white"
             android:contentDescription="Split"
             android:foreground="?attr/selectableItemBackgroundBorderless" />
 
@@ -114,11 +114,11 @@
             android:layout_width="56dp"
             android:layout_height="56dp"
             android:layout_margin="6dp"
-            android:background="@drawable/btn_double_gradient"
+            android:background="@drawable/btn_orange"
             android:scaleType="centerInside"
             android:padding="8dp"
-            android:src="@drawable/double_icon"
-            app:tint="@color/my_orange"
+            android:src="@drawable/icon_double"
+            app:tint="@android:color/white"
             android:contentDescription="Double"
             android:foreground="?attr/selectableItemBackgroundBorderless" />
     </LinearLayout>
@@ -184,10 +184,10 @@
             android:layout_height="56dp"
             android:layout_marginTop="10dp"
             android:padding="8dp"
-            android:background="@drawable/btn_place_bet_gradient"
+            android:background="@drawable/btn_green"
             android:scaleType="centerInside"
             android:contentDescription="Place Bet"
-            android:src="@drawable/chip"
+            android:src="@drawable/icon_chip"
             app:tint="@android:color/white"
             android:foreground="?attr/selectableItemBackgroundBorderless" />
     </LinearLayout>

@@ -4,10 +4,12 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.view.animation.AnimationUtils;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -46,9 +48,10 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
     private TextView gameTypeTxt;
     private TextView joinCodeTxt;
     private LinearLayout userListLayout;
-    private android.widget.Button deleteBtn;
+    private TextView deleteBtn;
+    private TextView startBtn;
     private android.widget.Button leaveBtn;
-    private android.widget.Button startBtn;
+
     private int unreadMessages;
     private final List<Message> chat = new ArrayList<>();
     private final ArrayList<String> currentUsers = new ArrayList<>();
@@ -78,9 +81,6 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         gameType = intent.getStringExtra("GAMETYPE");
         username = intent.getStringExtra("USERNAME");
         joinCode = intent.getStringExtra("JOINCODE");
-
-
-
 
         isHost = intent.getBooleanExtra("HOST", false);
         if (!isHost) {
@@ -118,8 +118,6 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
     }
 
     // -----------------------WEBSOCKET METHODS--------------------
-    // Replace the onWebSocketMessage method in LobbyViewActivity with this:
-
     @Override
     public void onWebSocketMessage(String message) {
         runOnUiThread(() -> {
@@ -145,18 +143,19 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                         break;
 
                     case "MESSAGE":
-                        unreadMessages += 1;
-                        updateUnreadLabel();
                         Message newMessage = new Message(user, msgText, System.currentTimeMillis());
                         chat.add(newMessage);
-                        if (chatDialog != null && chatDialog.isShowing()) {
+
+                        // Only add to unread count if chat sheet is closed
+                        if (chatDialog == null || !chatDialog.isShowing()) {
+                            unreadMessages += 1;
+                            updateUnreadLabel();
+                        } else {
                             addMessageBubble(user, msgText);
                         }
-                        Log.d("Chat", "Received chat message: " + msgText);
                         break;
 
                     case "START":
-                        // IMPORTANT: Disconnect from lobby WebSocket BEFORE starting game activity
                         Log.d(TAG, "START message received, disconnecting lobby WebSocket...");
                         WebSocketManager.getInstance().disconnectWebSocket();
 
@@ -168,7 +167,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                             i.putExtra("HOST", isHost);
                             i.putStringArrayListExtra("PLAYERS", currentUsers);
                             startActivity(i);
-                        } else if(gameType.equals("GOFISH")){
+                        } else if (gameType.equals("GOFISH")) {
                             Intent i = new Intent(LobbyViewActivity.this, GofishActivity.class);
                             i.putExtra("GAMETYPE", gameType);
                             i.putExtra("USERNAME", username);
@@ -176,8 +175,6 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                             i.putExtra("HOST", isHost);
                             i.putStringArrayListExtra("PLAYERS", currentUsers);
                             startActivity(i);
-                        } else if(gameType.equals("EUCHRE")){
-                            //TODO
                         }
                         break;
                 }
@@ -187,7 +184,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         });
     }
 
-    @Override public void onWebSocketOpen(ServerHandshake handshakedata) { Log.d(TAG, "WebSocket connection opened"); }
+    @Override public void onWebSocketOpen(ServerHandshake handshakedata) { Log.d(TAG, "WebSocket opened"); }
     @Override public void onWebSocketClose(int code, String reason, boolean remote) { Log.d(TAG, "WebSocket closed: " + reason); }
     @Override public void onWebSocketError(Exception ex) { Log.e(TAG, "WebSocket error", ex); }
 
@@ -198,23 +195,46 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-        params.setMargins(0, 8, 0, 8);
+        params.setMargins(0, 12, 0, 12);
         card.setLayoutParams(params);
-        card.setRadius(20f);
-        card.setCardElevation(8f);
-        card.setCardBackgroundColor(Color.WHITE);
+        card.setRadius(28f);
+        card.setCardElevation(10f);
+        card.setStrokeWidth(3);
+        card.setStrokeColor(getColor(R.color.my_blue));
+        card.setCardBackgroundColor(Color.parseColor("#141414")); // dark background
+        card.setUseCompatPadding(true);
 
+        // inner layout for spacing
+        LinearLayout inner = new LinearLayout(this);
+        inner.setOrientation(LinearLayout.HORIZONTAL);
+        inner.setPadding(32, 32, 32, 32);
+        inner.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);
+
+        // avatar icon
+        ImageView avatar = new ImageView(this);
+        avatar.setImageResource(R.drawable.icon_profile); // you can use any simple vector like a person
+        avatar.setColorFilter(getColor(R.color.my_blue));
+        LinearLayout.LayoutParams avatarParams = new LinearLayout.LayoutParams(64, 64);
+        avatarParams.setMarginEnd(24);
+        avatar.setLayoutParams(avatarParams);
+
+        // username
         TextView userText = new TextView(this);
         userText.setText(username);
-        userText.setTextColor(Color.BLACK);
-        userText.setTextSize(22);
+        userText.setTextColor(Color.WHITE);
+        userText.setTextSize(20);
         userText.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
-        userText.setPadding(0, 32, 0, 32);
-        userText.setGravity(android.view.Gravity.CENTER);
 
-        card.addView(userText);
+        inner.addView(avatar);
+        inner.addView(userText);
+        card.addView(inner);
+
+        // animation
+        card.startAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));
+
         return card;
     }
+
     private void updateUnreadLabel() {
         if (chatUnreadLabel == null) return;
         if (unreadMessages > 0) {
@@ -246,7 +266,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         countText.setTextColor(Color.WHITE);
         countText.setTextSize(20);
         countText.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
-        countText.setGravity(android.view.Gravity.CENTER);
+        countText.setGravity(Gravity.CENTER);
         countText.setPadding(0, 8, 0, 24);
         userListLayout.addView(countText);
     }
@@ -350,7 +370,6 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         View sheetView = getLayoutInflater().inflate(R.layout.chat_bottom_sheet, null);
         chatDialog.setContentView(sheetView);
 
-        // Force full-height & expanded state
         chatDialog.setOnShowListener(dlg -> {
             View bottomSheet = chatDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
             if (bottomSheet != null) {
@@ -368,45 +387,58 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         unreadMessages = 0;
         updateUnreadLabel();
 
-        // Hook up views
         chatMessagesLayout = sheetView.findViewById(R.id.chat_messages_layout);
         chatScroll = sheetView.findViewById(R.id.chat_scroll);
         EditText input = sheetView.findViewById(R.id.chat_edit_text);
-        Button sendBtn = sheetView.findViewById(R.id.chat_send_btn);
+        ImageButton sendBtn = sheetView.findViewById(R.id.chat_send_btn);
 
-        // Dump history
         for (Message msg : chat) addMessageBubble(msg.getSender(), msg.getText());
 
-        // Send handler
         sendBtn.setOnClickListener(v -> {
             String text = input.getText().toString().trim();
             if (!text.isEmpty()) {
                 String jsonMsg = "{\"type\":\"MESSAGE\",\"message\":\"" + text + "\"}";
-                Log.d(TAG, "Sending: " + jsonMsg);
                 WebSocketManager.getInstance().sendMessage(jsonMsg);
                 input.setText("");
             }
         });
-
     }
 
     private void addMessageBubble(String sender, String text) {
         if (chatMessagesLayout == null) return;
+
         TextView msgView = new TextView(this);
         msgView.setText(sender + ": " + text);
-        msgView.setTextColor(Color.WHITE);
         msgView.setTextSize(16f);
-        int pad = (int) (8 * getResources().getDisplayMetrics().density);
-        msgView.setPadding(pad, pad, pad, pad);
+        msgView.setTypeface(ResourcesCompat.getFont(this, R.font.inter_regular));
+        msgView.setTextColor(Color.WHITE);
+
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(0, 8, 0, 8);
+
+        // Align own messages to right with blue bubble
+        if (sender.equals(username)) {
+            params.gravity = Gravity.END;
+            msgView.setBackgroundResource(R.drawable.chat_message_bubble_user);
+        } else {
+            params.gravity = Gravity.START;
+            msgView.setBackgroundResource(R.drawable.chat_message_bubble);
+        }
+
+        msgView.setLayoutParams(params);
+        msgView.setPadding(24, 16, 24, 16);
+        msgView.startAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));
+
         chatMessagesLayout.addView(msgView);
 
-        // Always scroll to bottom after adding
-        if (chatScroll != null) {
+        if (chatScroll != null)
             chatScroll.post(() -> chatScroll.fullScroll(View.FOCUS_DOWN));
-        }
     }
 
-    private void startGame(){
+    private void startGame() {
         WebSocketManager.getInstance().sendMessage("{\"type\": \"START\"}");
     }
 }

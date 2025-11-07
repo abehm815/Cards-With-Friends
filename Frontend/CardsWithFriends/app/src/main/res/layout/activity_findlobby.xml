@@ -23,7 +23,7 @@
         app:strokeColor="@android:color/white"
         app:strokeWidth="2dp"
         app:cornerRadius="12dp"
-        app:icon="@drawable/backarrow"
+        app:icon="@drawable/icon_backarrow"
         app:iconTint="@android:color/white"
         app:iconPadding="8dp"
         app:iconGravity="textStart"

@@ -30,7 +30,7 @@
         android:layout_marginTop="12dp"
         android:background="@android:color/transparent"
         android:contentDescription="Refresh Stats"
-        android:src="@drawable/refresh"
+        android:src="@drawable/icon_refresh"
         app:tint="@android:color/white"
         app:layout_constraintTop_toBottomOf="@id/stats_title"
         app:layout_constraintStart_toStartOf="parent"
