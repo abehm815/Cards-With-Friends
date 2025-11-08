@@ -1,48 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AndroidLayouts">
+    <layouts>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/btn_blue.xml">
+        <config>
+          <theme>@style/Theme.AndroidExample</theme>
+        </config>
+      </layout>
+      <layout url="file://$PROJECT_DIR$/app/src/main/res/drawable/lobby_card_base.xml">
+        <config>
+          <theme>@style/Theme.AndroidExample</theme>
+        </config>
+      </layout>
+    </layouts>
+  </component>
   <component name="AutoImportSettings">
-    <option name="autoReloadType" value="SELECTIVE" />
+    <option name="autoReloadType" value="NONE" />
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b8f83e91-f191-4050-916d-4fdf9b0007bf" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/HomeActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/HomeActivity.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/LobbyActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/LobbyActivity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/LobbyViewActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/LobbyViewActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/blackjack/CardRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/blackjack/CardRenderer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/blackjack/PlayerTurnBar.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/blackjack/PlayerTurnBar.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/backarrow.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_backarrow.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/badge_circle.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/bg_hand_value_pill.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/bj_hand_value_pill.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/blackjack_card.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/home_card_bj.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/btn_double_gradient.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/btn_orange.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/btn_hit_gradient.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/btn_green.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/btn_place_bet_gradient.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/btn_split_gradient.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/btn_blue.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/btn_stand_gradient.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/btn_red.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/chaticon.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_chat.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/chip.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_chip.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/double_icon.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_double.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/euchre_card.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/home_card_euchre.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/gofish_card.png" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/home_card_gofish.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/hit.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_hit.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/leaderboard.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_leaderboard.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/person.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_profile.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/player_chip_bg.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/bj_player_chip_bg.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/playingcards.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_cards.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/refresh.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_refresh.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/rounded_player_bg.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/bj_rounded_player_bg.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/send_icon.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_send.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/split.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_split.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/stand.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_stand.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/stats.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/icon_stats.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_blackjack.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_blackjack.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_findlobby.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_findlobby.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_home.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_home.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_leaderboard.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_leaderboard.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_lobby.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_lobby.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_lobbyview.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_lobbyview.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_stats.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_stats.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/bottom_nav.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/bottom_nav.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/chat_bottom_sheet.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/chat_bottom_sheet.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/build/reports/problems/problems-report.html" beforeDir="false" afterPath="$PROJECT_DIR$/build/reports/problems/problems-report.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -69,9 +49,23 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "associatedIndex": 1
+}]]></component>
+  <component name="ProjectId" id="35AnCjKKgxWTr5wXo32WmIsQdPq" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "Android App.app.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.readMode.enableVisualFormatting": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
     "git-widget-placeholder": "blackjack-final"
   }
 }]]></component>
@@ -150,6 +144,13 @@
     </configuration>
   </component>
   <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="b8f83e91-f191-4050-916d-4fdf9b0007bf" name="Changes" comment="" />
+      <created>1762561619314</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1762561619314</updated>
+    </task>
     <servers />
   </component>
   <component name="play_dynamic_filters_status">
