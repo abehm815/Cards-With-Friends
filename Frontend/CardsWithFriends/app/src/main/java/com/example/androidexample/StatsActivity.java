@@ -3,17 +3,25 @@ package com.example.androidexample;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
+
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.example.androidexample.services.BottomNavHelper;
 import com.example.androidexample.services.VolleySingleton;
+import com.google.android.material.card.MaterialCardView;
+
 import org.json.JSONObject;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +32,8 @@ public class StatsActivity extends AppCompatActivity {
     private LinearLayout statsContainer;
     private ImageButton refreshBtn;
     private String username;
+
+    private TextView blackjackBtn, euchreBtn, gofishBtn;
 
     // cache
     private JSONObject cachedStats = null;
@@ -42,22 +52,49 @@ public class StatsActivity extends AppCompatActivity {
         statsContainer = findViewById(R.id.stats_text_container);
         refreshBtn = findViewById(R.id.refresh_button);
 
-        findViewById(R.id.stats_blackjack_btn).setOnClickListener(v -> {
-            currentGame = "Blackjack";
-            showGameStats();
-        });
-        findViewById(R.id.stats_euchre_btn).setOnClickListener(v -> {
-            currentGame = "Euchre";
-            showGameStats();
-        });
-        findViewById(R.id.stats_gofish_btn).setOnClickListener(v -> {
-            currentGame = "GoFish";
-            showGameStats();
-        });
+        blackjackBtn = findViewById(R.id.stats_blackjack_btn);
+        euchreBtn = findViewById(R.id.stats_euchre_btn);
+        gofishBtn = findViewById(R.id.stats_gofish_btn);
+
+        blackjackBtn.setOnClickListener(v -> selectGame("Blackjack"));
+        euchreBtn.setOnClickListener(v -> selectGame("Euchre"));
+        gofishBtn.setOnClickListener(v -> selectGame("GoFish"));
 
         refreshBtn.setOnClickListener(v -> fetchStats());
 
         fetchStats(); // load on open
+        updateButtonStyles(); // make sure default highlights properly
+    }
+
+    private void selectGame(String game) {
+        if (game.equals(currentGame)) return; // avoid unnecessary reloads
+        currentGame = game;
+        updateButtonStyles();
+
+        // fade content during switch
+        statsContainer.animate().alpha(0f).setDuration(150).withEndAction(() -> {
+            showGameStats();
+            statsContainer.animate().alpha(1f).setDuration(150).start();
+        }).start();
+    }
+
+    /** Visually updates which game is active **/
+    private void updateButtonStyles() {
+        blackjackBtn.setBackgroundResource(R.drawable.btn_dark);
+        euchreBtn.setBackgroundResource(R.drawable.btn_dark);
+        gofishBtn.setBackgroundResource(R.drawable.btn_dark);
+
+        switch (currentGame) {
+            case "Blackjack":
+                blackjackBtn.setBackgroundResource(R.drawable.btn_red);
+                break;
+            case "Euchre":
+                euchreBtn.setBackgroundResource(R.drawable.btn_blue);
+                break;
+            case "GoFish":
+                gofishBtn.setBackgroundResource(R.drawable.btn_green);
+                break;
+        }
     }
 
     private void fetchStats() {
@@ -76,9 +113,8 @@ public class StatsActivity extends AppCompatActivity {
                                     cachedStats = statsRes;
                                     showGameStats();
                                 },
-                                err -> {
-                                    Toast.makeText(this, "Failed to load stats", Toast.LENGTH_SHORT).show();
-                                });
+                                err -> Toast.makeText(this, "Failed to load stats", Toast.LENGTH_SHORT).show()
+                        );
 
                         VolleySingleton.getInstance(this).addToRequestQueue(statsReq);
                     } catch (Exception e) {
@@ -142,24 +178,33 @@ public class StatsActivity extends AppCompatActivity {
         }
     }
 
-    /** creates a grey box for each stat line **/
+    /** Creates a grey box for each stat line **/
     private void addTextBox(String text) {
-        TextView tv = new TextView(this);
+        int accent;
+        switch (currentGame) {
+            case "Blackjack":
+                accent = getColor(R.color.my_red);
+                break;
+            case "Euchre":
+                accent = getColor(R.color.my_blue);
+                break;
+            case "GoFish":
+            default:
+                accent = getColor(R.color.my_green);
+                break;
+        }
+
+        View cardView = getLayoutInflater().inflate(R.layout.item_stat_card, statsContainer, false);
+        MaterialCardView card = (MaterialCardView) cardView;
+        card.setStrokeColor(accent);
+
+        ImageView icon = card.findViewById(R.id.stat_icon);
+        icon.setColorFilter(accent);
+
+        TextView tv = card.findViewById(R.id.stat_text);
         tv.setText(text);
-        tv.setTextColor(getColor(android.R.color.white));
-        tv.setTextSize(20);
-        tv.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
-        tv.setBackgroundColor(getColor(R.color.my_grey));
-        tv.setPadding(20, 15, 20, 15);
 
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        );
-        params.setMargins(40, 12, 40, 0);
-        tv.setLayoutParams(params);
-        tv.setGravity(android.view.Gravity.CENTER);
-
-        statsContainer.addView(tv);
+        card.startAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));
+        statsContainer.addView(card);
     }
 }

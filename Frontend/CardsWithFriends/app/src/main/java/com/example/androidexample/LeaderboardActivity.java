@@ -1,10 +1,8 @@
 package com.example.androidexample;
 
 import android.content.Intent;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -19,6 +17,7 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.example.androidexample.services.BottomNavHelper;
 import com.example.androidexample.services.VolleySingleton;
+import com.google.android.material.card.MaterialCardView;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -38,7 +37,7 @@ public class LeaderboardActivity extends AppCompatActivity {
     private final List<PlayerStat> gofishList = new ArrayList<>();
 
     private LinearLayout leaderboardContainer;
-    private View blackjackBtn, euchreBtn, gofishBtn;
+    private TextView blackjackBtn, euchreBtn, gofishBtn;
     private ImageButton refreshBtn;
 
     private String currentGame = "Blackjack";
@@ -58,27 +57,49 @@ public class LeaderboardActivity extends AppCompatActivity {
         gofishBtn = findViewById(R.id.leaderboard_gofish_btn);
         refreshBtn = findViewById(R.id.refresh_button);
 
+        // Button click listeners
         blackjackBtn.setOnClickListener(v -> {
             currentGame = "Blackjack";
             displayLeaderboard(blackjackList);
+            setActiveButton(currentGame);
         });
 
         euchreBtn.setOnClickListener(v -> {
             currentGame = "Euchre";
             displayLeaderboard(euchreList);
+            setActiveButton(currentGame);
         });
 
         gofishBtn.setOnClickListener(v -> {
             currentGame = "Go Fish";
             displayLeaderboard(gofishList);
+            setActiveButton(currentGame);
         });
 
-        refreshBtn.setOnClickListener(v -> {
-            getUserStats();
-        });
+        refreshBtn.setOnClickListener(v -> getUserStats());
 
-        // Load stats once initially
-        getUserStats();
+        getUserStats(); // load on open
+        setActiveButton(currentGame); // default highlight
+    }
+
+    private void setActiveButton(String activeGame) {
+        // Reset all buttons to dark
+        blackjackBtn.setBackgroundResource(R.drawable.btn_dark);
+        euchreBtn.setBackgroundResource(R.drawable.btn_dark);
+        gofishBtn.setBackgroundResource(R.drawable.btn_dark);
+
+        // Highlight selected one
+        switch (activeGame) {
+            case "Blackjack":
+                blackjackBtn.setBackgroundResource(R.drawable.btn_red);
+                break;
+            case "Euchre":
+                euchreBtn.setBackgroundResource(R.drawable.btn_blue);
+                break;
+            case "Go Fish":
+                gofishBtn.setBackgroundResource(R.drawable.btn_green);
+                break;
+        }
     }
 
     private void getUserStats() {
@@ -128,6 +149,7 @@ public class LeaderboardActivity extends AppCompatActivity {
 
             dataLoaded = true;
             displayLeaderboard(getCurrentList());
+            setActiveButton(currentGame);
 
         } catch (Exception e) {
             Log.e("Volley", "Parse error", e);
@@ -167,72 +189,47 @@ public class LeaderboardActivity extends AppCompatActivity {
             return;
         }
 
+        // pick border color based on game type
+        int borderColor;
+        switch (currentGame) {
+            case "Euchre":
+                borderColor = ContextCompat.getColor(this, R.color.my_blue);
+                break;
+            case "Go Fish":
+                borderColor = ContextCompat.getColor(this, R.color.my_green);
+                break;
+            default:
+                borderColor = ContextCompat.getColor(this, R.color.my_red);
+                break;
+        }
+
         int rank = 1;
         for (PlayerStat p : list) {
-            // Create outer block
-            LinearLayout block = new LinearLayout(this);
-            block.setOrientation(LinearLayout.HORIZONTAL);
-            block.setPadding(30, 25, 30, 25);
-            block.setGravity(Gravity.CENTER_VERTICAL);
+            View card = getLayoutInflater().inflate(R.layout.item_leaderboard_entry, leaderboardContainer, false);
+            MaterialCardView cardView = (MaterialCardView) card;
+            cardView.setStrokeColor(borderColor);
 
-            // Light grey rounded background
-            GradientDrawable bg = new GradientDrawable();
-            bg.setColor(ContextCompat.getColor(this, R.color.my_grey));
-            bg.setCornerRadius(25);
-            block.setBackground(bg);
+            TextView rankText = card.findViewById(R.id.rank_text);
+            TextView usernameText = card.findViewById(R.id.username_text);
+            TextView scoreText = card.findViewById(R.id.score_text);
 
-            LinearLayout.LayoutParams blockParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-            );
-            blockParams.setMargins(0, 12, 0, 12);
-            block.setLayoutParams(blockParams);
+            rankText.setText(String.valueOf(rank));
+            usernameText.setText(p.username);
+            scoreText.setText(String.format("%.2f%%", p.winPct));
 
-            // Rank circle
-            TextView rankCircle = new TextView(this);
-            rankCircle.setText(String.valueOf(rank));
-            rankCircle.setTextColor(ContextCompat.getColor(this, android.R.color.black));
-            rankCircle.setTextSize(18);
-            rankCircle.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
-            rankCircle.setGravity(Gravity.CENTER);
+            // Gradient backgrounds
+            if (rank == 1) {
+                rankText.setBackgroundResource(R.drawable.bg_rank_gold);
+            } else if (rank == 2) {
+                rankText.setBackgroundResource(R.drawable.bg_rank_silver);
+            } else if (rank == 3) {
+                rankText.setBackgroundResource(R.drawable.bg_rank_bronze);
+            } else {
+                rankText.setBackgroundResource(R.drawable.bg_rank_gradient);
+            }
+            rankText.setTextColor(ContextCompat.getColor(this, android.R.color.white));
 
-            GradientDrawable circleBg = new GradientDrawable();
-            circleBg.setShape(GradientDrawable.OVAL);
-            circleBg.setColor(ContextCompat.getColor(this, android.R.color.white));
-            circleBg.setSize(80, 80);
-            rankCircle.setBackground(circleBg);
-
-            LinearLayout.LayoutParams circleParams = new LinearLayout.LayoutParams(80, 80);
-            circleParams.setMargins(0, 0, 30, 0);
-            rankCircle.setLayoutParams(circleParams);
-
-            // Username
-            TextView nameView = new TextView(this);
-            nameView.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
-            nameView.setTextColor(ContextCompat.getColor(this, android.R.color.white));
-            nameView.setTextSize(20);
-            nameView.setText(p.username);
-
-            // Spacer
-            View spacer = new View(this);
-            LinearLayout.LayoutParams spacerParams = new LinearLayout.LayoutParams(
-                    0, LinearLayout.LayoutParams.WRAP_CONTENT, 1
-            );
-            spacer.setLayoutParams(spacerParams);
-
-            // Score
-            TextView scoreView = new TextView(this);
-            scoreView.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
-            scoreView.setTextColor(ContextCompat.getColor(this, android.R.color.white));
-            scoreView.setTextSize(20);
-            scoreView.setText(String.format("%.2f%%", p.winPct));
-
-            block.addView(rankCircle);
-            block.addView(nameView);
-            block.addView(spacer);
-            block.addView(scoreView);
-
-            leaderboardContainer.addView(block);
+            leaderboardContainer.addView(card);
             rank++;
         }
     }

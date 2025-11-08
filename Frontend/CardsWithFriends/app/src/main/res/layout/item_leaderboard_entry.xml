@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="20dp"
+    android:layout_marginVertical="4dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp"
+    app:strokeWidth="2dp"
+    app:cardBackgroundColor="#141414"
+    app:strokeColor="@android:color/white">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="10dp">
+
+        <!-- Rank Badge -->
+        <TextView
+            android:id="@+id/rank_text"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="@drawable/bg_rank_gradient"
+            android:gravity="center"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:fontFamily="@font/inter_black"
+            android:layout_marginEnd="12dp"/>
+
+        <!-- Username -->
+        <TextView
+            android:id="@+id/username_text"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Username"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:fontFamily="@font/inter_bold"/>
+
+        <!-- Score -->
+        <TextView
+            android:id="@+id/score_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="95.0%"
+            android:textColor="@android:color/white"
+            android:textSize="16sp"
+            android:fontFamily="@font/inter_bold"/>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

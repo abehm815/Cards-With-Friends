@@ -27,6 +27,9 @@ import org.java_websocket.handshake.ServerHandshake;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * BlackjackActivity
  * Handles all blackjack game UI updates and WebSocket communications.
@@ -56,6 +59,8 @@ public class BlackjackActivity extends AppCompatActivity implements WebSocketLis
     private GameState gameState = new GameState();
 
     private GameState previousGameState = null;
+
+    private List<CardState> previousDealerHand = new ArrayList<>();
 
     // Helpers
     private CardRenderer cardRenderer;
@@ -227,8 +232,8 @@ public class BlackjackActivity extends AppCompatActivity implements WebSocketLis
                 updateDealerCardsUI(isRoundOver);
                 updateActionButtonsUI();
 
-                long newRoundDelay = 3000;
-                long countDownDelay = 3500;
+                long newRoundDelay = 3000; //How long the countdown timer is
+                long countDownDelay = 5000; //Delay before countdown starts
                 if (isRoundOver) {
                     new android.os.Handler(android.os.Looper.getMainLooper())
                             .postDelayed(() -> {
@@ -293,7 +298,12 @@ public class BlackjackActivity extends AppCompatActivity implements WebSocketLis
     }
 
     private void updateDealerCardsUI(boolean isRoundOver) {
-        cardRenderer.renderDealer(dealerCardContainer, gameState.dealer, isRoundOver);
+        if (gameState == null || gameState.dealer == null || gameState.dealer.hand == null) {
+            return; // No dealer yet, skip rendering
+        }
+
+        cardRenderer.renderDealer(dealerCardContainer, gameState.dealer, isRoundOver, previousDealerHand);
+        previousDealerHand = new ArrayList<>(gameState.dealer.hand);
     }
 
     // -------------------------------------------------------------------
