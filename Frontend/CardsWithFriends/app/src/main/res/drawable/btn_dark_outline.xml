@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#33FFFFFF">  <!-- subtle white ripple -->
+
+    <!-- Background shape -->
+    <item>
+        <shape android:shape="rectangle">
+            <!-- Very dark base so it blends with keypad -->
+            <solid android:color="#151515" />
+
+            <!-- Rounded corners -->
+            <corners android:radius="16dp" />
+
+            <!-- Soft gray-white outline for contrast -->
+            <stroke
+                android:width="2dp"
+                android:color="#AAAAAA" />
+        </shape>
+    </item>
+
+</ripple>

@@ -91,7 +91,6 @@ public class LoginActivity extends AppCompatActivity {
                         String user = response.getString("username");
                         String pass = response.getString("password");
                         if(username.equals(user) && password.equals(pass)){
-                            Toast.makeText(this, "Logging in: " + user, Toast.LENGTH_SHORT).show();
                             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                             intent.putExtra("USERNAME", username);
                             startActivity(intent);

@@ -3,7 +3,6 @@ package com.example.androidexample;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -16,11 +15,7 @@ import com.example.androidexample.services.VolleySingleton;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private Button deleteButton;
-    private Button updateButton;
-    private Button logoutButton;
-    private TextView usernameDisplayText;
-
+    private TextView deleteButton, updateButton, logoutButton, usernameDisplayText;
     private String username;
 
     @Override
@@ -96,9 +91,7 @@ public class ProfileActivity extends AppCompatActivity {
                     Intent i = new Intent(ProfileActivity.this, MainActivity.class);
                     startActivity(i);
                 },
-                error -> {
-                    Toast.makeText(this, "Failed to delete user stats", Toast.LENGTH_LONG).show();
-                }
+                error -> Toast.makeText(this, "Failed to delete user stats", Toast.LENGTH_LONG).show()
         );
 
         VolleySingleton.getInstance(this).addToRequestQueue(deleteRequest);
