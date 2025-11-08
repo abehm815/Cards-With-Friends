@@ -1,13 +1,19 @@
 package com.example.androidexample;
 
 import android.content.Intent;
-import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.services.VolleySingleton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class LobbyActivity extends AppCompatActivity {
 
@@ -25,7 +31,6 @@ public class LobbyActivity extends AppCompatActivity {
         setContentView(R.layout.activity_lobby);
 
         // Link UI
-        ConstraintLayout rootLayout = findViewById(R.id.lobby_root);
         gameText = findViewById(R.id.lobby_title);
         backButton = findViewById(R.id.lobby_back_btn);
         joinButton = findViewById(R.id.lobby_join_btn);
@@ -37,9 +42,6 @@ public class LobbyActivity extends AppCompatActivity {
         gameType = intent.getStringExtra("GAMETYPE");
         username = intent.getStringExtra("USERNAME");
         gameText.setText(gameType);
-
-        // Set dynamic background gradient
-        setDynamicBackground(rootLayout, gameType);
 
         // Back button → return to home
         backButton.setOnClickListener(v -> {
@@ -56,60 +58,60 @@ public class LobbyActivity extends AppCompatActivity {
             startActivity(i);
         });
 
-        // Host button
-        hostButton.setOnClickListener(v -> {
-            Intent i = new Intent(LobbyActivity.this, HostActivity.class);
+        // Host button → autogen and open LobbyViewActivity
+        hostButton.setOnClickListener(v -> createAutoLobby());
+
+        // Find button
+        findButton.setOnClickListener(v -> {
+            Intent i = new Intent(LobbyActivity.this, FindLobbyActivity.class);
             i.putExtra("GAMETYPE", gameType);
             i.putExtra("USERNAME", username);
             startActivity(i);
         });
-
-        findButton.setOnClickListener(v -> {
-           Intent i = new Intent(LobbyActivity.this, FindLobbyActivity.class);
-           i.putExtra("GAMETYPE", gameType);
-           i.putExtra("USERNAME", username);
-           startActivity(i);
-        });
     }
 
     /**
-     * Dynamically sets gradient background based on game type.
+     * Auto-creates a lobby and opens LobbyViewActivity as host.
      */
-    private void setDynamicBackground(ConstraintLayout layout, String gameType) {
-        int[] colors;
+    private void createAutoLobby() {
+        String url = "http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/autogen/" + username;
 
-        switch (gameType.toUpperCase()) {
-            case "BLACKJACK":
-                colors = new int[]{
-                        getColor(R.color.my_red),
-                        getColor(R.color.my_dark_red)
-                };
-                break;
-            case "GOFISH":
-                colors = new int[]{
-                        getColor(R.color.my_green),
-                        getColor(R.color.my_dark_green)
-                };
-                break;
-            case "EUCHRE":
-                colors = new int[]{
-                        getColor(R.color.my_blue),
-                        getColor(R.color.my_dark_blue)
-                };
-                break;
-            default:
-                colors = new int[]{
-                        getColor(R.color.my_grey),
-                        getColor(R.color.black)
-                };
-                break;
+        JSONObject body = new JSONObject();
+        try {
+            body.put("gameType", gameType.toUpperCase());
+        } catch (JSONException e) {
+            Toast.makeText(this, "Error creating request", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        GradientDrawable gradient = new GradientDrawable(
-                GradientDrawable.Orientation.TOP_BOTTOM,
-                colors
-        );
-        gradient.setCornerRadius(0f);
-        layout.setBackground(gradient);
+        JsonObjectRequest request = new JsonObjectRequest(
+                Request.Method.POST,
+                url,
+                body,
+                response -> {}, // handled below
+                error -> Toast.makeText(this, "Network Error", Toast.LENGTH_LONG).show()
+        ) {
+            @Override
+            protected com.android.volley.Response<JSONObject> parseNetworkResponse(com.android.volley.NetworkResponse response) {
+                try {
+                    String joinCode = new String(response.data).replace("\"", "").trim();
+
+                    runOnUiThread(() -> {
+                        Intent i = new Intent(LobbyActivity.this, LobbyViewActivity.class);
+                        i.putExtra("GAMETYPE", gameType);
+                        i.putExtra("USERNAME", username);
+                        i.putExtra("JOINCODE", joinCode);
+                        i.putExtra("HOST", true);
+                        startActivity(i);
+                    });
+
+                    return com.android.volley.Response.success(new JSONObject(), null);
+                } catch (Exception e) {
+                    return com.android.volley.Response.error(new com.android.volley.VolleyError(e));
+                }
+            }
+        };
+
+        VolleySingleton.getInstance(this).addToRequestQueue(request);
     }
 }

@@ -53,7 +53,7 @@ public class HomeActivity extends AppCompatActivity {
         // Go Fish listener
         goFishCard.setOnClickListener(v -> {
             Intent i = new Intent(HomeActivity.this, LobbyActivity.class);
-            i.putExtra("GAMETYPE", "GOFISH");
+            i.putExtra("GAMETYPE", "GO_FISH");
             i.putExtra("USERNAME", username);
             startActivity(i);
         });

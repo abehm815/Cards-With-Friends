@@ -167,7 +167,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                             i.putExtra("HOST", isHost);
                             i.putStringArrayListExtra("PLAYERS", currentUsers);
                             startActivity(i);
-                        } else if (gameType.equals("GOFISH")) {
+                        } else if (gameType.equals("GO_FISH")) {
                             Intent i = new Intent(LobbyViewActivity.this, GofishActivity.class);
                             i.putExtra("GAMETYPE", gameType);
                             i.putExtra("USERNAME", username);
@@ -319,7 +319,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                 null,
                 response -> {
                     Toast.makeText(getApplicationContext(), "Closed Lobby", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(this, JoinActivity.class);
+                    Intent intent = new Intent(this, LobbyActivity.class);
                     intent.putExtra("USERNAME", username);
                     intent.putExtra("GAMETYPE", gameType);
                     WebSocketManager.getInstance().disconnectWebSocket();
