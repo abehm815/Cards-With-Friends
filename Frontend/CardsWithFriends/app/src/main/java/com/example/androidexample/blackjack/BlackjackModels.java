@@ -46,6 +46,71 @@ public class BlackjackModels {
 
         /** All players participating in the current lobby. */
         public List<PlayerState> players = new ArrayList<>();
+
+        // ==========================================================
+        // Deep Copy Utility — creates a full duplicate of GameState
+        // ==========================================================
+        public GameState deepCopy() {
+            GameState copy = new GameState();
+
+            copy.currentTurn = this.currentTurn;
+            copy.roundInProgress = this.roundInProgress;
+            copy.lobbyCode = this.lobbyCode;
+
+            // Copy dealer
+            if (this.dealer != null) {
+                DealerState dealerCopy = new DealerState();
+                dealerCopy.handValue = this.dealer.handValue;
+                dealerCopy.hand = new ArrayList<>();
+                for (CardState c : this.dealer.hand) {
+                    CardState cardCopy = new CardState();
+                    cardCopy.value = c.value;
+                    cardCopy.suit = c.suit;
+                    cardCopy.isShowing = c.isShowing;
+                    dealerCopy.hand.add(cardCopy);
+                }
+                copy.dealer = dealerCopy;
+            }
+
+            // Copy players
+            copy.players = new ArrayList<>();
+            if (this.players != null) {
+                for (PlayerState p : this.players) {
+                    PlayerState playerCopy = new PlayerState();
+                    playerCopy.username = p.username;
+                    playerCopy.chips = p.chips;
+                    playerCopy.hasBet = p.hasBet;
+                    playerCopy.hands = new ArrayList<>();
+
+                    if (p.hands != null) {
+                        for (HandState h : p.hands) {
+                            HandState handCopy = new HandState();
+                            handCopy.bet = h.bet;
+                            handCopy.hasStood = h.hasStood;
+                            handCopy.canSplit = h.canSplit;
+                            handCopy.handValue = h.handValue;
+                            handCopy.handIndex = h.handIndex;
+                            handCopy.hand = new ArrayList<>();
+
+                            if (h.hand != null) {
+                                for (CardState c : h.hand) {
+                                    CardState cardCopy = new CardState();
+                                    cardCopy.value = c.value;
+                                    cardCopy.suit = c.suit;
+                                    cardCopy.isShowing = c.isShowing;
+                                    handCopy.hand.add(cardCopy);
+                                }
+                            }
+                            playerCopy.hands.add(handCopy);
+                        }
+                    }
+
+                    copy.players.add(playerCopy);
+                }
+            }
+
+            return copy;
+        }
     }
 
     // ==========================================================

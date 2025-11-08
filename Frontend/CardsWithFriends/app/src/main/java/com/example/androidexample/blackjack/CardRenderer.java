@@ -17,6 +17,9 @@ import com.example.androidexample.blackjack.BlackjackModels.HandState;
 import com.example.androidexample.blackjack.BlackjackModels.PlayerState;
 import com.example.androidexample.services.CardView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Responsible for rendering card visuals and related UI elements
  * (like value and bet pills) for both players and the dealer.
@@ -155,64 +158,155 @@ public class CardRenderer {
      * @param container The LinearLayout to place the dealer's hand in.
      * @param dealer    The dealer state object containing cards and hand value.
      */
-    public void renderDealer(LinearLayout container, DealerState dealer, boolean isRoundOver) {
-        container.removeAllViews();
+    public void renderDealer(LinearLayout container, DealerState dealer, boolean isRoundOver, List<CardState> previousDealerHand) {
         if (dealer == null || dealer.hand == null || dealer.hand.isEmpty()) return;
+        if (previousDealerHand == null) previousDealerHand = new ArrayList<>();
 
-        LinearLayout dealerLayout = new LinearLayout(context);
-        dealerLayout.setOrientation(LinearLayout.VERTICAL);
-        dealerLayout.setGravity(Gravity.CENTER_HORIZONTAL);
-        dealerLayout.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-        ));
-        dealerLayout.setClipChildren(false);
-        dealerLayout.setClipToPadding(false);
+        int oldCount = previousDealerHand.size();
+        int newCount = dealer.hand.size();
 
-        LinearLayout row = new LinearLayout(context);
-        row.setOrientation(LinearLayout.HORIZONTAL);
-        row.setGravity(Gravity.CENTER_HORIZONTAL);
-        row.setClipChildren(false);
-        row.setClipToPadding(false);
+        // Create or reuse dealer layout
+        LinearLayout dealerLayout;
+        if (container.getChildCount() == 0) {
+            dealerLayout = new LinearLayout(context);
+            dealerLayout.setOrientation(LinearLayout.VERTICAL);
+            dealerLayout.setGravity(Gravity.CENTER_HORIZONTAL);
+            dealerLayout.setClipChildren(false);
+            dealerLayout.setClipToPadding(false);
+            container.addView(dealerLayout);
+        } else {
+            dealerLayout = (LinearLayout) container.getChildAt(0);
+        }
 
+        // Create or reuse card row
+        LinearLayout row;
+        if (dealerLayout.getChildCount() > 0 && dealerLayout.getChildAt(0) instanceof LinearLayout) {
+            row = (LinearLayout) dealerLayout.getChildAt(0);
+        } else {
+            row = new LinearLayout(context);
+            row.setOrientation(LinearLayout.HORIZONTAL);
+            row.setGravity(Gravity.CENTER_HORIZONTAL);
+            row.setClipChildren(false);
+            row.setClipToPadding(false);
+            dealerLayout.addView(row);
+        }
+
+        // Determine a dynamic off-screen height for animation
+        int screenHeight = context.getResources().getDisplayMetrics().heightPixels;
+        float offscreenY = -screenHeight * 0.25f; // 25% of the screen height above visible area
+
+        // Render cards (animate new ones, flip revealed ones)
         for (int i = 0; i < dealer.hand.size(); i++) {
             CardState card = dealer.hand.get(i);
-            CardView cv = new CardView(context);
-            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(80), dp(120));
+            CardView cv;
 
-            if (isRoundOver && i > 0) {
-                int overlap = Math.max(-dp(90 / dealer.hand.size()), -dp(45));
-                p.setMargins(overlap, 0, 0, 0);
+            if (i < row.getChildCount()) {
+                // Reuse existing card
+                cv = (CardView) row.getChildAt(i);
+
+                // Flip face-down card if it just got revealed
+                if (i < oldCount) {
+                    CardState old = previousDealerHand.get(i);
+                    if (!old.isShowing && card.isShowing && !cv.isFaceUp()) {
+                        cv.flipCard();
+                    }
+                }
             } else {
+                // New card → animate it in from above screen
+                cv = new CardView(context);
+                LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(80), dp(120));
                 p.setMargins(dp(6), 0, dp(6), 0);
+                cv.setLayoutParams(p);
+                cv.setCard(String.valueOf(card.value), card.suit, card.isShowing);
+
+                // Start off-screen above
+                cv.setTranslationY(offscreenY);
+                row.addView(cv);
+
+                cv.animate()
+                        .translationY(0f)
+                        .setDuration(500)       // slightly longer travel for realism
+                        .setStartDelay(i * 250) // slower dealing pace between cards
+                        .setInterpolator(new android.view.animation.DecelerateInterpolator(1.5f))
+                        .start();
+            }
+        }
+
+        // --- Recalculate consistent overlap for all cards after animations ---
+        int totalCards = row.getChildCount();
+        if (totalCards > 1) {
+            int overlap;
+
+            if (totalCards <= 2) {
+                // No overlap for 1–2 cards (spread them apart a bit)
+                overlap = dp(12);
+            } else {
+                // Overlap gradually more as more cards are added
+                overlap = Math.max(-dp(90 / totalCards), -dp(45));
             }
 
-            cv.setLayoutParams(p);
-            cv.setCard(String.valueOf(card.value), card.suit, card.isShowing);
-            row.addView(cv);
+            for (int i = 0; i < totalCards; i++) {
+                View cardView = row.getChildAt(i);
+                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) cardView.getLayoutParams();
+
+                if (i == 0) {
+                    lp.setMargins(0, 0, 0, 0);
+                } else {
+                    lp.setMargins(overlap, 0, 0, 0);
+                }
+
+                cardView.setLayoutParams(lp);
+
+                // Smoothly reposition existing cards
+                cardView.animate()
+                        .translationX(0f)
+                        .setDuration(250)
+                        .setStartDelay(500 + (i * 50))
+                        .start();
+            }
         }
 
-        dealerLayout.addView(row);
+        // --- Always ensure old value pill is removed at round start ---
+        if (!isRoundOver) {
+            if (dealerLayout.getChildCount() > 1 && dealerLayout.getChildAt(1) instanceof TextView) {
+                dealerLayout.removeViewAt(1);
+            }
+        }
 
+        // --- Add or update the value pill AFTER animations ---
         if (isRoundOver) {
-            TextView valuePill = makePillText(
-                    String.valueOf(dealer.handValue),
-                    R.font.inter_bold,
-                    18,
-                    Color.WHITE,
-                    0.95f
-            );
-            LinearLayout.LayoutParams valueParams = new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-            );
-            valueParams.topMargin = dp(8);
-            valuePill.setLayoutParams(valueParams);
-            dealerLayout.addView(valuePill);
-        }
+            long delay = 600 + ((dealer.hand.size() - 1) * 600);
 
-        container.addView(dealerLayout);
+            row.postDelayed(() -> {
+                TextView valuePill;
+                if (dealerLayout.getChildCount() > 1 && dealerLayout.getChildAt(1) instanceof TextView) {
+                    valuePill = (TextView) dealerLayout.getChildAt(1);
+                    valuePill.setText(String.valueOf(dealer.handValue));
+                } else {
+                    valuePill = makePillText(
+                            String.valueOf(dealer.handValue),
+                            R.font.inter_bold,
+                            18,
+                            Color.WHITE,
+                            0.95f
+                    );
+                    LinearLayout.LayoutParams valueParams = new LinearLayout.LayoutParams(
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                    );
+                    valueParams.topMargin = dp(8);
+                    valuePill.setLayoutParams(valueParams);
+                    dealerLayout.addView(valuePill);
+                }
+
+                // Show immediately (no fade)
+                valuePill.setAlpha(1f);
+                valuePill.requestLayout();
+                valuePill.invalidate();
+            }, delay);
+        }
     }
+
 
     // ==========================================================
     // Private Helpers — UI construction utilities

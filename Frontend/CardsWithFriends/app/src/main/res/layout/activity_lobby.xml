@@ -37,6 +37,7 @@
         android:text="ENTER GAME LOBBY"
         android:textAllCaps="true"
         android:textColor="@android:color/white"
+        android:gravity="center_horizontal"
         android:textSize="36sp"
         android:layout_marginBottom="24dp"
         app:layout_constraintBottom_toTopOf="@id/lobby_host_btn"
