@@ -23,8 +23,6 @@
             android:exported="false"/>
         <activity android:name=".LeaderboardActivity"
             android:exported="false"/>
-        <activity android:name=".FindLobbyActivity"
-            android:exported="false"/>
         <activity android:name=".GofishActivity"
             android:exported="false"/>
         <activity android:name=".blackjack.BlackjackActivity"
@@ -35,9 +33,6 @@
             android:exported="false"/>
         <activity android:name=".UpdateActivity"
             android:exported="false"/>
-        <activity
-            android:name=".HostActivity"
-            android:exported="false" />
         <activity
             android:name=".JoinActivity"
             android:exported="false" />
@@ -67,7 +62,6 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

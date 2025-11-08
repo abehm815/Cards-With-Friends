@@ -2,11 +2,14 @@ package com.example.androidexample;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -18,10 +21,10 @@ import org.json.JSONObject;
 public class LobbyActivity extends AppCompatActivity {
 
     private TextView gameText;
-    private Button backButton;
-    private Button joinButton;
-    private Button hostButton;
-    private Button findButton;
+    private TextView joinButton;
+    private TextView hostButton;
+    private TextView findButton;
+    private TextView backButton;
     private String gameType;
     private String username;
 
@@ -41,7 +44,30 @@ public class LobbyActivity extends AppCompatActivity {
         Intent intent = getIntent();
         gameType = intent.getStringExtra("GAMETYPE");
         username = intent.getStringExtra("USERNAME");
-        gameText.setText(gameType);
+
+        // Normalize and color title (ALL CAPS)
+        String normalized = gameType.replace("_", " ").toUpperCase();
+        int accentColor;
+        switch (gameType.toUpperCase()) {
+            case "BLACKJACK":
+                accentColor = ContextCompat.getColor(this, R.color.my_red);
+                break;
+            case "EUCHRE":
+                accentColor = ContextCompat.getColor(this, R.color.my_blue);
+                break;
+            case "GO_FISH":
+                accentColor = ContextCompat.getColor(this, R.color.my_green);
+                break;
+            default:
+                accentColor = ContextCompat.getColor(this, android.R.color.white);
+        }
+
+        String titleText = "ENTER " + normalized + " LOBBY";
+        SpannableString span = new SpannableString(titleText);
+        int start = titleText.indexOf(normalized);
+        int end = start + normalized.length();
+        span.setSpan(new ForegroundColorSpan(accentColor), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        gameText.setText(span);
 
         // Back button → return to home
         backButton.setOnClickListener(v -> {
@@ -70,9 +96,6 @@ public class LobbyActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Auto-creates a lobby and opens LobbyViewActivity as host.
-     */
     private void createAutoLobby() {
         String url = "http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/autogen/" + username;
 
@@ -88,14 +111,13 @@ public class LobbyActivity extends AppCompatActivity {
                 Request.Method.POST,
                 url,
                 body,
-                response -> {}, // handled below
+                response -> {},
                 error -> Toast.makeText(this, "Network Error", Toast.LENGTH_LONG).show()
         ) {
             @Override
             protected com.android.volley.Response<JSONObject> parseNetworkResponse(com.android.volley.NetworkResponse response) {
                 try {
                     String joinCode = new String(response.data).replace("\"", "").trim();
-
                     runOnUiThread(() -> {
                         Intent i = new Intent(LobbyActivity.this, LobbyViewActivity.class);
                         i.putExtra("GAMETYPE", gameType);
@@ -104,7 +126,6 @@ public class LobbyActivity extends AppCompatActivity {
                         i.putExtra("HOST", true);
                         startActivity(i);
                     });
-
                     return com.android.volley.Response.success(new JSONObject(), null);
                 } catch (Exception e) {
                     return com.android.volley.Response.error(new com.android.volley.VolleyError(e));

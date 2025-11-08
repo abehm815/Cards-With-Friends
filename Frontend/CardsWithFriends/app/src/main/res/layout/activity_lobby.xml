@@ -5,17 +5,16 @@
     android:id="@+id/lobby_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg_gradient">
+    android:background="@drawable/bg_gradient"
+    android:padding="24dp">
 
-    <!-- Back Button with Arrow Icon -->
+    <!-- Back Button (unchanged) -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/lobby_back_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
         android:text="Back"
-        android:textSize="18sp"
+        android:textSize="16sp"
         android:fontFamily="@font/inter_black"
         android:textColor="@android:color/white"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
@@ -34,63 +33,75 @@
         android:id="@+id/lobby_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="148dp"
         android:fontFamily="@font/inter_black"
-        android:text="Lobbies"
+        android:text="ENTER GAME LOBBY"
+        android:textAllCaps="true"
         android:textColor="@android:color/white"
-        android:textSize="50sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <!-- Host Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/lobby_host_btn"
-        android:layout_width="150dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:text="Host"
-        android:textSize="20sp"
-        android:fontFamily="@font/inter_black"
-        android:textColor="@android:color/black"
-        style="@style/Widget.MaterialComponents.Button"
-        app:cornerRadius="12dp"
-        app:backgroundTint="@android:color/white"
-        app:layout_constraintTop_toBottomOf="@id/lobby_title"
+        android:textSize="36sp"
+        android:layout_marginBottom="24dp"
+        app:layout_constraintBottom_toTopOf="@id/lobby_host_btn"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Join Button -->
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/lobby_join_btn"
-        android:layout_width="150dp"
+    <!-- Vertical chain of buttons -->
+    <TextView
+        android:id="@+id/lobby_host_btn"
+        android:layout_width="160dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Join"
+        android:text="HOST"
+        android:textAllCaps="true"
+        android:textColor="@android:color/white"
         android:textSize="20sp"
         android:fontFamily="@font/inter_black"
-        android:textColor="@android:color/black"
-        style="@style/Widget.MaterialComponents.Button"
-        app:cornerRadius="12dp"
-        app:backgroundTint="@android:color/white"
+        android:gravity="center"
+        android:background="@drawable/btn_dark"
+        android:paddingVertical="14dp"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/lobby_join_btn"
+        app:layout_constraintVertical_chainStyle="packed" />
+
+    <TextView
+        android:id="@+id/lobby_join_btn"
+        android:layout_width="160dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="JOIN"
+        android:textAllCaps="true"
+        android:textColor="@android:color/white"
+        android:textSize="20sp"
+        android:fontFamily="@font/inter_black"
+        android:gravity="center"
+        android:background="@drawable/btn_dark"
+        android:paddingVertical="14dp"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintTop_toBottomOf="@id/lobby_host_btn"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/lobby_find_btn" />
 
-    <com.google.android.material.button.MaterialButton
+    <TextView
         android:id="@+id/lobby_find_btn"
-        android:layout_width="150dp"
+        android:layout_width="160dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:text="Find"
+        android:layout_marginTop="16dp"
+        android:text="FIND"
+        android:textAllCaps="true"
+        android:textColor="@android:color/white"
         android:textSize="20sp"
         android:fontFamily="@font/inter_black"
-        android:textColor="@android:color/black"
-        style="@style/Widget.MaterialComponents.Button"
-        app:cornerRadius="12dp"
-        app:backgroundTint="@android:color/white"
+        android:gravity="center"
+        android:background="@drawable/btn_dark"
+        android:paddingVertical="14dp"
+        android:clickable="true"
+        android:focusable="true"
         app:layout_constraintTop_toBottomOf="@id/lobby_join_btn"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
