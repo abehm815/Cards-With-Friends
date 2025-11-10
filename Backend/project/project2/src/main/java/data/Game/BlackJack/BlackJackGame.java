@@ -10,12 +10,10 @@ import data.User.Stats.UserStats;
 import data.User.Stats.UserStatsRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import data.Lobby.LobbyController;
 
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -63,8 +61,6 @@ public class BlackJackGame {
 
         Lobby lobby = LobbyRepository.findByJoinCodeWithUsers(joinCode);
 
-       //lobby lobby = LobbyRepository.findByJoinCodeWithUsersAndBlackJackStats(joinCode);
-
         if (lobby == null) {
             System.out.println("Lobby not found with join code: " +  joinCode );
             return;
@@ -79,15 +75,6 @@ public class BlackJackGame {
         // Clear any existing players before reloading
         players.clear();
 
-        // Loop through all users in the lobby and create player objects
-        /*
-        for (AppUser user : lobby.getUsers()) {
-            BlackjackStats bjStats = (BlackjackStats) user.getUserStats().getGameStats("BlackJack");
-            BlackJackPlayer player = new BlackJackPlayer(user, 1000);
-            players.add(player);
-        }
-
-         */
         //use jakes query to add users to blackjack game
         for (String name : userNames) {
             AppUser user = AppUserRepository.findByUsernameWithStats(name);
@@ -207,6 +194,9 @@ public class BlackJackGame {
                 playerSplit(currentPlayer.getUsername());
                 currentPlayerStats.addTimeSplit();
                 break;
+
+            case "LEAVE":
+                playerLeave(currentPlayer.getUsername());
 
             default:
                 System.out.println("Invalid decision: " + decision);
@@ -337,6 +327,19 @@ public class BlackJackGame {
 
 
         System.out.println(username + " splits into two hands with separate bets.");
+    }
+
+
+    //removes player from player list in web socket but not from backend sql frontend please call put method on button press!!!
+    public void playerLeave(String username) {
+        boolean removed = players.removeIf(
+                player -> player.getUsername().equals(username)
+        );
+        if (removed) {
+            System.out.println("Removed player: " + username);
+        } else {
+            System.out.println("No player found with username: " + username);
+        }
     }
 
 

@@ -102,6 +102,7 @@ public class BlackJackWebSocket {
             case "STAND":
             case "DOUBLE":
             case "SPLIT":
+            case "LEAVE":
                 game.handlePlayerDecision(player, action);
                 break;
             case "STARTROUND":
