@@ -16,7 +16,7 @@ public class BlackJackDeck {
             char[] suits = {'h', 'd', 's', 'c'};
 
             for (char s : suits) {
-                for (int i = 2; i < 14; i++) {
+                for (int i = 2; i <= 14; i++) {
                     cards.add(new BlackJackCard(i, s));
                 }
             }
