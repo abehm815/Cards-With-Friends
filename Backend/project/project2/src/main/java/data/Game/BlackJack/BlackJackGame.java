@@ -196,7 +196,7 @@ public class BlackJackGame {
                 break;
 
             case "LEAVE":
-                playerLeave(currentPlayer.getUsername());
+                playerLeave(username);
 
             default:
                 System.out.println("Invalid decision: " + decision);
