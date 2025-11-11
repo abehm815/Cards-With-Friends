@@ -4,14 +4,14 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.res.ResourcesCompat;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonArrayRequest;
@@ -55,9 +55,7 @@ public class LeaderboardActivity extends AppCompatActivity {
         blackjackBtn = findViewById(R.id.leaderboard_blackjack_btn);
         euchreBtn = findViewById(R.id.leaderboard_euchre_btn);
         gofishBtn = findViewById(R.id.leaderboard_gofish_btn);
-        refreshBtn = findViewById(R.id.refresh_button);
 
-        // Button click listeners
         blackjackBtn.setOnClickListener(v -> {
             currentGame = "Blackjack";
             displayLeaderboard(blackjackList);
@@ -76,19 +74,16 @@ public class LeaderboardActivity extends AppCompatActivity {
             setActiveButton(currentGame);
         });
 
-        refreshBtn.setOnClickListener(v -> getUserStats());
-
-        getUserStats(); // load on open
-        setActiveButton(currentGame); // default highlight
+        getUserStats();
+        setActiveButton(currentGame);
     }
 
+    /** Highlights the selected game button **/
     private void setActiveButton(String activeGame) {
-        // Reset all buttons to dark
         blackjackBtn.setBackgroundResource(R.drawable.btn_dark);
         euchreBtn.setBackgroundResource(R.drawable.btn_dark);
         gofishBtn.setBackgroundResource(R.drawable.btn_dark);
 
-        // Highlight selected one
         switch (activeGame) {
             case "Blackjack":
                 blackjackBtn.setBackgroundResource(R.drawable.btn_red);
@@ -102,6 +97,7 @@ public class LeaderboardActivity extends AppCompatActivity {
         }
     }
 
+    /** Fetches leaderboard data from backend **/
     private void getUserStats() {
         String url = DB_URL + "/UserStats";
 
@@ -112,13 +108,14 @@ public class LeaderboardActivity extends AppCompatActivity {
                 this::handleResponse,
                 error -> {
                     Log.e("Volley", "Error fetching user stats: " + error);
-                    Toast.makeText(this, "Cannot fetch stats right now", Toast.LENGTH_SHORT).show();
+                    showUnavailableMessage();
                 }
         );
 
         VolleySingleton.getInstance(this).addToRequestQueue(request);
     }
 
+    /** Handles valid server responses **/
     private void handleResponse(JSONArray response) {
         try {
             blackjackList.clear();
@@ -153,10 +150,47 @@ public class LeaderboardActivity extends AppCompatActivity {
 
         } catch (Exception e) {
             Log.e("Volley", "Parse error", e);
-            Toast.makeText(this, "Error parsing leaderboard", Toast.LENGTH_SHORT).show();
+            showUnavailableMessage();
         }
     }
 
+    /** Shows styled "unavailable" card like StatsActivity **/
+    private void showUnavailableMessage() {
+        leaderboardContainer.removeAllViews();
+        addTextBox("Leaderboard is unavailable when offline.");
+    }
+
+    /** Creates styled card matching StatsActivity **/
+    private void addTextBox(String text) {
+        int accent;
+        switch (currentGame) {
+            case "Blackjack":
+                accent = getColor(R.color.my_red);
+                break;
+            case "Euchre":
+                accent = getColor(R.color.my_blue);
+                break;
+            case "Go Fish":
+            default:
+                accent = getColor(R.color.my_green);
+                break;
+        }
+
+        View cardView = getLayoutInflater().inflate(R.layout.item_stat_card, leaderboardContainer, false);
+        MaterialCardView card = (MaterialCardView) cardView;
+        card.setStrokeColor(accent);
+
+        TextView tv = card.findViewById(R.id.stat_text);
+        tv.setText(text);
+
+        ImageView icon = card.findViewById(R.id.stat_icon);
+        icon.setColorFilter(accent);
+
+        card.startAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));
+        leaderboardContainer.addView(card);
+    }
+
+    /** Selects the list for the currently active game **/
     private List<PlayerStat> getCurrentList() {
         switch (currentGame) {
             case "Euchre":
@@ -168,6 +202,7 @@ public class LeaderboardActivity extends AppCompatActivity {
         }
     }
 
+    /** Calculates win percentage for a user's game stats **/
     private double calcWinPct(JSONObject obj) {
         if (obj == null) return 0;
         int played = obj.optInt("gamesPlayed", 0);
@@ -175,21 +210,15 @@ public class LeaderboardActivity extends AppCompatActivity {
         return played > 0 ? (double) won / played * 100 : 0;
     }
 
-    /** Builds and displays leaderboard entries dynamically **/
+    /** Builds and displays the leaderboard entries dynamically **/
     private void displayLeaderboard(List<PlayerStat> list) {
         leaderboardContainer.removeAllViews();
 
         if (!dataLoaded || list.isEmpty()) {
-            TextView noData = new TextView(this);
-            noData.setTextColor(getColor(android.R.color.white));
-            noData.setTextSize(18);
-            noData.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));
-            noData.setText("No stats available.");
-            leaderboardContainer.addView(noData);
+            addTextBox("No leaderboard data available for " + currentGame + ".");
             return;
         }
 
-        // pick border color based on game type
         int borderColor;
         switch (currentGame) {
             case "Euchre":
@@ -217,23 +246,24 @@ public class LeaderboardActivity extends AppCompatActivity {
             usernameText.setText(p.username);
             scoreText.setText(String.format("%.2f%%", p.winPct));
 
-            // Gradient backgrounds
+            // Rank background gradient
             if (rank == 1) {
-                rankText.setBackgroundResource(R.drawable.bg_rank_gold);
+                rankText.setBackgroundResource(R.drawable.leaderboard_rank_gold);
             } else if (rank == 2) {
-                rankText.setBackgroundResource(R.drawable.bg_rank_silver);
+                rankText.setBackgroundResource(R.drawable.leaderboard_rank_silver);
             } else if (rank == 3) {
-                rankText.setBackgroundResource(R.drawable.bg_rank_bronze);
+                rankText.setBackgroundResource(R.drawable.leaderboard_rank_bronze);
             } else {
                 rankText.setBackgroundResource(R.drawable.bg_rank_gradient);
             }
-            rankText.setTextColor(ContextCompat.getColor(this, android.R.color.white));
 
+            rankText.setTextColor(ContextCompat.getColor(this, android.R.color.white));
             leaderboardContainer.addView(card);
             rank++;
         }
     }
 
+    /** Simple model for leaderboard entries **/
     public static class PlayerStat {
         String username;
         double winPct;

@@ -10,14 +10,14 @@ import com.example.androidexample.HomeActivity;
 import com.example.androidexample.ProfileActivity;
 import com.example.androidexample.R;
 import com.example.androidexample.StatsActivity;
-import com.example.androidexample.LeaderboardActivity; // <-- add this import
+import com.example.androidexample.LeaderboardActivity;
 
 public class BottomNavHelper {
 
     public static void setupBottomNav(Activity activity, String username) {
         ImageButton homeBtn = activity.findViewById(R.id.nav_home);
         ImageButton statsBtn = activity.findViewById(R.id.nav_stats);
-        ImageButton leaderboardBtn = activity.findViewById(R.id.nav_leaderboard); // <-- new
+        ImageButton leaderboardBtn = activity.findViewById(R.id.nav_leaderboard);
         ImageButton profileBtn = activity.findViewById(R.id.nav_profile);
 
         if (homeBtn == null || statsBtn == null || leaderboardBtn == null || profileBtn == null) return;
@@ -70,7 +70,7 @@ public class BottomNavHelper {
             }
         });
 
-        leaderboardBtn.setOnClickListener(v -> { // <-- new button
+        leaderboardBtn.setOnClickListener(v -> {
             if (!(activity instanceof LeaderboardActivity)) {
                 Intent i = new Intent(activity, LeaderboardActivity.class);
                 i.putExtra("USERNAME", username);

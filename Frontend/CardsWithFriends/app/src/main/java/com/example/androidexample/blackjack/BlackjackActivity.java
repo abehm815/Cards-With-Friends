@@ -294,8 +294,28 @@ public class BlackjackActivity extends AppCompatActivity implements WebSocketLis
                 break;
             }
         }
-        cardRenderer.renderPlayerHands(cardContainer, player);
+
+        if (player == null) return;
+
+        // Use animated renderer
+        cardRenderer.renderPlayerHandsAnimated(
+                cardContainer,
+                player,
+                previousGameState != null ? findPreviousHands(player.username, previousGameState) : null
+        );
+
+        // Save deep copy for next frame comparison
+        previousGameState = gameState.deepCopy();
     }
+
+    private List<HandState> findPreviousHands(String username, GameState previous) {
+        if (previous == null || previous.players == null) return new ArrayList<>();
+        for (PlayerState p : previous.players) {
+            if (p.username.equals(username)) return p.hands;
+        }
+        return new ArrayList<>();
+    }
+
 
     private void updateDealerCardsUI(boolean isRoundOver) {
         if (gameState == null || gameState.dealer == null || gameState.dealer.hand == null) {

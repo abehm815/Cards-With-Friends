@@ -3,10 +3,10 @@ package com.example.androidexample.blackjack;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.Gravity;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 
 import androidx.core.content.res.ResourcesCompat;
 
@@ -24,37 +24,24 @@ import java.util.List;
  * Responsible for rendering card visuals and related UI elements
  * (like value and bet pills) for both players and the dealer.
  *
- * <p>This class encapsulates all layout logic for card display,
- * ensuring consistent spacing, alignment, and scaling across devices.
- * It focuses purely on UI generation — no game logic or data manipulation.</p>
+ * This class encapsulates layout/animation logic only — no game rules.
  */
 public class CardRenderer {
 
-    /** Context used to access resources and instantiate views. */
+    /** Android context for inflating views / resources. */
     private final Context context;
 
-    /** Screen density multiplier to convert dp → px for consistent sizing. */
+    /** Density multiplier for dp → px. */
     private final float density;
 
-    /**
-     * Constructs a new CardRenderer.
-     *
-     * @param context The Android context (the activity).
-     * @param density The current device's display density.
-     */
     public CardRenderer(Context context, float density) {
         this.context = context;
         this.density = density;
     }
 
-    /**
-     * Renders all of a player's hands within the given container.
-     * <p>Each hand is stacked vertically with its cards displayed horizontally,
-     * followed by value and bet indicators ("pills").</p>
-     *
-     * @param container The LinearLayout where player hands will be added.
-     * @param player    The player whose hands should be rendered.
-     */
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    // Old static render (No animation)
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
     public void renderPlayerHands(LinearLayout container, PlayerState player) {
         container.removeAllViews();
         if (player == null || player.hands == null) return;
@@ -84,11 +71,8 @@ public class CardRenderer {
 
             int cardCount = hand.hand.size();
 
-            // Default overlap (normal hand)
             int overlap = -dp(Math.min(12 + (cardCount - 2) * 6, 40));
-
-            // If split, cards should overlap more tightly (reduce visible gap)
-            if (isSplit) overlap = (int)(overlap * 1.5f);
+            if (isSplit) overlap = (int) (overlap * 1.5f);
 
             for (int i = 0; i < cardCount; i++) {
                 CardState card = hand.hand.get(i);
@@ -139,8 +123,6 @@ public class CardRenderer {
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
                 );
-
-                // Make gap between split hands much larger
                 int spacing = isSplit ? dp(40) : dp(16);
                 handParams.setMargins(spacing, 0, spacing, 0);
 
@@ -150,20 +132,14 @@ public class CardRenderer {
         }
     }
 
-    /**
-     * Renders the dealer’s hand in the provided container.
-     * <p>The dealer layout includes a horizontal row of cards
-     * followed by a single value pill underneath.</p>
-     *
-     * @param container The LinearLayout to place the dealer's hand in.
-     * @param dealer    The dealer state object containing cards and hand value.
-     */
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    // Dealer
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
     public void renderDealer(LinearLayout container, DealerState dealer, boolean isRoundOver, List<CardState> previousDealerHand) {
         if (dealer == null || dealer.hand == null || dealer.hand.isEmpty()) return;
         if (previousDealerHand == null) previousDealerHand = new ArrayList<>();
 
         int oldCount = previousDealerHand.size();
-        int newCount = dealer.hand.size();
 
         // Create or reuse dealer layout
         LinearLayout dealerLayout;
@@ -191,20 +167,15 @@ public class CardRenderer {
             dealerLayout.addView(row);
         }
 
-        // Determine a dynamic off-screen height for animation
         int screenHeight = context.getResources().getDisplayMetrics().heightPixels;
-        float offscreenY = -screenHeight * 0.25f; // 25% of the screen height above visible area
+        float offscreenY = -screenHeight * 0.25f;
 
-        // Render cards (animate new ones, flip revealed ones)
         for (int i = 0; i < dealer.hand.size(); i++) {
             CardState card = dealer.hand.get(i);
             CardView cv;
 
             if (i < row.getChildCount()) {
-                // Reuse existing card
                 cv = (CardView) row.getChildAt(i);
-
-                // Flip face-down card if it just got revealed
                 if (i < oldCount) {
                     CardState old = previousDealerHand.get(i);
                     if (!old.isShowing && card.isShowing && !cv.isFaceUp()) {
@@ -212,52 +183,43 @@ public class CardRenderer {
                     }
                 }
             } else {
-                // New card → animate it in from above screen
                 cv = new CardView(context);
                 LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(80), dp(120));
                 p.setMargins(dp(6), 0, dp(6), 0);
                 cv.setLayoutParams(p);
                 cv.setCard(String.valueOf(card.value), card.suit, card.isShowing);
 
-                // Start off-screen above
                 cv.setTranslationY(offscreenY);
                 row.addView(cv);
 
                 cv.animate()
                         .translationY(0f)
-                        .setDuration(500)       // slightly longer travel for realism
-                        .setStartDelay(i * 250) // slower dealing pace between cards
+                        .setDuration(500)
+                        .setStartDelay(i * 250)
                         .setInterpolator(new android.view.animation.DecelerateInterpolator(1.5f))
                         .start();
             }
         }
 
-        // --- Recalculate consistent overlap for all cards after animations ---
         int totalCards = row.getChildCount();
         if (totalCards > 1) {
             int overlap;
-
             if (totalCards <= 2) {
-                // No overlap for 1–2 cards (spread them apart a bit)
                 overlap = dp(12);
             } else {
-                // Overlap gradually more as more cards are added
                 overlap = Math.max(-dp(90 / totalCards), -dp(45));
             }
 
             for (int i = 0; i < totalCards; i++) {
                 View cardView = row.getChildAt(i);
                 LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) cardView.getLayoutParams();
-
                 if (i == 0) {
                     lp.setMargins(0, 0, 0, 0);
                 } else {
                     lp.setMargins(overlap, 0, 0, 0);
                 }
-
                 cardView.setLayoutParams(lp);
 
-                // Smoothly reposition existing cards
                 cardView.animate()
                         .translationX(0f)
                         .setDuration(250)
@@ -266,14 +228,12 @@ public class CardRenderer {
             }
         }
 
-        // --- Always ensure old value pill is removed at round start ---
         if (!isRoundOver) {
             if (dealerLayout.getChildCount() > 1 && dealerLayout.getChildAt(1) instanceof TextView) {
                 dealerLayout.removeViewAt(1);
             }
         }
 
-        // --- Add or update the value pill AFTER animations ---
         if (isRoundOver) {
             long delay = 600 + ((dealer.hand.size() - 1) * 600);
 
@@ -298,8 +258,6 @@ public class CardRenderer {
                     valuePill.setLayoutParams(valueParams);
                     dealerLayout.addView(valuePill);
                 }
-
-                // Show immediately (no fade)
                 valuePill.setAlpha(1f);
                 valuePill.requestLayout();
                 valuePill.invalidate();
@@ -307,72 +265,15 @@ public class CardRenderer {
         }
     }
 
-
-    // ==========================================================
-    // Private Helpers — UI construction utilities
-    // ==========================================================
-
-    /**
-     * Creates a pill-shaped TextView with consistent styling.
-     *
-     * @param text    The text content for the pill.
-     * @param fontRes The font resource (e.g., R.font.inter_bold).
-     * @param sizeSp  The text size in SP.
-     * @param color   The text color.
-     * @param alpha   The view opacity (1.0f = fully visible).
-     * @return A styled TextView representing a pill.
-     */
-    private TextView makePillText(String text, int fontRes, int sizeSp, int color, float alpha) {
-        // Create new TextView and apply visual style
-        TextView tv = new TextView(context);
-        tv.setText(text);
-        tv.setTextSize(sizeSp);
-        tv.setTextColor(color);
-        tv.setTypeface(ResourcesCompat.getFont(context, fontRes));
-        tv.setGravity(Gravity.CENTER);
-
-        // Add generous horizontal padding to create "pill" shape
-        tv.setPadding(dp(24), dp(8), dp(24), dp(8));
-
-        // Use reusable rounded background drawable
-        tv.setBackgroundResource(R.drawable.bj_hand_value_pill);
-
-        // Adjust transparency for secondary UI elements
-        tv.setAlpha(alpha);
-
-        return tv;
-    }
-
-    /**
-     * Converts a density-independent pixel (dp) value to
-     * actual screen pixels for consistent scaling across devices.
-     *
-     * @param v The dp value to convert.
-     * @return The equivalent pixel value as an integer.
-     */
-    private int dp(int v) {
-        // Multiply by density and round down to nearest pixel
-        return (int) (v * density);
-    }
-    /**
-     * Animates all cards on screen out of view — used at end of round.
-     * Cards lift up, drift toward the top-left, and fade out.
-     * Should be called before starting the next round (e.g., during countdown).
-     *
-     * @param containerRoot The parent layout that holds card groups (e.g., cardContainer or dealerCardContainer).
-     */
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    // Public utility: animate everything off (used between rounds).
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
     public void animateAllCardsOut(LinearLayout containerRoot) {
         if (containerRoot == null) return;
-
-        // Recursively animate all CardViews within this layout
         animateGroupCardsOut(containerRoot);
     }
 
-    /**
-     * Recursively traverses a layout and animates all CardView children out of view.
-     */
     private void animateGroupCardsOut(ViewGroup group) {
-        // fade out all value/bet TextViews but preserve layout space
         for (int i = 0; i < group.getChildCount(); i++) {
             View child = group.getChildAt(i);
 
@@ -389,7 +290,6 @@ public class CardRenderer {
             }
         }
 
-        // after a delay, animate cards directly off-screen (top-left corner)
         new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
             int screenWidth = group.getResources().getDisplayMetrics().widthPixels;
             int screenHeight = group.getResources().getDisplayMetrics().heightPixels;
@@ -398,7 +298,6 @@ public class CardRenderer {
                 View child = group.getChildAt(i);
 
                 if (child instanceof CardView) {
-                    // Move far enough up and left to guarantee it’s off screen
                     float targetX = -screenWidth * 0.8f;
                     float targetY = -screenHeight * 0.8f;
 
@@ -417,4 +316,292 @@ public class CardRenderer {
         }, 450);
     }
 
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    // Player: Incremental, animated renderer (HIT/FLIP/SPLIT/RE-SPLIT)
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    /**
+     * Animated rendering for player hands.
+     * Incremental updates only (no full redraw):
+     *  - Reuses CardViews in-place; new cards are dealt from above.
+     *  - Flips when a hidden card becomes visible.
+     *  - On split/re-split, moves the CardView from donor hand to recipient hand (no cloning).
+     *  - Hands are spaced evenly and re-centered when returning to one hand.
+     *  - Value/bet pills render only if a hand has at least one card.
+     */
+    public void renderPlayerHandsAnimated(LinearLayout container, PlayerState player, List<HandState> previous) {
+        if (player == null || player.hands == null) return;
+        if (previous == null) previous = new ArrayList<>();
+
+        container.setOrientation(LinearLayout.HORIZONTAL);
+        container.setGravity(Gravity.CENTER_HORIZONTAL);
+        container.setClipChildren(false);
+        container.setClipToPadding(false);
+        // Defensive: container might have padding from layout; ensure it's not skewing centering
+        container.setPadding(0, container.getPaddingTop(), 0, container.getPaddingBottom());
+
+        final int currCount = player.hands.size();
+        final int prevCount = previous.size();
+
+        // Ensure hand containers & rows exist up to current count
+        for (int h = 0; h < currCount; h++) {
+            LinearLayout hc = getOrCreateHandContainer(container, h);
+            zeroMargins(hc);                              // normalize margins every time
+            LinearLayout row = getOrCreateCardRow(hc);
+            zeroMargins(row);                             // normalize margins every time
+        }
+
+        // Hard reset when returning to a single hand (typical after new round)
+        if (currCount == 1) {
+            for (int i = 0; i < container.getChildCount(); i++) {
+                View v = container.getChildAt(i);
+                v.animate().cancel();
+                v.setTranslationX(0f);
+                zeroMargins(v);                           // CRITICAL: wipe old split margins
+            }
+            while (container.getChildCount() > 1) {
+                container.removeViewAt(container.getChildCount() - 1);
+            }
+            container.requestLayout();
+        }
+
+        // Detect split/re-split: move the last card view from donor to recipient (no cloning)
+        if (currCount > prevCount && prevCount > 0 && container.getChildCount() >= currCount) {
+            int donorIdx = -1;
+            int recipientIdx = -1;
+
+            for (int i = 0; i < Math.min(prevCount, currCount); i++) {
+                HandState oldH = previous.get(i);
+                HandState newH = player.hands.get(i);
+                int oldSize = (oldH != null && oldH.hand != null) ? oldH.hand.size() : 0;
+                int newSize = (newH != null && newH.hand != null) ? newH.hand.size() : 0;
+                if (oldSize - newSize == 1) donorIdx = i;
+                if (newSize - oldSize == 1) recipientIdx = i;
+            }
+            if (recipientIdx == -1 && currCount > prevCount) {
+                recipientIdx = currCount - 1;
+            }
+
+            if (donorIdx >= 0 && recipientIdx >= 0 &&
+                    donorIdx < container.getChildCount() && recipientIdx < container.getChildCount()) {
+                LinearLayout donorHC = (LinearLayout) container.getChildAt(donorIdx);
+                LinearLayout recipHC = (LinearLayout) container.getChildAt(recipientIdx);
+                LinearLayout donorRow = (LinearLayout) donorHC.getChildAt(0);
+                LinearLayout recipRow = (LinearLayout) recipHC.getChildAt(0);
+
+                if (donorRow.getChildCount() > 0) {
+                    View moved = donorRow.getChildAt(donorRow.getChildCount() - 1);
+                    donorRow.removeViewAt(donorRow.getChildCount() - 1);
+
+                    float sign = (recipientIdx > donorIdx) ? 1f : -1f;
+                    moved.setTranslationX(sign * -dp(140));
+                    recipRow.addView(moved);
+
+                    moved.animate()
+                            .translationX(0f)
+                            .setDuration(350)
+                            .setInterpolator(new android.view.animation.DecelerateInterpolator(1.25f))
+                            .start();
+                }
+            }
+        }
+
+        // Evenly position/center hands when more than one
+        if (currCount > 1) {
+            positionHandsEvenly(container, currCount, 500);
+        }
+
+        // Per-hand incremental updates
+        for (int h = 0; h < currCount; h++) {
+            HandState newHand = player.hands.get(h);
+            HandState oldHand = (h < prevCount) ? previous.get(h) : null;
+
+            LinearLayout handContainer = (LinearLayout) container.getChildAt(h);
+            LinearLayout cardRow = (LinearLayout) handContainer.getChildAt(0);
+
+            int oldSize = (oldHand != null && oldHand.hand != null) ? oldHand.hand.size() : 0;
+            int newSize = (newHand.hand != null) ? newHand.hand.size() : 0;
+
+            // Trim any extra views if server corrected size
+            while (cardRow.getChildCount() > newSize) {
+                View toRemove = cardRow.getChildAt(cardRow.getChildCount() - 1);
+                cardRow.removeViewAt(cardRow.getChildCount() - 1);
+            }
+
+            // Update existing indices and append new cards
+            for (int i = 0; i < newSize; i++) {
+                CardState card = newHand.hand.get(i);
+
+                if (i < cardRow.getChildCount()) {
+                    CardView cv = (CardView) cardRow.getChildAt(i);
+                    cv.setCard(String.valueOf(card.value), card.suit, card.isShowing);
+                    if (oldHand != null && i < oldSize) {
+                        CardState oldCard = oldHand.hand.get(i);
+                        if (!oldCard.isShowing && card.isShowing && !cv.isFaceUp()) {
+                            cv.flipCard();
+                        }
+                    }
+                } else {
+                    CardView cv = new CardView(context);
+                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(70), dp(105));
+                    lp.setMargins(dp(6), 0, dp(6), 0);
+                    cv.setLayoutParams(lp);
+                    cv.setCard(String.valueOf(card.value), card.suit, card.isShowing);
+
+                    int screenHeight = context.getResources().getDisplayMetrics().heightPixels;
+                    float offscreenY = -screenHeight * 0.7f;
+                    cv.setTranslationY(offscreenY);
+                    cardRow.addView(cv);
+
+                    cv.animate()
+                            .translationY(0f)
+                            .setDuration(520)
+                            .setStartDelay(i * 160)
+                            .setInterpolator(new android.view.animation.DecelerateInterpolator(1.7f))
+                            .start();
+                }
+            }
+
+            // Recompute simple overlap fan
+            int totalCards = cardRow.getChildCount();
+            if (totalCards > 1) {
+                int overlap = Math.max(-dp(50 / Math.max(totalCards, 1)), -dp(40));
+                for (int i = 0; i < totalCards; i++) {
+                    View v = cardRow.getChildAt(i);
+                    LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) v.getLayoutParams();
+                    lp.setMargins(i == 0 ? 0 : overlap, 0, 0, 0);
+                    v.setLayoutParams(lp);
+                }
+            }
+
+            // Pills only when the hand actually has cards
+            while (handContainer.getChildCount() > 1) handContainer.removeViewAt(1);
+            if (newHand.hand != null && !newHand.hand.isEmpty()) {
+                TextView valuePill = makePillText(
+                        String.valueOf(newHand.handValue),
+                        R.font.inter_bold, 18, Color.WHITE, 0.95f
+                );
+                LinearLayout.LayoutParams vParams = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+                vParams.topMargin = dp(8);
+                valuePill.setLayoutParams(vParams);
+                handContainer.addView(valuePill);
+
+                TextView betPill = makePillText(
+                        "$" + newHand.bet,
+                        R.font.inter_regular, 16, Color.LTGRAY, 0.8f
+                );
+                LinearLayout.LayoutParams bParams = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+                bParams.topMargin = dp(4);
+                betPill.setLayoutParams(bParams);
+                handContainer.addView(betPill);
+            }
+        }
+
+        // Safety: trim any extra hand containers
+        while (container.getChildCount() > currCount) {
+            container.removeViewAt(container.getChildCount() - 1);
+        }
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    // Private helpers
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    /** Creates a pill-styled text view. */
+    private TextView makePillText(String text, int fontRes, int sizeSp, int color, float alpha) {
+        TextView tv = new TextView(context);
+        tv.setText(text);
+        tv.setTextSize(sizeSp);
+        tv.setTextColor(color);
+        tv.setTypeface(ResourcesCompat.getFont(context, fontRes));
+        tv.setGravity(Gravity.CENTER);
+        tv.setPadding(dp(24), dp(8), dp(24), dp(8));
+        tv.setBackgroundResource(R.drawable.bj_hand_value_pill);
+        tv.setAlpha(alpha);
+        return tv;
+    }
+
+    /** dp → px helper. */
+    private int dp(int v) {
+        return (int) (v * density);
+    }
+
+    /** Ensure a vertical hand container exists at a specific index. */
+    private LinearLayout getOrCreateHandContainer(LinearLayout parent, int index) {
+        if (parent.getChildCount() > index && parent.getChildAt(index) instanceof LinearLayout) {
+            return (LinearLayout) parent.getChildAt(index);
+        }
+        LinearLayout hand = new LinearLayout(context);
+        hand.setOrientation(LinearLayout.VERTICAL);
+        hand.setGravity(Gravity.CENTER_HORIZONTAL);
+        hand.setClipChildren(false);
+        hand.setClipToPadding(false);
+
+        // Insert at the desired index with clean layout params (no margins)
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        lp.setMargins(0, 0, 0, 0);
+        if (parent.getChildCount() >= index) parent.addView(hand, index, lp);
+        else parent.addView(hand, lp);
+        return hand;
+    }
+
+    /** Ensure child-0 of a hand container is a horizontal card row. */
+    private LinearLayout getOrCreateCardRow(LinearLayout handContainer) {
+        if (handContainer.getChildCount() > 0 && handContainer.getChildAt(0) instanceof LinearLayout) {
+            return (LinearLayout) handContainer.getChildAt(0);
+        }
+        LinearLayout row = new LinearLayout(context);
+        row.setOrientation(LinearLayout.HORIZONTAL);
+        row.setGravity(Gravity.CENTER_HORIZONTAL);
+        row.setClipChildren(false);
+        row.setClipToPadding(false);
+
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        lp.setMargins(0, 0, 0, 0);
+        handContainer.addView(row, 0, lp);
+        return row;
+    }
+
+    /** Evenly distribute hand containers around center using translationX. */
+    private void positionHandsEvenly(LinearLayout container, int count, long durationMs) {
+        if (count <= 0) return;
+        float spread = dp(110); // distance between each hand's center
+        float totalWidth = spread * (count - 1);
+        float startX = -totalWidth / 2f;
+
+        for (int h = 0; h < container.getChildCount(); h++) {
+            View v = container.getChildAt(h);
+            if (h >= count) break;
+
+            // Ensure no residual margins can bias centering
+            zeroMargins(v);
+
+            float targetX = startX + h * spread;
+            v.animate()
+                    .translationX(targetX)
+                    .setDuration(durationMs)
+                    .setInterpolator(new android.view.animation.DecelerateInterpolator(1.25f))
+                    .start();
+        }
+    }
+
+    /** Zero out margins on a view if it has LinearLayout.LayoutParams. */
+    private void zeroMargins(View v) {
+        ViewGroup.LayoutParams lp = v.getLayoutParams();
+        if (lp instanceof LinearLayout.LayoutParams) {
+            LinearLayout.LayoutParams ll = (LinearLayout.LayoutParams) lp;
+            if (ll.leftMargin != 0 || ll.rightMargin != 0 || ll.topMargin != 0 || ll.bottomMargin != 0) {
+                ll.setMargins(0, 0, 0, 0);
+                v.setLayoutParams(ll);
+            }
+        }
+    }
 }
