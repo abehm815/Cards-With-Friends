@@ -22,20 +22,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="60dp" />
 
-    <!-- Refresh Button (top-right corner, smaller) -->
-    <ImageButton
-        android:id="@+id/refresh_button"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:background="@android:color/transparent"
-        android:contentDescription="Refresh Stats"
-        android:src="@drawable/icon_refresh"
-        app:tint="@android:color/white"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="44dp"
-        android:layout_marginEnd="24dp" />
-
     <!-- Game Toggle Row -->
     <LinearLayout
         android:id="@+id/stats_button_row"
@@ -43,7 +29,6 @@
         android:layout_height="70dp"
         android:orientation="horizontal"
         android:gravity="center"
-        android:weightSum="1"
         android:layout_marginHorizontal="24dp"
         android:layout_marginTop="30dp"
         app:layout_constraintTop_toBottomOf="@id/stats_title"
@@ -138,5 +123,5 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

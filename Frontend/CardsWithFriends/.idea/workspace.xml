@@ -23,12 +23,14 @@
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/LeaderboardActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/LeaderboardActivity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/StatsActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/StatsActivity.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/blackjack/BlackjackActivity.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/blackjack/BlackjackActivity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/blackjack/BlackjackModels.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/blackjack/BlackjackModels.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/blackjack/CardRenderer.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/blackjack/CardRenderer.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/services/BottomNavHelper.java" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/java/com/example/androidexample/services/BottomNavHelper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/bg_rank_bronze.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/leaderboard_rank_bronze.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/bg_rank_gold.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/leaderboard_rank_gold.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/src/main/res/drawable/bg_rank_silver.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/drawable/leaderboard_rank_silver.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_leaderboard.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_leaderboard.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_lobby.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_lobby.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_profile.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_profile.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/src/main/res/layout/activity_stats.xml" beforeDir="false" afterPath="$PROJECT_DIR$/app/src/main/res/layout/activity_stats.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/build/reports/problems/problems-report.html" beforeDir="false" afterPath="$PROJECT_DIR$/build/reports/problems/problems-report.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,7 +40,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
-  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=LocalEmulator, isTemplate=false, identifier=path=C:\Users\alexb\.android\avd\Pixel_5.avd)]" />
+  <component name="ExecutionTargetManager" SELECTED_TARGET="device_and_snapshot_combo_box_target[DeviceId(pluginId=PhysicalDevice, isTemplate=false, identifier=serial=ZY32L7W6XQ)]" />
   <component name="ExternalProjectsData">
     <projectState path="$PROJECT_DIR$">
       <ProjectState />
@@ -79,6 +81,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\1_srijita_5\Frontend\CardsWithFriends\app\src\main\res\raw" />
       <recent name="C:\1_srijita_5\Frontend\CardsWithFriends\app\src\main\res\layout" />
     </key>
   </component>
@@ -171,12 +174,12 @@
       <map>
         <entry key="com.example.androidexample">
           <value>
-            <CheckInfo lastCheckTimestamp="1762637377754" />
+            <CheckInfo lastCheckTimestamp="1762738423277" />
           </value>
         </entry>
         <entry key="com.example.androidexample.test">
           <value>
-            <CheckInfo lastCheckTimestamp="1762637377757" />
+            <CheckInfo lastCheckTimestamp="1762738423276" />
           </value>
         </entry>
       </map>

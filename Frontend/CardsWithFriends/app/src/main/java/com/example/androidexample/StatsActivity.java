@@ -5,14 +5,11 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.AnimationUtils;
-import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.res.ResourcesCompat;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -30,12 +27,10 @@ public class StatsActivity extends AppCompatActivity {
     private static final String DB_URL = "http://coms-3090-006.class.las.iastate.edu:8080";
 
     private LinearLayout statsContainer;
-    private ImageButton refreshBtn;
     private String username;
 
     private TextView blackjackBtn, euchreBtn, gofishBtn;
 
-    // cache
     private JSONObject cachedStats = null;
     private String currentGame = "Blackjack";
 
@@ -50,8 +45,6 @@ public class StatsActivity extends AppCompatActivity {
         BottomNavHelper.setupBottomNav(this, username);
 
         statsContainer = findViewById(R.id.stats_text_container);
-        refreshBtn = findViewById(R.id.refresh_button);
-
         blackjackBtn = findViewById(R.id.stats_blackjack_btn);
         euchreBtn = findViewById(R.id.stats_euchre_btn);
         gofishBtn = findViewById(R.id.stats_gofish_btn);
@@ -60,25 +53,23 @@ public class StatsActivity extends AppCompatActivity {
         euchreBtn.setOnClickListener(v -> selectGame("Euchre"));
         gofishBtn.setOnClickListener(v -> selectGame("GoFish"));
 
-        refreshBtn.setOnClickListener(v -> fetchStats());
-
-        fetchStats(); // load on open
-        updateButtonStyles(); // make sure default highlights properly
+        fetchStats(); // initial load
+        updateButtonStyles();
     }
 
+    /** Handles switching between game tabs **/
     private void selectGame(String game) {
-        if (game.equals(currentGame)) return; // avoid unnecessary reloads
+        if (game.equals(currentGame)) return;
         currentGame = game;
         updateButtonStyles();
 
-        // fade content during switch
         statsContainer.animate().alpha(0f).setDuration(150).withEndAction(() -> {
             showGameStats();
             statsContainer.animate().alpha(1f).setDuration(150).start();
         }).start();
     }
 
-    /** Visually updates which game is active **/
+    /** Updates visual highlight for the selected button **/
     private void updateButtonStyles() {
         blackjackBtn.setBackgroundResource(R.drawable.btn_dark);
         euchreBtn.setBackgroundResource(R.drawable.btn_dark);
@@ -97,6 +88,7 @@ public class StatsActivity extends AppCompatActivity {
         }
     }
 
+    /** Fetches stats from the backend **/
     private void fetchStats() {
         String url = DB_URL + "/AppUser/username/" + username;
 
@@ -113,32 +105,40 @@ public class StatsActivity extends AppCompatActivity {
                                     cachedStats = statsRes;
                                     showGameStats();
                                 },
-                                err -> Toast.makeText(this, "Failed to load stats", Toast.LENGTH_SHORT).show()
+                                err -> showUnavailableMessage()
                         );
 
                         VolleySingleton.getInstance(this).addToRequestQueue(statsReq);
                     } catch (Exception e) {
-                        Toast.makeText(this, "Error parsing user info", Toast.LENGTH_SHORT).show();
+                        Log.e("Stats", "Error parsing user info", e);
+                        showUnavailableMessage();
                     }
                 },
-                err -> Toast.makeText(this, "Failed to fetch user", Toast.LENGTH_SHORT).show()
+                err -> showUnavailableMessage()
         );
 
         VolleySingleton.getInstance(this).addToRequestQueue(userReq);
     }
 
+    /** Displays stats for the selected game **/
     private void showGameStats() {
         statsContainer.removeAllViews();
+
         if (cachedStats == null) {
-            addTextBox("No stats loaded yet.");
+            addTextBox("Stats are unavailable for " + currentGame + " right now.");
             return;
         }
 
         try {
-            JSONObject allGameStats = cachedStats.getJSONObject("allGameStats");
+            JSONObject allGameStats = cachedStats.optJSONObject("allGameStats");
+            if (allGameStats == null) {
+                addTextBox("Stats are unavailable for " + currentGame + " right now.");
+                return;
+            }
+
             JSONObject gameStats = allGameStats.optJSONObject(currentGame);
             if (gameStats == null) {
-                addTextBox("No data for " + currentGame);
+                addTextBox("No data for " + currentGame + ".");
                 return;
             }
 
@@ -170,15 +170,26 @@ public class StatsActivity extends AppCompatActivity {
                     break;
             }
 
+            if (lines.isEmpty()) {
+                addTextBox("Stats are unavailable for " + currentGame + " right now.");
+                return;
+            }
+
             for (String line : lines) addTextBox(line);
 
         } catch (Exception e) {
             Log.e("Stats", "Error showing stats", e);
-            addTextBox("Error showing stats");
+            addTextBox("Stats are unavailable for " + currentGame + " right now.");
         }
     }
 
-    /** Creates a grey box for each stat line **/
+    /** Displays an unavailable message **/
+    private void showUnavailableMessage() {
+        statsContainer.removeAllViews();
+        addTextBox("Stats are unavailable for " + currentGame + " right now.");
+    }
+
+    /** Builds a styled stat card **/
     private void addTextBox(String text) {
         int accent;
         switch (currentGame) {

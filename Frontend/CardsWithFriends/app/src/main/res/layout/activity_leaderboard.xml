@@ -22,20 +22,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="60dp" />
 
-    <!-- Refresh Button (top-right corner, smaller) -->
-    <ImageButton
-        android:id="@+id/refresh_button"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
-        android:background="@android:color/transparent"
-        android:contentDescription="Refresh Leaderboard"
-        android:src="@drawable/icon_refresh"
-        app:tint="@android:color/white"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="44dp"
-        android:layout_marginEnd="24dp" />
-
     <!-- Game Toggle Row -->
     <LinearLayout
         android:id="@+id/leaderboard_game_toggle"
