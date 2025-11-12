@@ -28,6 +28,7 @@ public class UserStats {
         addGameStats("Euchre", new EuchreStats());
         addGameStats("Blackjack", new BlackjackStats());
         addGameStats("GoFish", new GoFishStats());
+        addGameStats("Crazy8", new Crazy8Stats());
     }
 
     public UserStats(int holder) {
