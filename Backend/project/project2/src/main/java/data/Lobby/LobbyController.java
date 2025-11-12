@@ -160,6 +160,30 @@ public class LobbyController {
         return  savedLobby;
     }
 
+    @DeleteMapping(path = {"/Lobby/empty"})
+    public String deleteEmptyLobbies() {
+        List<Lobby> allLobbies = this.LobbyRepository.findAll();
+        List<Lobby> emptyLobbies = new ArrayList<>();
+
+        for (Lobby lobby : allLobbies) {
+            if (lobby.getUsers() == null || lobby.getUsers().isEmpty()) {
+                emptyLobbies.add(lobby);
+            }
+        }
+
+        if (emptyLobbies.isEmpty()) {
+            return "{\"message\":\"no empty lobbies found\"}";
+        }
+
+        // For each empty lobby, delete it and make sure relationships are cleared
+        for (Lobby lobby : emptyLobbies) {
+            this.LobbyRepository.delete(lobby);
+        }
+
+        LobbyListWebSocket.broadcastLobbyList();
+        return "{\"message\":\"deleted " + emptyLobbies.size() + " empty lobbies\"}";
+    }
+
     /**
      * PUT /Lobby/{lobbyID}
      * <p>
