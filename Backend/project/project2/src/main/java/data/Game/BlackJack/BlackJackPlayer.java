@@ -174,8 +174,13 @@ public class BlackJackPlayer {
 
     public boolean canSplit() {
         List<BlackJackCard> hand = getHand();
-        return hand.size() == 2 && ((hand.get(0).getValue()) == (hand.get(1).getValue()));
+        return (hand.size() == 2 && ((hand.get(0).getValue()) == (hand.get(1).getValue())) && (chips >= (betOnCurrentHand.get(currentHandIndex))));
+        // now checks for chip balance and if cards are same value
     }
+    public boolean canDouble(){
+        return chips >= (betOnCurrentHand.get(currentHandIndex)*2);
+    }
+
 
     public void moveToNextHand() {
         if (currentHandIndex + 1 < hands.size()) {

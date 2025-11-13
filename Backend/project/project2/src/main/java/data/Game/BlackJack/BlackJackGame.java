@@ -93,6 +93,9 @@ public class BlackJackGame {
 
         // Clear all player hands
         for (BlackJackPlayer player : players) {
+            if (player.getHands().size() > 1) {
+                player.getHands().subList(1, player.getHands().size()).clear();
+            } //removes list of hands after a split needs testing
             for (List<BlackJackCard> hand : player.getHands()) {
                 hand.clear();
             }
@@ -176,16 +179,20 @@ public class BlackJackGame {
                 break;
 
             case "DOUBLE":
-                currentPlayerStats.addTimeDoubledDown();
-                if  (currentPlayer.isOnLastHand()) {
-                    playerDouble(currentPlayer.getUsername());
-                    System.out.println(username + " doubles.");
-                    advanceTurn();
+                if(currentPlayer.getChips()>= currentPlayer.getBetOnCurrentHand()*2) { // fix for doubling into negative
+                    currentPlayerStats.addTimeDoubledDown();
+                    if (currentPlayer.isOnLastHand()) {
+                        playerDouble(currentPlayer.getUsername());
+                        System.out.println(username + " doubles.");
+                        advanceTurn();
+                    } else if (!currentPlayer.isOnLastHand()) {
+                        playerDouble(currentPlayer.getUsername());
+                        System.out.println(username + " doubles.");
+                        currentPlayer.moveToNextHand();
+                    }
                 }
-               else if(!currentPlayer.isOnLastHand()) {
-                    playerDouble(currentPlayer.getUsername());
-                    System.out.println(username + " doubles.");
-                    currentPlayer.moveToNextHand();
+                else{
+                    System.out.println(username + " does not have enough chips to double.");
                 }
                 break;
 
@@ -282,8 +289,6 @@ public class BlackJackGame {
     public void playerDouble(String username) {
         BlackJackPlayer player = getPlayer(username);
         if (player == null || player.getHasStoodForHand() || !roundInProgress) return;
-
-
         player.setChips(player.getChips() - player.getBetOnCurrentHand());
         player.setBetOnCurrentHand(player.getBetOnCurrentHand()*2);
         player.addCard(deck.dealCard(true));
@@ -451,6 +456,8 @@ public class BlackJackGame {
                     int bet = (bets != null && i < bets.size()) ? bets.get(i) : 0;
                     boolean hasStood = player.getHasStoodForHand();
                     boolean canSplit = player.canSplit();
+                    boolean canDouble = player.canDouble();
+                    int currentHandIndex = player.getCurrentHandIndex();
 
                     playerHands.add(Map.of(
                             "handIndex", i,
@@ -458,7 +465,9 @@ public class BlackJackGame {
                             "handValue", handValue,
                             "bet", bet,
                             "hasStood", hasStood,
-                            "canSplit", canSplit
+                            "canSplit", canSplit,
+                            "canDouble", canDouble,
+                            "currentHandIndex", currentHandIndex
                     ));
                 }
             } catch (Exception e) {
