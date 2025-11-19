@@ -103,6 +103,7 @@ public class BlackJackGame {
             player.setHasStood(false);
             player.resetAllBets();
             player.resetAllHasStood();
+            player.setCurrentHandIndex(0);
         }
         System.out.println("New round started. Waiting for all players to place bets...");
     }

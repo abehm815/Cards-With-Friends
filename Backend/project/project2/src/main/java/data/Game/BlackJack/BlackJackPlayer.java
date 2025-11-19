@@ -77,6 +77,10 @@ public class BlackJackPlayer {
         return currentHandIndex;
     }
 
+    public void setCurrentHandIndex(int currentHandIndex) {
+        this.currentHandIndex = currentHandIndex;
+    }
+
     /**
      * Gets chips
      *
