@@ -23,3 +23,4 @@ public class Crazy8Card extends MyCard {
         return  isPlayable;
     }
 }
+

@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Crazy8Player {
     private String username;
-    private List<MyCard> hand;
+    private List<Crazy8Card> hand;
     private transient AppUser userRef;
 
     /**
@@ -41,7 +41,7 @@ public class Crazy8Player {
      * Gets stats associated with user
      * @return GoFishStats
      */
-    public Crazy8Stats getStats() {
+    public Crazy8Stats getCrazy8Stats() {
         if (userRef != null && userRef.getUserStats() != null) {
             return (Crazy8Stats) userRef.getUserStats().getGameStats("Crazy8");
         }
@@ -60,7 +60,7 @@ public class Crazy8Player {
      * Gets hand
      * @return hand
      */
-    public List<MyCard> getHand() {
+    public List<Crazy8Card> getHand() {
         return hand;
     }
 
@@ -74,7 +74,7 @@ public class Crazy8Player {
      * Adds a card to the player's hand
      * @param card basic MyCard
      */
-    public void addCard(MyCard card) {
+    public void addCard(Crazy8Card card) {
         hand.add(card);
     }
 
@@ -82,6 +82,6 @@ public class Crazy8Player {
      * Removes a card from the player's hand
      * @param card basic MyCard
      */
-    public void removeCard(MyCard card) { hand.remove(card); }
+    public void removeCard(Crazy8Card card) { hand.remove(card); }
 
 }
