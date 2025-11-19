@@ -40,7 +40,7 @@ auto-deploy:
   - springboot_tag      # change to your runner's tag
   script:               # script to run the deployment service you created
     - cd Backend/project/project2        # change 'Backend' to to where you have the pom.xml (do not add / in the beginning)
-    - mvn clean package #may need to remove 
+    #- mvn clean package #may need to remove 
     - sudo mv target/onetoone-1.0.0.jar /target/web-demo.jar 
     - sudo systemctl stop system-web-demo
     - sudo systemctl start system-web-demo
@@ -57,7 +57,7 @@ android-build:
    - android_tag                    # change to your runner's tag
   before_script:                    # enable gradlew, change 'Frontend' to where you have 'gradlew'
     - export GRADLE_USER_HOME=`pwd`/.gradle
-    - chmod +x ./Frontend/gradlew
+    - chmod +x ./Frontend/CardsWithFriends/gradlew
   script:
     - cd Frontend/CardsWithFriends                   # change 'Frontend' to where you have 'gradlew' (do not add / in the beginning)
     - ./gradlew build               # gradle build
@@ -74,7 +74,7 @@ android-test:
     - android_tag                   # change to your runner's tag
   before_script:                   # enable gradlew, change 'Frontend' to where you have 'gradlew'
      - export GRADLE_USER_HOME=`pwd`/.gradle
-     - chmod +x ./Frontend/gradlew
+     - chmod +x ./Frontend/CardsWithFriends/gradlew
   script:
      - cd Frontend/CardsWithFriends/                  # change 'Frontend' to where you have 'gradlew' (do not add / in the beginning)
      - ./gradlew test               # gradle test
