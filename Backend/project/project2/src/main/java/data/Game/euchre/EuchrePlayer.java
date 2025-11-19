@@ -1,6 +1,5 @@
 package data.Game.euchre;
 
-import data.Game.MyCard;
 import data.User.AppUser;
 import data.User.Stats.EuchreStats;
 
@@ -9,9 +8,10 @@ import java.util.List;
 
 public class EuchrePlayer {
     private String username;
-    private List<MyCard> hand;
-    private List<List<MyCard>> tricks;
+    private List<EuchreCard> hand;
+    private List<List<EuchreCard>> tricks;
     private transient AppUser userRef;
+
 
     /**
      * Constructor for a Euchre Player for the game logic does not keep stats
@@ -65,7 +65,7 @@ public class EuchrePlayer {
      * Gets hand
      * @return hand
      */
-    public List<MyCard> getHand() {
+    public List<EuchreCard> getHand() {
         return hand;
     }
 
@@ -81,15 +81,15 @@ public class EuchrePlayer {
      * Gets held tricks
      * @return tricks
      */
-    public List<List<MyCard>> getTricks() {
+    public List<List<EuchreCard>> getTricks() {
         return tricks;
     }
 
     /**
      * Adds a trick to the held tricks
-     * @param trick (list of 4 MyCards)
+     * @param trick (list of 4 EuchreCards)
      */
-    public void addTrick (List<MyCard> trick) {
+    public void addTrick (List<EuchreCard> trick) {
         tricks.add(trick);
     }
 
@@ -105,24 +105,23 @@ public class EuchrePlayer {
      * Clears all tricks held
      */
     public void clearTricks() {
-        for (List<MyCard> trick : tricks) {
-            tricks.remove(trick);
-        }
+        tricks.clear();
     }
 
     /**
      * Adds a card to the player's hand
-     * @param card basic MyCard
+     * @param card basic EuchreCard
      */
-    public void addCard(MyCard card) {
+    public void addCard(EuchreCard card) {
         hand.add(card);
+        card.setOwner(this);
     }
 
     /**
      * Removes a card from the player's hand
-     * @param card basic MyCard
+     * @param card basic EuchreCard
      */
-    public void removeCard(MyCard card) {
+    public void removeCard(EuchreCard card) {
         hand.remove(card);
     }
 
@@ -133,18 +132,17 @@ public class EuchrePlayer {
      * @param leadSuit (Current Lead Suit)
      * @return (list of playable cards)
      */
-    public List<MyCard> checkPlayableCards(char leadSuit) {
-        // Create new list to hold playable cards
-        List<MyCard> playable = new ArrayList<>();
+    public List<EuchreCard> checkPlayableCards(char leadSuit, char trumpSuit) {
+        List<EuchreCard> playable = new ArrayList<>();
 
-        // Fill list with cards that match the lead suit
-        for (MyCard card : hand) {
-            if (card.getSuit() == leadSuit) {
+        // First pass: find cards that follow suit
+        for (EuchreCard card : hand) {
+            if (card.getEffectiveSuit(trumpSuit) == leadSuit) {
                 playable.add(card);
             }
         }
 
-        // If no lead suits in hand, add all cards to playable
+        // If none follow suit, all are playable
         if (playable.isEmpty()) {
             playable.addAll(hand);
         }

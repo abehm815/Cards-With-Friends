@@ -1,7 +1,5 @@
 package data.Game.euchre;
 
-import data.Game.MyCard;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -12,7 +10,7 @@ import java.util.List;
  * 9-Ace.
  */
 public class EuchreDeck {
-    private List<MyCard> cards;
+    private List<EuchreCard> cards;
 
     /**
      * Constructor for a Euchre Deck
@@ -23,7 +21,7 @@ public class EuchreDeck {
 
         for (char s : suits) {
             for(int i = 9; i < 14; i++) {
-                cards.add(new MyCard(i, s));
+                cards.add(new EuchreCard(i, s, null));
             }
         }
     }
@@ -39,7 +37,7 @@ public class EuchreDeck {
      * Prints out all the cards currently in the deck
      */
     public void printDeck() {
-        for(MyCard card : cards){
+        for(EuchreCard card : cards){
             System.out.println(card.toString());
         }
     }
@@ -47,9 +45,24 @@ public class EuchreDeck {
     /**
      * Deals a card by removing it from the deck and returning a card object
      */
-    public MyCard dealCard() {
+    public EuchreCard dealCard() {
         if(!cards.isEmpty()) {
             return cards.remove(cards.size()-1);
+        }
+        System.out.println("Deck is empty");
+        return null;
+    }
+
+    /**
+     * Deals a card and also assigns it to a player
+     * @param player (player card is going to)
+     * @return Euchre Card
+     */
+    public EuchreCard dealCard(EuchrePlayer player) {
+        if(!cards.isEmpty()) {
+            EuchreCard returnCard = cards.remove(cards.size()-1);
+            returnCard.setOwner(player);
+            return returnCard;
         }
         System.out.println("Deck is empty");
         return null;
