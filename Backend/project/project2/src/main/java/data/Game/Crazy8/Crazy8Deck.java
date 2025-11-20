@@ -1,16 +1,36 @@
 package data.Game.Crazy8;
-
-
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Represents a deck of Crazy 8s cards.
+ * <p>
+ * Supports multiple combined decks, shuffling, dealing cards, and querying size.
+ * Cards are instances of {@link Crazy8Card}.
+ */
 public class Crazy8Deck {
+
+    /**
+     * The list of cards currently in the deck.
+     */
     private List<Crazy8Card> cards;
 
     /**
-     * Basic constructor for a normal 52 card deck
+     * Creates a Crazy 8s deck containing the specified number of standard decks.
+     * <p>
+     * Each deck includes all card values from 2–14 (with 11–14 representing special cards)
+     * for each of the four colors (R, G, B, Y).
+     *
+     * <ul>
+     *     <li>11 → Reverse</li>
+     *     <li>12 → Skip</li>
+     *     <li>13 → Draw 2</li>
+     *     <li>14 → Draw 4 / pick color</li>
+     *     <li>8  → Wild / pick color</li>
+     * </ul>
+     *
+     * @param numberOfDecks the number of 52-card Crazy 8 decks to include
      */
     public Crazy8Deck(int numberOfDecks) {
         cards = new ArrayList<>();
@@ -29,6 +49,7 @@ public class Crazy8Deck {
             }
         }
     }
+
     /**
      * Shuffles the deck of cards using the collections class
      */
@@ -46,7 +67,10 @@ public class Crazy8Deck {
     }
 
     /**
-     * Deals a card by removing it from the deck and returning a card object
+     * Deals the top card from the deck.
+     *
+     * @param isPlayable whether the dealt card should be marked as playable
+     * @return the dealt {@link Crazy8Card}, or {@code null} if the deck is empty
      */
     public Crazy8Card dealCard(boolean isPlayable) {
         if(!cards.isEmpty()) {
@@ -59,11 +83,11 @@ public class Crazy8Deck {
     }
 
     /**
-     * Returns how many cards are left in the deck
+     * Returns the number of cards remaining in the deck.
+     *
+     * @return the deck size
      */
     public int size() {
         return cards.size();
     }
-
-
 }

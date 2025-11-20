@@ -7,14 +7,19 @@ public class BlackJackCard extends MyCard {
     /**
      * Constructor for a card
      *
-     * @param value
-     * @param suit
+     * @param value value of card
+     * @param suit suit of card
      */
     public BlackJackCard(int value, char suit) {
         super(value, suit);
         isShowing = false;
     }
 
+    /**
+     *
+     * sets boolean is showing
+     * @param isShowing if the cards value is showing
+     */
     public void setIsShowing(boolean isShowing) {
         this.isShowing = isShowing;
     }

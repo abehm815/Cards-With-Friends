@@ -1,3 +1,12 @@
+/**
+ * Represents a full Blackjack game instance, including players, dealer, deck,
+ * game flow logic, betting, splitting, doubling, player decisions, and round resolution.
+ *
+ * <p>This class integrates with Spring repositories to load users from a lobby,
+ * update statistics, and broadcast turn updates via a WebSocket-consumer function.</p>
+ *
+ * <p>Each BlackJackGame instance manages a single lobby and its users.</p>
+ */
 package data.Game.BlackJack;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import data.User.AppUser;
@@ -10,39 +19,55 @@ import data.User.Stats.UserStats;
 import data.User.Stats.UserStatsRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
-import data.Lobby.LobbyController;
-
-
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 
 public class BlackJackGame {
+    /** Repository for querying and updating lobbies. */
     @Autowired
     LobbyRepository LobbyRepository;
+    /** Repository for loading and saving AppUser data. */
     @Autowired
     AppUserRepository AppUserRepository;
+    /** Repository for loading and updating player statistics. */
     @Autowired
     UserStatsRepository userStatsRepository;
 
 
-
+    /** Broadcast function used to send JSON messages to WebSocket clients. */
     private Consumer<String> broadcastFunction;
+    /** Shared mapper used for JSON serialization of broadcast messages. */
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    /**
+     * Sets the WebSocket broadcast function for sending game updates.
+     *
+     * @param broadcastFunction function accepting a JSON string payload
+     */
     public void setBroadcastFunction(Consumer<String> broadcastFunction) {
         this.broadcastFunction = broadcastFunction;
     }
 
+    /** Blackjack dealer for this game. */
     private BlackJackDealer dealer;
+    /** Multi-deck shoe used for card dealing. */
     private BlackJackDeck deck;
+    /** Players currently in the game. */
     private List<BlackJackPlayer> players;
+    /** Unique lobby code used to associate this game with a lobby. */
     private String lobbyCode;
-    private int currentPlayerIndex = 0; // Track whose turn it is
+    /** Index of the player whose turn it currently is. */
+    private int currentPlayerIndex = 0;
+    /** Whether a round of blackjack is currently active. */
     private boolean roundInProgress = false;
 
-
+    /**
+     * Constructs a new Blackjack game instance.
+     *
+     * @param lobbyCode lobby code associated with this game
+     */
     public BlackJackGame(String lobbyCode) {
         this.players = new ArrayList<>();
         deck = new BlackJackDeck(6);
@@ -84,7 +109,10 @@ public class BlackJackGame {
         System.out.println("Initialized game with " + players.size() + " players.");
     }
 
-
+    /**
+     * Starts a new blackjack round by resetting hands, shuffling the deck,
+     * and preparing the game state for betting.
+     */
     public void startRound() {
         deck.shuffle();
         dealer.resetHand();
@@ -108,6 +136,12 @@ public class BlackJackGame {
         System.out.println("New round started. Waiting for all players to place bets...");
     }
 
+    /**
+     * Handles a player's bet and triggers dealing when all players have bet.
+     *
+     * @param username username of the betting player
+     * @param amount   wager amount
+     */
     public void handlePlayerBet(String username, int amount) {
         BlackJackPlayer player = getPlayer(username);
         if (player == null) return;
@@ -133,6 +167,12 @@ public class BlackJackGame {
         }
     }
 
+    /**
+     * Handles actions such as HIT, STAND, DOUBLE, SPLIT, and LEAVE for a player.
+     *
+     * @param username player issuing command
+     * @param decision action keyword
+     */
     public void handlePlayerDecision(String username, String decision) {
         if (!roundInProgress) return;
 
@@ -210,6 +250,11 @@ public class BlackJackGame {
                 System.out.println("Invalid decision: " + decision);
         }
     }
+
+    /**
+     * Advances turn to the next eligible player,
+     * or resolves the round if all have finished.
+     */
     private void advanceTurn() {
         // Move to next player who hasn't stood yet
         do {
@@ -227,6 +272,9 @@ public class BlackJackGame {
         }
     }
 
+    /**
+     * Broadcasts a JSON message indicating whose turn it is.
+     */
     private void notifyCurrentPlayerTurn() {
         String username = players.get(currentPlayerIndex).getUsername();
         System.out.println("It's now " + username + "'s turn.");
@@ -247,6 +295,9 @@ public class BlackJackGame {
         }
     }
 
+    /**
+     * Deals two initial cards to each player and two to the dealer.
+     */
     private void dealInitialCards() {
         for (int i = 0; i < 2; i++) {
             for (BlackJackPlayer player : players) {
@@ -259,6 +310,12 @@ public class BlackJackGame {
         }
     }
 
+    /**
+     * Validates and deducts the player's bet.
+     *
+     * @param bet    amount wagered
+     * @param player player placing bet
+     */
     private void takeBet(int bet,BlackJackPlayer player) {
             if (bet <= 0 || bet > player.getChips()) {
                 System.out.println(player.getUsername() + " has invalid bet: " + bet);
@@ -270,6 +327,12 @@ public class BlackJackGame {
             }
         }
 
+
+    /**
+     * Player stands on the current hand.
+     *
+     * @param username player choosing to stand
+     */
     public void playerStand(String username) {
         BlackJackPlayer player = getPlayer(username);
         if (player == null || player.getHasStoodForHand() || !roundInProgress) return;
@@ -278,7 +341,11 @@ public class BlackJackGame {
         System.out.println(username + " stands.");
     }
 
-
+    /**
+     * Player hits and receives one card.
+     *
+     * @param username player choosing to hit
+     */
     public void playerHit(String username) {
         BlackJackPlayer player = getPlayer(username);
         if (player == null || player.getHasStoodForHand() || !roundInProgress) return;
@@ -287,6 +354,12 @@ public class BlackJackGame {
         System.out.println(username + " hits. Hand value: " + player.getHandValue());
 
     }
+
+    /**
+     * Player doubles down and receives exactly one more card forces stand to be made after card received.
+     *
+     * @param username player doubling down
+     */
     public void playerDouble(String username) {
         BlackJackPlayer player = getPlayer(username);
         if (player == null || player.getHasStoodForHand() || !roundInProgress) return;
@@ -296,6 +369,11 @@ public class BlackJackGame {
         playerStand(username);
     }
 
+    /**
+     * Player splits a pair into two separate hands.
+     *
+     * @param username player performing a split
+     */
     public void playerSplit(String username) {
         BlackJackPlayer player = getPlayer(username);
         if (player == null || !roundInProgress) return;
@@ -336,7 +414,11 @@ public class BlackJackGame {
     }
 
 
-    //removes player from player list in web socket but not from backend sql frontend please call put method on button press!!!
+    /**
+     * Removes a player from the game (WebSocket-only removal).
+     *
+     * @param username user to remove
+     */
     public void playerLeave(String username) {
         boolean removed = players.removeIf(
                 player -> player.getUsername().equals(username)
@@ -348,7 +430,10 @@ public class BlackJackGame {
         }
     }
 
-
+    /**
+     * Compares each player's hands against the dealer and awards or removes chips.
+     * Also updates stats based on win or loss.
+     */
     private void compareHandsAndResolveBets() {
         // Reveal dealer cards
         dealer.getHand().forEach(card -> card.setIsShowing(true));
@@ -399,7 +484,12 @@ public class BlackJackGame {
         }
     }
 
-
+    /**
+     * Retrieves a player by username.
+     *
+     * @param username username to match
+     * @return matching player or null
+     */
     public BlackJackPlayer getPlayer(String username) {
         for (BlackJackPlayer player : players) {
             if (player.getUsername().equals(username)) {
@@ -409,22 +499,31 @@ public class BlackJackGame {
         return null; // no match found
     }
 
+    /** @return true if a round is currently active */
     public boolean isRoundInProgress() {
         return roundInProgress;
     }
 
+    /** @return list of players in the game */
     public List<BlackJackPlayer> getPlayers() {
         return players;
     }
 
+    /** @return the dealer for this game */
     public BlackJackDealer getDealer() {
         return dealer;
     }
 
+    /** @return lobby join code associated with this game */
     public String getLobbyCode() {
         return lobbyCode;
     }
 
+    /**
+     * Converts game state into a serializable DTO representation.
+     *
+     * @return DTO map containing dealer, players, and turn info
+     */
     public Map<String, Object> toDTO() {
         Map<String, Object> dto = new HashMap<>();
         dto.put("lobbyCode", lobbyCode);
@@ -498,18 +597,35 @@ public class BlackJackGame {
         return dto;
     }
 
+    /**
+     * Sets the lobby repository
+     *
+     * @param repo lobby repository for game
+     */
     public void setLobbyRepository(LobbyRepository repo) {
         this.LobbyRepository = repo;
     }
 
+    /** Sets the user repository
+     *
+     * @param repo app repository for game
+     */
     public void setAppUserRepository(AppUserRepository repo) {
         this.AppUserRepository = repo;
     }
 
+    /** Sets the statistics repository.
+     *
+     * @param repo stats repo for game
+     */
     public void setUserStatsRepository(UserStatsRepository repo) {
         this.userStatsRepository = repo;
     }
 
+    /**
+     * Updates persistent Blackjack statistics for all players in the game.
+     * Runs inside a transactional boundary.
+     */
     @Transactional
     public void updateStatsBlackjack() {
         for (BlackJackPlayer player : players) {
@@ -542,6 +658,12 @@ public class BlackJackGame {
         }
     }
 
+    /**
+     * Copies fields from one BlackjackStats object to another.
+     *
+     * @param src source stats
+     * @param dst target stats to overwrite
+     */
     private void copyBlackjackStats(BlackjackStats src, BlackjackStats dst) {
         dst.setGamesPlayed(src.getGamesPlayed());
         dst.setGamesWon(src.getGamesWon());
