@@ -22,6 +22,12 @@ public class GoFishServer {
     // Set up service layer
     private static GoFishService goFishService;
 
+    /**
+     * Setter called by Spring to supply the GoFishService instance.
+     * This allows a static server endpoint to access Spring-managed beans.
+     *
+     * @param service the injected GoFishService implementation
+     */
     @Autowired
     public void setGoFishService(GoFishService service) {
         GoFishServer.goFishService = service;
@@ -30,6 +36,13 @@ public class GoFishServer {
     private static final Map<String, Set<Session>> lobbySessions = new ConcurrentHashMap<>();
     private static final ObjectMapper mapper = new ObjectMapper();
 
+    /**
+     * Triggered when a WebSocket connection is first opened.
+     * Adds the player to the lobby's session set and confirms their connection.
+     *
+     * @param session    the new WebSocket session
+     * @param lobbyCode  unique identifier for the Go Fish lobby
+     */
     @OnOpen
     public void onOpen(Session session, @PathParam("lobbyCode") String lobbyCode) {
         goFishService.addPlayerToLobby(lobbyCode, session);
@@ -37,6 +50,22 @@ public class GoFishServer {
         sendMessage(session, "Connected to Go Fish lobby: " + lobbyCode);
     }
 
+    /**
+     * Processes incoming WebSocket messages from the client.
+     * Messages are JSON and must include a "type" field determining the action.
+     *
+     * Supported types:
+     * <ul>
+     *     <li>"start" – start a new game</li>
+     *     <li>"turn" – process a turn</li>
+     *     <li>"state" – request full game state</li>
+     *     <li>"end" – manually end the game</li>
+     * </ul>
+     *
+     * @param session   sender's WebSocket session
+     * @param message   JSON message string
+     * @param lobbyCode lobby identifier
+     */
     @OnMessage
     public void onMessage(Session session, String message, @PathParam("lobbyCode") String lobbyCode) {
         try {
@@ -56,6 +85,13 @@ public class GoFishServer {
         }
     }
 
+    /**
+     * Triggered when a WebSocket connection closes.
+     * Removes the player from the lobby session lists and lobby membership tracking.
+     *
+     * @param session   closing session
+     * @param lobbyCode lobby identifier
+     */
     @OnClose
     public void onClose(Session session, @PathParam("lobbyCode") String lobbyCode) {
         Set<Session> sessions = lobbySessions.get(lobbyCode);
@@ -65,6 +101,12 @@ public class GoFishServer {
         goFishService.removePlayerFromLobby(lobbyCode, session);
     }
 
+    /**
+     * Triggered when an error occurs over the WebSocket connection.
+     *
+     * @param session   session where the error occurred
+     * @param throwable exception thrown
+     */
     @OnError
     public void onError(Session session, Throwable throwable) {
         sendMessage(session, "Error: " + throwable.getMessage());
@@ -113,6 +155,12 @@ public class GoFishServer {
         broadcastGameState(lobbyCode);
     }
 
+    /**
+     * Handles manual game-ending requests.
+     *
+     * @param msg       JSON message
+     * @param lobbyCode lobby whose game should end
+     */
     private void handleEnd(Map<String, Object> msg, String lobbyCode) {
         // Save all user stats and remove the game
         goFishService.endGame(lobbyCode);
@@ -132,6 +180,12 @@ public class GoFishServer {
         }
     }
 
+    /**
+     * Sends a plain text message to one WebSocket session.
+     *
+     * @param session destination session
+     * @param message text to send
+     */
     private void sendMessage(Session session, String message) {
         try {
             session.getBasicRemote().sendText(message);

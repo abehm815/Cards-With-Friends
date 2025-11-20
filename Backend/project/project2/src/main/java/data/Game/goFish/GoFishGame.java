@@ -5,6 +5,14 @@ import data.User.Stats.GoFishStats;
 
 import java.util.List;
 
+/**
+ * Represents a full game of Go Fish, managing players, the deck,
+ * turn order, card requests, and end-game logic.
+ *
+ * <p>This class handles dealing cards, executing player turns,
+ * refreshing empty hands, determining when the game ends,
+ * and computing the winner based on completed books.</p>
+ */
 public class GoFishGame {
     private List<GoFishPlayer> players;
     private GoFishDeck deck;

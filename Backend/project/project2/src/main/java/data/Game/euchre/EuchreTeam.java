@@ -3,6 +3,12 @@ package data.Game.euchre;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a team of two players in a Euchre game. Tracks the team's
+ * members, score, number of tricks taken in the current round, and other
+ * team-specific statuses such as whether the team picked up the card or
+ * if a member went alone.
+ */
 public class EuchreTeam {
     private List<EuchrePlayer> teamMembers;
     private int score;
@@ -48,29 +54,62 @@ public class EuchreTeam {
         score += amount;
     }
 
+    /**
+     * Sets whether this team picked up the card during bidding.
+     *
+     * @param toggle true if the team picked up the card, false otherwise
+     */
     public void setTeamPickedUpCard(boolean toggle) {
         teamPickedUpCard = toggle;
     }
 
+    /**
+     * Sets whether a member of this team went alone.
+     *
+     * @param toggle true if a member went alone, false otherwise
+     */
     public void setTeamMemberWhenAlone(boolean toggle) {
         teamMemberWhenAlone = toggle;
     }
 
+    /**
+     * Returns whether this team picked up the card during bidding.
+     *
+     * @return true if the team picked up the card, false otherwise
+     */
     public boolean getTeamPickedUpCard() {
         return teamPickedUpCard;
     }
 
+    /**
+     * Returns whether a member of this team went alone.
+     *
+     * @return true if a member went alone, false otherwise
+     */
     public boolean getTeamMemberWentAlone() {
         return teamMemberWhenAlone;
     }
 
+    /**
+     * Returns the number of tricks this team has taken in the current round.
+     *
+     * @return number of tricks taken
+     */
     public int getTricksTaken() {
         return tricksTaken;
     }
 
+    /**
+     * Increments the count of tricks taken by the team by 1.
+     */
+
     public void incrementTricksTaken() {
         tricksTaken += 1;
     }
+
+    /**
+     * Increments the count of tricks taken by the team by 1.
+     */
 
     public void clearTricksTaken() {
         tricksTaken = 0;

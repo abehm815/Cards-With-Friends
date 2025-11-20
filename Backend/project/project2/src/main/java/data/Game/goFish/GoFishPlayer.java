@@ -7,6 +7,15 @@ import data.User.Stats.GoFishStats;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a player in a game of Go Fish.
+ *
+ * <p>This class stores player information such as username, hand of cards,
+ * completed books, and an optional reference to an {@link AppUser} for
+ * persistent statistics tracking. It provides utilities for managing the
+ * player's hand, checking for card ranks, and detecting completed pairs
+ * to form “books.”</p>
+ */
 public class GoFishPlayer {
     private String username;
     private List<MyCard> hand;

@@ -3,6 +3,12 @@ package data.Game.euchre;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents an entire Euchre game session, including bidding,
+ * dealing, trick-taking, scoring, and round progression.
+ * Stores player order, teams, the deck, current trick state,
+ * and all gameplay-related rules.
+ */
 public class EuchreGame {
     private List<EuchrePlayer> players;
     private EuchreDeck deck;
