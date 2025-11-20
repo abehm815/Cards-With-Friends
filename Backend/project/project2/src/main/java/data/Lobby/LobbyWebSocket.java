@@ -12,6 +12,14 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * WebSocket endpoint for real-time communication within a lobby.
+ * <p>
+ * This endpoint allows users to join a lobby, send messages, start games,
+ * and receive broadcast updates about other users joining or leaving.
+ * <p>
+ * WebSocket path: {@code /ws/lobby/{joinCode}/{username}}
+ */
 @Component
 @ServerEndpoint(value = "/ws/lobby/{joinCode}/{username}")
 public class LobbyWebSocket {
@@ -22,13 +30,29 @@ public class LobbyWebSocket {
     private static final Map<String, Set<Session>> lobbySessions = new ConcurrentHashMap<>();
     private static final ObjectMapper mapper = new ObjectMapper();
 
-    // This is needed for Spring to inject static fields
+    /**
+     * Spring injection for static repositories.
+     * <p>
+     * Required because WebSocket endpoints are managed by the container,
+     * not Spring, so static fields are used to access Spring beans.
+     *
+     * @param lobbyRepo the {@link LobbyRepository} bean
+     * @param userRepo  the {@link AppUserRepository} bean
+     */
     @Autowired
     public void setStaticRepositories(LobbyRepository lobbyRepo, AppUserRepository userRepo) {
         LobbyWebSocket.lobbyRepository = lobbyRepo;
         LobbyWebSocket.userRepository = userRepo;
     }
 
+    /**
+     * Called when a new WebSocket connection is opened.
+     *
+     * @param session  the WebSocket session
+     * @param joinCode the lobby join code
+     * @param username the username of the connecting user
+     * @throws IOException if sending messages to sessions fails
+     */
     @OnOpen
     public void onOpen(Session session,
                        @PathParam("joinCode") String joinCode,
@@ -65,7 +89,18 @@ public class LobbyWebSocket {
                 "message", username + " joined the lobby."
         ));
     }
-
+    /**
+     * Handles messages sent by clients.
+     * <p>
+     * Supports "START" messages to start the game and "MESSAGE" messages
+     * for chat functionality.
+     *
+     * @param session  the WebSocket session
+     * @param joinCode the lobby join code
+     * @param username the username sending the message
+     * @param message  the JSON-formatted message
+     * @throws IOException if broadcasting fails
+     */
     @OnMessage
     public void onMessage(Session session,
                           @PathParam("joinCode") String joinCode,
@@ -105,6 +140,15 @@ public class LobbyWebSocket {
         }
     }
 
+    /**
+     * Called when a WebSocket connection is closed.
+     * Removes the session from the lobby and broadcasts a "LEAVE" message.
+     *
+     * @param session  the WebSocket session
+     * @param joinCode the lobby join code
+     * @param username the username leaving
+     * @throws IOException if broadcasting fails
+     */
     @OnClose
     public void onClose(Session session,
                         @PathParam("joinCode") String joinCode,
@@ -124,11 +168,24 @@ public class LobbyWebSocket {
         ));
     }
 
+    /**
+     * Called when an error occurs on the WebSocket connection.
+     *
+     * @param session   the WebSocket session
+     * @param throwable the thrown error
+     */
     @OnError
     public void onError(Session session, Throwable throwable) {
         System.err.println("WebSocket error: " + throwable.getMessage());
     }
 
+    /**
+     * Broadcasts a JSON message to all users in a lobby.
+     *
+     * @param joinCode the lobby join code
+     * @param message  the message as a map
+     * @throws IOException if sending messages fails
+     */
     private void broadcastJson(String joinCode, Map<String, Object> message) throws IOException {
         Set<Session> sessions = lobbySessions.get(joinCode);
         if (sessions == null) return;

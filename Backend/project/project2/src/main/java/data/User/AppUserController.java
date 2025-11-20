@@ -125,6 +125,16 @@ public class AppUserController {
         }
     }
 
+    /**
+     * Updates an existing {@link AppUser} identified by their username.
+     * <p>
+     * This endpoint allows partial updates. Only non-empty fields in the request
+     * body will overwrite the existing user's corresponding fields.
+     *
+     * @param username the current username of the user to update
+     * @param request  an {@link AppUser} object containing the updated fields
+     * @return the updated {@link AppUser} if found, otherwise {@code null}
+     */
     @PutMapping(path = "/AppUser/username/{username}")
     AppUser usernameUpdateAppUser(@PathVariable String username, @RequestBody AppUser request) {
         AppUser existingUser = this.AppUserRepository.findByUsername(username);
