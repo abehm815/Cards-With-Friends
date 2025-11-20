@@ -17,6 +17,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Service layer responsible for managing Go Fish games, including:
+ * <ul>
+ *     <li>Lobby management</li>
+ *     <li>Starting and tracking active games</li>
+ *     <li>Persisting user statistics at the end of games</li>
+ *     <li>Processing individual player turns</li>
+ * </ul>
+ *
+ * <p>This service interfaces with repositories that load {@link AppUser},
+ * {@link UserStats}, and associated {@link GameStats}, and orchestrates
+ * the flow of a Go Fish multiplayer session.</p>
+ */
 @Service
 public class GoFishService {
 

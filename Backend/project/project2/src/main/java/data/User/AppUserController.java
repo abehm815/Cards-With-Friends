@@ -15,7 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-
+/**
+ * REST controller for managing {@link AppUser} entities.
+ * <p>
+ * This controller provides CRUD operations for users, including
+ * creation, retrieval, updates by ID or username, and deletion.
+ * All endpoints return JSON and rely on {@link AppUserRepository}
+ * for database interaction.
+ */
 @RestController
 public class AppUserController {
 
