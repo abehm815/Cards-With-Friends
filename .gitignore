@@ -200,3 +200,9 @@ fabric.properties
 
 !/gradle/wrapper/gradle-wrapper.jar
 .DS_Store
+
+# --- FORCE IGNORE ANDROID BUILD OUTPUTS ---
+Frontend/CardsWithFriends/build/
+Frontend/CardsWithFriends/app/build/
+**/build/
+**/reports/
