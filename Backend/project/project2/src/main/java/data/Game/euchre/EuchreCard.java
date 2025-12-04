@@ -1,5 +1,6 @@
 package data.Game.euchre;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import data.Game.MyCard;
 
 /**
@@ -7,6 +8,7 @@ import data.Game.MyCard;
  * Euchre-based ranking rules, including trump and bower logic.
  */
 public class EuchreCard extends MyCard {
+    @JsonIgnore
     private EuchrePlayer owner;
 
     /**

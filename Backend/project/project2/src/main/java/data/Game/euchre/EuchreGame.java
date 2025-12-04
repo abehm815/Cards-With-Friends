@@ -40,15 +40,31 @@ public class EuchreGame {
      * Starts the round by dealing everyone one their hand and revealing the option card
      * @return optionCard
      */
-    public EuchreCard startGame() {
+    public void startGame() {
         this.currentTrick = new ArrayList<>();
+        deck.shuffle();
         this.dealCards();
         this.isBidding = true;
         this.isChoice = false;
         optionCard = deck.dealCard();
         System.out.println("New round started Dealer: " + getCurrentDealerUsername() + " || " + getCurrentPlayerUsername() + "'s turn!");
         System.out.println("Option Card: " + optionCard);
+    }
+
+    /**
+     * Gets the option card
+     * @return option card
+     */
+    public EuchreCard getOptionCard() {
         return optionCard;
+    }
+
+    /**
+     * Gets the current trick
+     * @return current trick
+     */
+    public List<EuchreCard> getCurrentTrick() {
+        return currentTrick;
     }
 
     /**
