@@ -23,7 +23,7 @@ public class EuchreStats extends GameStats {
     /**
      * Protected default constructor for JPA use.
      */
-    protected EuchreStats() { }
+    public EuchreStats() { }
 
     /**
      * Constructs a EuchreStats object with custom initial values.
