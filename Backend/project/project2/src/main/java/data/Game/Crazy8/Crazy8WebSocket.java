@@ -77,55 +77,119 @@ public class Crazy8WebSocket {
     @OnMessage
     public void onMessage(Session session, String message, @PathParam("lobbyCode") String lobbyCode) throws IOException {
         Crazy8Game game = games.get(lobbyCode);
-        if (game == null) return;
-
-        // Parse JSON message
-        var json = mapper.readTree(message);
-        String action = json.get("action").asText();
-        String player = json.get("player").asText();
-        String cardcolor = json.get("cardcolor").asText();
-        int value = json.has("cardvalue") ? json.get("value").asInt() : 0;
-
-        // Associate session with player
-        sessionPlayers.put(session, player);
-
-        switch (action.toUpperCase()) {
-            case "START":
-                game.initializeGameFromLobby(lobbyCode);
-                break;
-            case "LEAVE":
-                game.handlePlayerDecision(player, action, cardcolor.charAt(0),value);
-                break;
-            case "STARTROUND":
-                game.startRound();
-                break;
-            default:
-                game.handlePlayerDecision(player, action, cardcolor.charAt(0),value);
+        if (game == null) {
+            sendError(session, "Game not found");
+            return;
         }
 
-        // Broadcast updated game state to only this lobby
-        //broadcastGameState(game, lobbyCode);
+        try {
+            // Parse JSON message
+            var json = mapper.readTree(message);
+            String action = json.has("action") ? json.get("action").asText() : "";
+            String player = json.has("player") ? json.get("player").asText() : "";
+
+            // Get card details if present
+            char cardcolor = ' ';
+            int value = 0;
+
+            if (json.has("cardcolor") && json.get("cardcolor").asText().length() > 0) {
+                cardcolor = json.get("cardcolor").asText().charAt(0);
+            }
+
+            if (json.has("cardvalue")) {
+                value = json.get("cardvalue").asInt();
+            }
+
+            // Associate session with player
+            if (!player.isEmpty()) {
+                sessionPlayers.put(session, player);
+            }
+
+            // Handle different actions
+            switch (action.toUpperCase()) {
+                case "START":
+                    game.initializeGameFromLobby(lobbyCode);
+                    sendConfirmation(session, "Game initialized");
+                    break;
+
+                case "STARTROUND":
+                    game.startRound();
+                    sendConfirmation(session, "Round started");
+                    break;
+
+                case "PLAYCARD":
+                    if (cardcolor == ' ' || value == 0) {
+                        sendError(session, "Invalid card data");
+                        break;
+                    }
+                    game.handlePlayerDecision(player, action, cardcolor, value);
+                    break;
+
+                case "DRAW":
+                    game.handlePlayerDecision(player, action, cardcolor, value);
+                    break;
+
+                case "SETCOLOR":
+                    // Handle color selection for wild cards
+                    if (json.has("color") && json.get("color").asText().length() > 0) {
+                        char newColor = json.get("color").asText().charAt(0);
+                        // You'll need to add a method to handle this in Crazy8Game
+                        sendConfirmation(session, "Color set to " + newColor);
+                    }
+                    break;
+
+                case "LEAVE":
+                    game.handlePlayerDecision(player, action, cardcolor, value);
+                    break;
+
+                case "STATUS":
+                    // Request current game state
+                    // Game will broadcast automatically
+                    break;
+
+                default:
+                    sendError(session, "Unknown action: " + action);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            sendError(session, "Error processing message: " + e.getMessage());
+        }
     }
 
     @OnClose
     public void onClose(Session session, @PathParam("lobbyCode") String lobbyCode) {
         System.out.println("Connection closed: " + session.getId());
-        sessionPlayers.remove(session);
+
+        String username = sessionPlayers.remove(session);
 
         Set<Session> sessions = lobbySessions.get(lobbyCode);
         if (sessions != null) {
             sessions.remove(session);
+
+            // If lobby is empty, clean up the game
             if (sessions.isEmpty()) {
                 lobbySessions.remove(lobbyCode);
+                games.remove(lobbyCode);
+                System.out.println("Lobby " + lobbyCode + " cleaned up - no active sessions");
+            } else if (username != null) {
+                // Player disconnected, handle in game
+                Crazy8Game game = games.get(lobbyCode);
+                if (game != null && game.isRoundInProgress()) {
+                    game.handlePlayerDecision(username, "LEAVE", ' ', 0);
+                }
             }
         }
     }
 
     @OnError
     public void onError(Session session, Throwable throwable) {
+        System.err.println("WebSocket error for session " + session.getId());
         throwable.printStackTrace();
     }
 
+    /**
+     * Broadcast message to all sessions in a specific lobby
+     */
     private void broadcastToLobby(String json, String lobbyCode) {
         Set<Session> sessions = lobbySessions.getOrDefault(lobbyCode, Collections.emptySet());
         for (Session session : sessions) {
@@ -133,8 +197,41 @@ public class Crazy8WebSocket {
                 try {
                     session.getBasicRemote().sendText(json);
                 } catch (IOException e) {
+                    System.err.println("Error broadcasting to session " + session.getId());
                     e.printStackTrace();
                 }
+            }
+        }
+    }
+
+    /**
+     * Send error message to a specific session
+     */
+    private void sendError(Session session, String error) {
+        if (session.isOpen()) {
+            try {
+                var errorJson = mapper.createObjectNode();
+                errorJson.put("type", "error");
+                errorJson.put("message", error);
+                session.getBasicRemote().sendText(mapper.writeValueAsString(errorJson));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Send confirmation message to a specific session
+     */
+    private void sendConfirmation(Session session, String message) {
+        if (session.isOpen()) {
+            try {
+                var confirmJson = mapper.createObjectNode();
+                confirmJson.put("type", "confirmation");
+                confirmJson.put("message", message);
+                session.getBasicRemote().sendText(mapper.writeValueAsString(confirmJson));
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }

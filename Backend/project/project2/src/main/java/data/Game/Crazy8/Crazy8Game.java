@@ -1,16 +1,20 @@
 package data.Game.Crazy8;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import data.Lobby.Lobby;
 import data.Lobby.LobbyRepository;
 import data.User.AppUser;
 import data.User.AppUserRepository;
 import data.User.Stats.Crazy8Stats;
 import data.User.Stats.UserStatsRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 
 public class Crazy8Game {
@@ -45,20 +49,22 @@ public class Crazy8Game {
     private Crazy8Card upCard;
     private List<Crazy8Player> players;
     private String lobbyCode;
-    private int currentPlayerIndex = 0; // Track whose turn it is
+    private int currentPlayerIndex = 0;
     private boolean roundInProgress = false;
+    private boolean clockwise = true; // Direction of play
+    private int drawStack = 0; // For stacking draw cards
+    private char currentColor; // Current color in play (for wild cards)
 
     public Crazy8Game(String lobbyCode) {
+        this.lobbyCode = lobbyCode;
         this.players = new ArrayList<>();
         drawDeck = new Crazy8Deck(1);
         this.playedCards = new ArrayList<>();
     }
 
     /**
-     * Initializes a blackjack game by loading all users from the specified lobby
+     * Initializes a crazy 8 game by loading all users from the specified lobby
      * and creating player objects for them.
-     *
-     * @param joinCode the joinCode of the lobby to load players from
      */
     public void initializeGameFromLobby(String joinCode) {
         this.lobbyCode = joinCode;
@@ -76,60 +82,539 @@ public class Crazy8Game {
             userNames.add(user.getUsername());
         }
 
-        // Clear any existing players before reloading
         players.clear();
 
-        //use jakes query to add users to blackjack game
         for (String name : userNames) {
             AppUser user = AppUserRepository.findByUsernameWithStats(name);
             players.add(new Crazy8Player(user));
         }
 
         System.out.println("Initialized game with " + players.size() + " players.");
+        broadcastGameState("Game initialized");
     }
 
     public void startRound() {
+        drawDeck = new Crazy8Deck(1); // Fresh deck
         drawDeck.shuffle();
+        playedCards.clear();
         currentPlayerIndex = 0;
         roundInProgress = true;
+        clockwise = true;
+        drawStack = 0;
 
         // Clear all player hands
         for (Crazy8Player player : players) {
             player.getHand().clear();
         }
-        System.out.println("New round started dealing cards");
+
+        System.out.println("New round started, dealing cards");
+
+        // Deal 7 cards to each player (standard Uno rules)
         for (Crazy8Player player : players) {
-            for(int i = 0; i < 6; i++) {
+            for(int i = 0; i < 7; i++) {
                 player.addCard(drawDeck.dealCard(false));
             }
         }
-        playedCards.add(drawDeck.dealCard(false));
 
+        // Draw initial up card (keep drawing if it's a special card)
+        do {
+            upCard = drawDeck.dealCard(false);
+        } while (upCard.getValue() >= 11); // Avoid starting with special cards
+
+        currentColor = upCard.getSuit();
+        playedCards.add(upCard);
+
+        updatePlayableCards();
+        broadcastGameState("Round started - cards dealt");
     }
 
-    public void handlePlayerDecision(String username, String decision,char cardcolor, int value) {
-        if (!roundInProgress) return;
-
-        Crazy8Player currentPlayer = players.get(currentPlayerIndex);
-        Crazy8Stats currentPlayerStats = currentPlayer.getCrazy8Stats();
-
-        if (currentPlayerStats == null) {
-            System.out.println("Current player stats is null");
+    public void handlePlayerDecision(String username, String decision, char cardcolor, int value) {
+        if (!roundInProgress) {
+            broadcastError(username, "No round in progress");
             return;
         }
+
+        Crazy8Player currentPlayer = players.get(currentPlayerIndex);
+
+        if (!currentPlayer.getUsername().equals(username)) {
+            broadcastError(username, "Not your turn");
+            return;
+        }
+
+        Crazy8Stats currentPlayerStats = currentPlayer.getCrazy8Stats();
+
         switch (decision.toUpperCase()) {
-
             case "PLAYCARD":
+                playCard(currentPlayer, cardcolor, value);
+                break;
 
-                //Playcard(cardcolor,value);
+            case "DRAW":
+                drawCard(currentPlayer);
                 break;
 
             case "LEAVE":
-               // playerLeave(username);
+                playerLeave(username);
                 break;
 
             default:
                 System.out.println("Invalid decision: " + decision);
+                broadcastError(username, "Invalid action");
         }
+
+        // Broadcast game state after every action
+        broadcastGameState("Action completed");
+    }
+
+    private void playCard(Crazy8Player player, char color, int value) {
+        // Find the card in player's hand
+        Crazy8Card cardToPlay = null;
+        for (Crazy8Card card : player.getHand()) {
+            if (card.getSuit() == color && card.getValue() == value) {
+                cardToPlay = card;
+                break;
+            }
+        }
+
+        if (cardToPlay == null) {
+            broadcastError(player.getUsername(), "Card not found in hand");
+            return;
+        }
+
+        // Validate if card can be played
+        if (!isValidPlay(cardToPlay)) {
+            broadcastError(player.getUsername(), "Invalid card play");
+            return;
+        }
+
+        // Handle draw stack - player must draw if there's a draw stack unless playing draw card
+        if (drawStack > 0 && cardToPlay.getValue() != 13 && cardToPlay.getValue() != 14) {
+            broadcastError(player.getUsername(), "Must play draw card or draw " + drawStack + " cards");
+            return;
+        }
+
+        // Remove card from hand and add to played pile
+        player.removeCard(cardToPlay);
+        playedCards.add(cardToPlay);
+        upCard = cardToPlay;
+
+        // Update stats for cards played
+        Crazy8Stats playerStats = player.getCrazy8Stats();
+        if (playerStats != null) {
+            playerStats.addCardPlaced(); // Track total cards placed
+
+            // Track specific special cards
+            int cardValue = cardToPlay.getValue();
+            switch (cardValue) {
+                case 8:  // Wild/Crazy 8
+                    playerStats.addCrazy8Played();
+                    break;
+                case 11: // Reverse
+                    playerStats.addReversePlayed();
+                    break;
+                case 12: // Skip
+                    playerStats.addSkipPlayed();
+                    break;
+                case 13: // Draw 2
+                    playerStats.addPlus2Played();
+                    break;
+                case 14: // Draw 4
+                    playerStats.addPlus4Played();
+                    break;
+            }
+        }
+
+        // Handle special cards
+        handleSpecialCard(cardToPlay, player);
+
+        // Check for win
+        if (player.getHandSize() == 0) {
+            endRound(player);
+            return;
+        }
+
+        // Move to next player
+        advanceTurn();
+        updatePlayableCards();
+        broadcastGameState("Card played: " + cardToPlay.toString());
+    }
+
+    private boolean isValidPlay(Crazy8Card card) {
+        // Wild cards (8 and 14) can always be played
+        if (card.getValue() == 8 || card.getValue() == 14) {
+            return true;
+        }
+
+        // Check if matches current color or value
+        return card.getSuit() == currentColor || card.getValue() == upCard.getValue();
+    }
+
+    private void handleSpecialCard(Crazy8Card card, Crazy8Player player) {
+        int value = card.getValue();
+
+        switch (value) {
+            case 8: // Wild card - pick color (color should be sent in next message)
+                currentColor = card.getSuit(); // Temporary, should be updated by player choice
+                break;
+
+            case 11: // Reverse
+                clockwise = !clockwise;
+                if (players.size() == 2) {
+                    // In 2 player game, reverse acts as skip
+                    advanceTurn();
+                }
+                break;
+
+            case 12: // Skip
+                advanceTurn(); // Skip next player
+                break;
+
+            case 13: // Draw 2
+                drawStack += 2;
+                break;
+
+            case 14: // Draw 4 and pick color
+                drawStack += 4;
+                currentColor = card.getSuit(); // Should be updated by player choice
+                break;
+        }
+    }
+
+    private void drawCard(Crazy8Player player) {
+        // Manual draw - player chooses to draw even though they might have playable cards
+        // This is optional strategy (bluffing or trying to get a better card)
+
+        Crazy8Stats playerStats = player.getCrazy8Stats();
+
+        if (drawStack > 0) {
+            // Player is drawing from a draw stack (forced)
+            for (int i = 0; i < drawStack; i++) {
+                if (drawDeck.size() > 0) {
+                    player.addCard(drawDeck.dealCard(false));
+                    if (playerStats != null) {
+                        playerStats.addCardDrawn();
+                    }
+                } else {
+                    reshuffleDeck();
+                    if (drawDeck.size() > 0) {
+                        player.addCard(drawDeck.dealCard(false));
+                        if (playerStats != null) {
+                            playerStats.addCardDrawn();
+                        }
+                    }
+                }
+            }
+            drawStack = 0;
+            advanceTurn();
+            updatePlayableCards();
+            broadcastGameState("Drew cards from draw stack");
+        } else {
+            // Voluntary draw - draw one card
+            if (drawDeck.size() > 0) {
+                Crazy8Card drawnCard = drawDeck.dealCard(false);
+                player.addCard(drawnCard);
+                if (playerStats != null) {
+                    playerStats.addCardDrawn();
+                }
+
+                // Check if drawn card can be played immediately
+                if (isValidPlay(drawnCard)) {
+                    drawnCard.setIsPlayable(true);
+                    broadcastGameState("Manual draw - card is playable");
+                    // Player can choose to play it or not
+                } else {
+                    advanceTurn();
+                    updatePlayableCards();
+                    broadcastGameState("Manual draw - turn passed");
+                }
+            } else {
+                reshuffleDeck();
+                if (drawDeck.size() > 0) {
+                    Crazy8Card drawnCard = drawDeck.dealCard(false);
+                    player.addCard(drawnCard);
+                    if (playerStats != null) {
+                        playerStats.addCardDrawn();
+                    }
+
+                    if (isValidPlay(drawnCard)) {
+                        drawnCard.setIsPlayable(true);
+                        broadcastGameState("Manual draw - card is playable");
+                    } else {
+                        advanceTurn();
+                        updatePlayableCards();
+                        broadcastGameState("Manual draw - turn passed");
+                    }
+                }
+            }
+        }
+    }
+
+    private void reshuffleDeck() {
+        if (playedCards.size() <= 1) {
+            System.out.println("No cards to reshuffle");
+            return;
+        }
+
+        // Keep the current up card, reshuffle the rest
+        Crazy8Card currentUpCard = playedCards.remove(playedCards.size() - 1);
+
+        for (Crazy8Card card : playedCards) {
+            drawDeck.dealCard(false); // Add back to deck
+        }
+
+        playedCards.clear();
+        playedCards.add(currentUpCard);
+        drawDeck.shuffle();
+
+        System.out.println("Deck reshuffled");
+    }
+
+    private void advanceTurn() {
+        if (clockwise) {
+            currentPlayerIndex = (currentPlayerIndex + 1) % players.size();
+        } else {
+            currentPlayerIndex = (currentPlayerIndex - 1 + players.size()) % players.size();
+        }
+    }
+
+    private void updatePlayableCards() {
+        Crazy8Player currentPlayer = players.get(currentPlayerIndex);
+
+        boolean hasPlayableCard = false;
+        for (Crazy8Card card : currentPlayer.getHand()) {
+            boolean playable = isValidPlay(card);
+            card.setIsPlayable(playable);
+            if (playable) {
+                hasPlayableCard = true;
+            }
+        }
+
+        // Auto-draw if player has no playable cards
+        if (!hasPlayableCard && roundInProgress) {
+            System.out.println("No playable cards - auto-drawing for " + currentPlayer.getUsername());
+            autoDrawCard(currentPlayer);
+        }
+    }
+
+    private void autoDrawCard(Crazy8Player player) {
+        Crazy8Stats playerStats = player.getCrazy8Stats();
+
+        if (drawStack > 0) {
+            // Player must draw from the draw stack
+            int cardsDrawn = drawStack;
+            for (int i = 0; i < drawStack; i++) {
+                if (drawDeck.size() > 0) {
+                    player.addCard(drawDeck.dealCard(false));
+                    if (playerStats != null) {
+                        playerStats.addCardDrawn();
+                    }
+                } else {
+                    reshuffleDeck();
+                    if (drawDeck.size() > 0) {
+                        player.addCard(drawDeck.dealCard(false));
+                        if (playerStats != null) {
+                            playerStats.addCardDrawn();
+                        }
+                    }
+                }
+            }
+            drawStack = 0;
+            advanceTurn();
+            updatePlayableCards();
+            broadcastGameState("Auto-drew " + cardsDrawn + " cards (draw stack)");
+        } else {
+            // Normal auto-draw - draw one card
+            if (drawDeck.size() > 0) {
+                Crazy8Card drawnCard = drawDeck.dealCard(false);
+                player.addCard(drawnCard);
+                if (playerStats != null) {
+                    playerStats.addCardDrawn();
+                }
+
+                // Check if drawn card can be played
+                if (isValidPlay(drawnCard)) {
+                    drawnCard.setIsPlayable(true);
+                    broadcastGameState("Auto-drew card - can play it");
+                    // Don't advance turn - player can play the drawn card
+                } else {
+                    // Can't play drawn card, move to next player
+                    advanceTurn();
+                    updatePlayableCards();
+                    broadcastGameState("Auto-drew card - turn passed");
+                }
+            } else {
+                reshuffleDeck();
+                if (drawDeck.size() > 0) {
+                    Crazy8Card drawnCard = drawDeck.dealCard(false);
+                    player.addCard(drawnCard);
+                    if (playerStats != null) {
+                        playerStats.addCardDrawn();
+                    }
+
+                    if (isValidPlay(drawnCard)) {
+                        drawnCard.setIsPlayable(true);
+                        broadcastGameState("Auto-drew card - can play it");
+                    } else {
+                        advanceTurn();
+                        updatePlayableCards();
+                        broadcastGameState("Auto-drew card - turn passed");
+                    }
+                } else {
+                    // No cards left at all
+                    advanceTurn();
+                    updatePlayableCards();
+                    broadcastGameState("No cards to draw - turn passed");
+                }
+            }
+        }
+    }
+
+    private void playerLeave(String username) {
+        players.removeIf(p -> p.getUsername().equals(username));
+
+        if (players.size() < 2) {
+            roundInProgress = false;
+            broadcastGameState("Not enough players - round ended");
+        } else {
+            // Adjust current player index if needed
+            if (currentPlayerIndex >= players.size()) {
+                currentPlayerIndex = 0;
+            }
+            updatePlayableCards();
+            broadcastGameState("Player left: " + username);
+        }
+    }
+
+    private void endRound(Crazy8Player winner) {
+        roundInProgress = false;
+
+        // Update stats - only winner gets game won incremented
+        Crazy8Stats winnerStats = winner.getCrazy8Stats();
+        if (winnerStats != null) {
+            winnerStats.addGameWon();
+        }
+
+        // Save all stats using transactional update
+        updateStatsCrazy8();
+
+        broadcastGameState("Round ended - Winner: " + winner.getUsername());
+    }
+
+    @Transactional
+    public void updateStatsCrazy8() {
+        for (Crazy8Player player : players) {
+            AppUser detached = player.getUserRef(); // in-memory player object
+            if (detached == null) continue;
+
+            // Load managed user from DB
+            AppUser managed = AppUserRepository.findByIdWithStats(detached.getUserID());
+            if (managed == null) continue;
+
+            // Ensure managed user has UserStats
+            if (managed.getUserStats() == null) {
+                managed.setUserStats(new data.User.Stats.UserStats());
+                managed.getUserStats().setAppUser(managed);
+            }
+
+            // Get or create Crazy8Stats
+            data.User.Stats.GameStats detachedStats = detached.getUserStats().getGameStats("Crazy8");
+            data.User.Stats.GameStats managedStats = managed.getUserStats().getGameStats("Crazy8");
+
+            if (detachedStats instanceof Crazy8Stats && managedStats instanceof Crazy8Stats) {
+                copyCrazy8Stats((Crazy8Stats) detachedStats, (Crazy8Stats) managedStats);
+            } else if (detachedStats instanceof Crazy8Stats && managedStats == null) {
+                Crazy8Stats newStats = new Crazy8Stats();
+                copyCrazy8Stats((Crazy8Stats) detachedStats, newStats);
+                newStats.setUserStats(managed.getUserStats());
+                managed.getUserStats().addGameStats("Crazy8", newStats);
+            }
+            AppUserRepository.save(managed);
+        }
+    }
+
+    private void copyCrazy8Stats(Crazy8Stats src, Crazy8Stats dst) {
+        dst.setTimesDrewCard(src.getTimesDrewCard());
+        dst.setCardsPlaced(src.getCardsPlaced());
+        dst.setCrazy8Played(src.getCrazy8Played());
+        dst.setSkipsPlayed(src.getSkipsPlayed());
+        dst.setReversePlayed(src.getReversePlayed());
+        dst.setPlus2Played(src.getPlus2Played());
+        dst.setPlus4Played(src.getPlus4Played());
+        dst.setGamesWon(src.getGamesWon());
+    }
+
+    private void broadcastGameState(String message) {
+        if (broadcastFunction == null) return;
+
+        try {
+            ObjectNode json = mapper.createObjectNode();
+            json.put("type", "gameState");
+            json.put("message", message);
+            json.put("currentPlayer", players.get(currentPlayerIndex).getUsername());
+            json.put("roundInProgress", roundInProgress);
+            json.put("currentColor", String.valueOf(currentColor));
+            json.put("drawStack", drawStack);
+            json.put("deckSize", drawDeck.size());
+
+            if (upCard != null) {
+                ObjectNode upCardJson = json.putObject("upCard");
+                upCardJson.put("value", upCard.getValue());
+                upCardJson.put("color", String.valueOf(upCard.getSuit()));
+            }
+
+            // Add player info (hand sizes only for opponents, full hand for current player)
+            var playersArray = json.putArray("players");
+            for (Crazy8Player player : players) {
+                ObjectNode playerJson = playersArray.addObject();
+                playerJson.put("username", player.getUsername());
+                playerJson.put("handSize", player.getHandSize());
+
+                // Only send full hand for current player
+                if (player == players.get(currentPlayerIndex)) {
+                    var handArray = playerJson.putArray("hand");
+                    for (Crazy8Card card : player.getHand()) {
+                        ObjectNode cardJson = handArray.addObject();
+                        cardJson.put("value", card.getValue());
+                        cardJson.put("color", String.valueOf(card.getSuit()));
+                        cardJson.put("isPlayable", card.getIsSPlayable());
+                    }
+                }
+            }
+
+            broadcastFunction.accept(mapper.writeValueAsString(json));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void broadcastError(String username, String error) {
+        if (broadcastFunction == null) return;
+
+        try {
+            ObjectNode json = mapper.createObjectNode();
+            json.put("type", "error");
+            json.put("username", username);
+            json.put("error", error);
+
+            broadcastFunction.accept(mapper.writeValueAsString(json));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    // Getters for testing
+    public List<Crazy8Player> getPlayers() {
+        return players;
+    }
+
+    public Crazy8Card getUpCard() {
+        return upCard;
+    }
+
+    public int getCurrentPlayerIndex() {
+        return currentPlayerIndex;
+    }
+
+    public boolean isRoundInProgress() {
+        return roundInProgress;
     }
 }

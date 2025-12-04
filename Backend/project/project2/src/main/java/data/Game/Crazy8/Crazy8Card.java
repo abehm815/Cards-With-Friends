@@ -22,5 +22,6 @@ public class Crazy8Card extends MyCard {
     public boolean getIsSPlayable(){
         return  isPlayable;
     }
+
 }
 
