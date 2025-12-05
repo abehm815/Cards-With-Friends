@@ -103,7 +103,7 @@ public class BlackJackGame {
         //use jakes query to add users to blackjack game
         for (String name : userNames) {
             AppUser user = AppUserRepository.findByUsernameWithStats(name);
-            players.add(new BlackJackPlayer(user,1000));
+            players.add(new BlackJackPlayer(user,user.getChips()));// takes chips from app user database
         }
 
         System.out.println("Initialized game with " + players.size() + " players.");
@@ -635,6 +635,9 @@ public class BlackJackGame {
             // Load managed user from DB
             AppUser managed = AppUserRepository.findByIdWithStats(detached.getUserID());
             if (managed == null) continue;
+
+            // Update chips
+            managed.setChips(player.getChips());
 
             // Ensure managed user has UserStats
             if (managed.getUserStats() == null) {

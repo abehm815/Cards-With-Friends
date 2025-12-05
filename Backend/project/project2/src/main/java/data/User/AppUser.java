@@ -35,6 +35,7 @@ public class AppUser {
     private String firstName;
     private String lastName;
     private String age;
+    private Integer chips;
 
     @Column(nullable = false)
     private boolean isModerator = false;
@@ -84,6 +85,7 @@ public class AppUser {
         this.firstName = firstName;
         this.lastName = lastName;
         this.age = age;
+        this.chips = 1000;
         this.userStats = new UserStats();
     }
 
@@ -179,6 +181,12 @@ public class AppUser {
     public boolean isInLobby() { return inLobby; }
     /** @param lobby sets whether the user is in a lobby */
     public void setInLobby(boolean lobby) { this.inLobby = lobby; }
+
+    /** @return chips the current app user has*/
+    public Integer getChips() { return chips; }
+
+    /** @param chips sets the amount of chips a appuser has */
+    public void setChips(int chips) { this.chips = chips; }
 
     /**
      * Returns the username as the string representation of the user.
