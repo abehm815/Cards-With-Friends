@@ -54,6 +54,8 @@ public class Crazy8Game {
     private boolean clockwise = true; // Direction of play
     private int drawStack = 0; // For stacking draw cards
     private char currentColor; // Current color in play (for wild cards)
+    private boolean waitingForColorChoice = false; // Flag to indicate waiting for color
+    private String playerChoosingColor = null; // Username of player choosing color
 
     public Crazy8Game(String lobbyCode) {
         this.lobbyCode = lobbyCode;
@@ -134,6 +136,18 @@ public class Crazy8Game {
             return;
         }
 
+        // Handle color choice separately
+        if (decision.equalsIgnoreCase("CHOOSECOLOR")) {
+            handleColorChoice(username, cardcolor);
+            return;
+        }
+
+        // Don't allow other actions while waiting for color choice
+        if (waitingForColorChoice) {
+            broadcastError(username, "Waiting for " + playerChoosingColor + " to choose a color");
+            return;
+        }
+
         Crazy8Player currentPlayer = players.get(currentPlayerIndex);
 
         if (!currentPlayer.getUsername().equals(username)) {
@@ -161,8 +175,41 @@ public class Crazy8Game {
                 broadcastError(username, "Invalid action");
         }
 
-        // Broadcast game state after every action
-        broadcastGameState("Action completed");
+        // Broadcast game state after every action (unless waiting for color)
+        if (!waitingForColorChoice) {
+            broadcastGameState("Action completed");
+        }
+    }
+
+    private void handleColorChoice(String username, char color) {
+        if (!waitingForColorChoice) {
+            broadcastError(username, "No color choice needed");
+            return;
+        }
+
+        if (!username.equals(playerChoosingColor)) {
+            broadcastError(username, "Not your turn to choose color");
+            return;
+        }
+
+        // Validate color
+        if (color != 'R' && color != 'G' && color != 'B' && color != 'Y') {
+            broadcastError(username, "Invalid color. Must be R, G, B, or Y");
+            return;
+        }
+
+        // Set the chosen color
+        currentColor = color;
+        upCard.setSuit(color); // changes upcard from original color to color that is chosen
+        waitingForColorChoice = false;
+        playerChoosingColor = null;
+
+        System.out.println(username + " chose color: " + color);
+
+        // Continue with the game
+        advanceTurn();
+        updatePlayableCards();
+        broadcastGameState("Color chosen: " + getSuitName(color));
     }
 
     private void playCard(Crazy8Player player, char color, int value) {
@@ -226,16 +273,21 @@ public class Crazy8Game {
         // Handle special cards
         handleSpecialCard(cardToPlay, player);
 
-        // Check for win
+        // Check for win (but only if not waiting for color choice)
         if (player.getHandSize() == 0) {
             endRound(player);
             return;
         }
 
-        // Move to next player
-        advanceTurn();
-        updatePlayableCards();
-        broadcastGameState("Card played: " + cardToPlay.toString());
+        // Only advance turn and broadcast if NOT waiting for color choice
+        if (!waitingForColorChoice) {
+            advanceTurn();
+            updatePlayableCards();
+            broadcastGameState("Card played: " + cardToPlay.toString());
+        } else {
+            // Broadcast that card was played and waiting for color
+            broadcastGameState("Card played: " + cardToPlay.toString() + " - waiting for color choice");
+        }
     }
 
     private boolean isValidPlay(Crazy8Card card) {
@@ -252,8 +304,11 @@ public class Crazy8Game {
         int value = card.getValue();
 
         switch (value) {
-            case 8: // Wild card - pick color (color should be sent in next message)
-                currentColor = card.getSuit(); // Temporary, should be updated by player choice
+            case 8: // Wild card - pick color
+                waitingForColorChoice = true;
+                playerChoosingColor = player.getUsername();
+                broadcastColorChoiceRequest(player.getUsername());
+                // Don't advance turn yet - wait for color choice
                 break;
 
             case 11: // Reverse
@@ -274,8 +329,36 @@ public class Crazy8Game {
 
             case 14: // Draw 4 and pick color
                 drawStack += 4;
-                currentColor = card.getSuit(); // Should be updated by player choice
+                waitingForColorChoice = true;
+                playerChoosingColor = player.getUsername();
+                broadcastColorChoiceRequest(player.getUsername());
+                // Don't advance turn yet - wait for color choice
                 break;
+        }
+    }
+
+    private void broadcastColorChoiceRequest(String username) {
+        if (broadcastFunction == null) return;
+
+        try {
+            ObjectNode json = mapper.createObjectNode();
+            json.put("type", "colorChoiceRequest");
+            json.put("username", username);
+            json.put("message", username + " must choose a color (R, G, B, or Y)");
+
+            broadcastFunction.accept(mapper.writeValueAsString(json));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String getSuitName(char color) {
+        switch (color) {
+            case 'R': return "Red";
+            case 'G': return "Green";
+            case 'B': return "Blue";
+            case 'Y': return "Yellow";
+            default: return "Unknown";
         }
     }
 
