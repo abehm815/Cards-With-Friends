@@ -35,7 +35,9 @@ public class AppUser {
     private String firstName;
     private String lastName;
     private String age;
-    private Integer chips;
+
+    @Column(nullable = false)
+    private Integer chips = 0;
 
     @Column(nullable = false)
     private boolean isModerator = false;
