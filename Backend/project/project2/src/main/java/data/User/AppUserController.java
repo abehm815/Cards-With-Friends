@@ -128,6 +128,9 @@ public class AppUserController {
             if (!Objects.equals(request.getUsername(), "")) {
                 existingUser.setUsername(request.getUsername());
             }
+            if (request.getChips() != null) {
+                existingUser.setChips(request.getChips());
+            }
             return AppUserRepository.save(existingUser);
         }
     }
@@ -165,6 +168,9 @@ public class AppUserController {
             }
             if (!Objects.equals(request.getUsername(), "")) {
                 existingUser.setUsername(request.getUsername());
+            }
+            if (request.getChips() != null) {
+                existingUser.setChips(request.getChips());
             }
             return AppUserRepository.save(existingUser);
         }
