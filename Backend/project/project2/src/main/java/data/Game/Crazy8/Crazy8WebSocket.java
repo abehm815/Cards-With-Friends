@@ -17,18 +17,40 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+        * WebSocket endpoint that manages Crazy 8s gameplay communication between clients.
+ * <p>
+ * Each lobby is identified by a unique {@code lobbyCode}. This class handles:
+        * <ul>
+ *     <li>Connecting and disconnecting clients</li>
+        *     <li>Routing player actions to the appropriate {@link Crazy8Game}</li>
+        *     <li>Broadcasting updated game state to all connected players</li>
+        * </ul>
+        *
+        * This endpoint integrates with Spring-managed repositories for lobby and user data.
+        */
 @Component
 @ServerEndpoint("/ws/Crazy8/{lobbyCode}")
 public class Crazy8WebSocket {
     // Map of lobbyCode -> Crazy8Game instance
     private static final Map<String, Crazy8Game> games = new ConcurrentHashMap<>();
 
-    // Map of lobbyCode -> set of sessions
+    /**
+     * Map of lobbyCode → set of active websocket sessions.
+     * Used to broadcast events only to players in the same lobby.
+     */
     private static final Map<String, Set<Session>> lobbySessions = new ConcurrentHashMap<>();
 
-    // Map of session -> player username
+    /**
+     * Map of websocket session → username.
+     * Tracks which player is connected on which session.
+     */
     private static final Map<Session, String> sessionPlayers = new ConcurrentHashMap<>();
 
+
+    /**
+     * JSON serializer for parsing client messages.
+     */
     private final ObjectMapper mapper = new ObjectMapper();
 
     // Spring-managed repositories
@@ -36,20 +58,36 @@ public class Crazy8WebSocket {
     private static AppUserRepository appUserRepository;
     private static UserStatsRepository userStatsRepository;
 
+    /**
+     * Injects the LobbyRepository.
+     *
+     * @param repo the repository instance
+     */
     @Autowired
     public void setLobbyRepository(LobbyRepository repo) {
         Crazy8WebSocket.lobbyRepository = repo;
     }
 
+    /**
+     * Injects the AppUserRepository.
+     *
+     * @param repo the repository instance
+     */
     @Autowired
     public void setAppUserRepository(AppUserRepository repo) {
         Crazy8WebSocket.appUserRepository = repo;
     }
 
+    /**
+     * Injects the UserStatsRepository.
+     *
+     * @param repo the repository instance
+     */
     @Autowired
     public void setUserStatsRepository(UserStatsRepository repo) {
         Crazy8WebSocket.userStatsRepository = repo;
     }
+
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -72,6 +110,17 @@ public class Crazy8WebSocket {
         lobbySessions.computeIfAbsent(lobbyCode, k -> ConcurrentHashMap.newKeySet()).add(session);
     }
 
+    /**
+     * Triggered when a message is received from a client.
+     * <p>
+     * Parses the JSON payload and forwards the action to the Crazy8Game instance
+     * assigned to the current lobby.
+     *
+     * @param session   the sending client session
+     * @param message   the raw JSON payload
+     * @param lobbyCode the lobby the message belongs to
+     * @throws IOException if parsing the JSON fails
+     */
     @OnMessage
     public void onMessage(Session session, String message, @PathParam("lobbyCode") String lobbyCode) throws IOException {
         Crazy8Game game = games.get(lobbyCode);
@@ -154,6 +203,13 @@ public class Crazy8WebSocket {
         }
     }
 
+    /**
+     * Triggered when a WebSocket connection closes.
+     * Removes the session from the lobby and cleans up empty lobbies.
+     *
+     * @param session   the disconnected session
+     * @param lobbyCode the lobby the session belonged to
+     */
     @OnClose
     public void onClose(Session session, @PathParam("lobbyCode") String lobbyCode) {
         System.out.println("Connection closed: " + session.getId());
@@ -179,6 +235,12 @@ public class Crazy8WebSocket {
         }
     }
 
+    /**
+     * Triggered when a WebSocket error occurs.
+     *
+     * @param session   the session where the error occurred
+     * @param throwable the exception that occurred
+     */
     @OnError
     public void onError(Session session, Throwable throwable) {
         System.err.println("WebSocket error for session " + session.getId());

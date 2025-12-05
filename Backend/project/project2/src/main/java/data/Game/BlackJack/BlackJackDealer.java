@@ -8,12 +8,16 @@ public class BlackJackDealer {
     private List<BlackJackCard> hand;
     private boolean hitOnSoft17; // true = dealer hits on soft 17 (optional rule)
 
+    /**
+     * constructor for a balckjack dealer
+     * @param hitOnSoft17 determines what the dealer does if they get a soft 17 delt to them
+     */
     public BlackJackDealer(boolean hitOnSoft17) {
         this.hand = new ArrayList<>();
         this.hitOnSoft17 = hitOnSoft17;
     }
 
-    /** Default constructor (dealer stands on all 17s) */
+    /**Default constructor (dealer stands on all 17s)*/
     public BlackJackDealer() {
         this(false);
     }

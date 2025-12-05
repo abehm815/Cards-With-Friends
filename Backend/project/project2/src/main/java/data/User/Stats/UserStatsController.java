@@ -7,6 +7,21 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST controller responsible for exposing CRUD-style endpoints
+ * for managing {@link UserStats} entities and their associated
+ * per-game statistics. This controller enables:
+ * <ul>
+ *     <li>Retrieving all user statistics</li>
+ *     <li>Retrieving a single user’s statistics</li>
+ *     <li>Deleting or resetting statistics</li>
+ *     <li>Creating new UserStats for a user</li>
+ *     <li>Incrementing or setting individual game-specific statistics</li>
+ * </ul>
+ *
+ * The controller interacts with {@link UserStatsRepository} and
+ * {@link AppUserRepository} to manage persistence and relational mapping.
+ */
 @RestController
 public class UserStatsController {
     @Autowired

@@ -6,6 +6,11 @@ import data.User.Stats.EuchreStats;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents a player in a Euchre game. Each player has a username, a hand of cards,
+ * a collection of tricks taken, and optionally an associated {@link AppUser} for
+ * persistent user statistics.
+ */
 public class EuchrePlayer {
     private String username;
     private List<EuchreCard> hand;

@@ -15,7 +15,14 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-
+/**
+ * REST controller for managing {@link AppUser} entities.
+ * <p>
+ * This controller provides CRUD operations for users, including
+ * creation, retrieval, updates by ID or username, and deletion.
+ * All endpoints return JSON and rely on {@link AppUserRepository}
+ * for database interaction.
+ */
 @RestController
 public class AppUserController {
 
@@ -125,6 +132,16 @@ public class AppUserController {
         }
     }
 
+    /**
+     * Updates an existing {@link AppUser} identified by their username.
+     * <p>
+     * This endpoint allows partial updates. Only non-empty fields in the request
+     * body will overwrite the existing user's corresponding fields.
+     *
+     * @param username the current username of the user to update
+     * @param request  an {@link AppUser} object containing the updated fields
+     * @return the updated {@link AppUser} if found, otherwise {@code null}
+     */
     @PutMapping(path = "/AppUser/username/{username}")
     AppUser usernameUpdateAppUser(@PathVariable String username, @RequestBody AppUser request) {
         AppUser existingUser = this.AppUserRepository.findByUsername(username);

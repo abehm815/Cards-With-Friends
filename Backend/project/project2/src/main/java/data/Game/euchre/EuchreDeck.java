@@ -20,7 +20,7 @@ public class EuchreDeck {
         char[] suits = {'h', 'd', 's', 'c'};
 
         for (char s : suits) {
-            for(int i = 9; i < 14; i++) {
+            for(int i = 9; i <= 14; i++) {
                 cards.add(new EuchreCard(i, s, null));
             }
         }

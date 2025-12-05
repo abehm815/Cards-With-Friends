@@ -9,6 +9,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+/**
+ * REST controller for managing game lobbies.
+ * Provides endpoints to create, update, retrieve, and delete lobbies.
+ */
 @RestController
 public class LobbyController {
 
@@ -98,6 +102,15 @@ public class LobbyController {
         return savedLobby;
     }
 
+    /**
+     * POST /Lobby/joinCode/autogen/{username}
+     * <p>
+     * Creates a new lobby with a randomly generated unique join code and adds the specified user as host.
+     *
+     * @param lobby    the {@link Lobby} object to create
+     * @param username the username of the host
+     * @return the generated join code
+     */
     @PostMapping(path = "/Lobby/joinCode/autogen/{username}")
     public String createLobbyWithautogen(@RequestBody Lobby lobby, @PathVariable String username) {
         AppUser host = this.AppUserRepository.findByUsername(username);
@@ -132,6 +145,16 @@ public class LobbyController {
     }
 
 
+    /**
+     * POST /Lobby/joinCode/{joinCode}/{username}
+     * <p>
+     * Creates a lobby with a specified join code and adds the host user.
+     *
+     * @param lobby    the {@link Lobby} object to create
+     * @param username the username of the host
+     * @param joinCode the join code for the lobby
+     * @return the created {@link Lobby} entity
+     */
     @PostMapping(path = "/Lobby/joinCode/{joinCode}/{username}")
     public Lobby createLobbyWithJoinCode(@RequestBody Lobby lobby, @PathVariable String username, @PathVariable String joinCode) {
         // Find the user creating the lobby (host)
@@ -160,6 +183,13 @@ public class LobbyController {
         return  savedLobby;
     }
 
+    /**
+     * DELETE /Lobby/empty
+     * <p>
+     * Deletes all empty lobbies from the database.
+     *
+     * @return JSON message indicating how many lobbies were deleted
+     */
     @DeleteMapping(path = {"/Lobby/empty"})
     public String deleteEmptyLobbies() {
         List<Lobby> allLobbies = this.LobbyRepository.findAll();
@@ -218,6 +248,15 @@ public class LobbyController {
         }
     }
 
+    /**
+     * PUT /Lobby/joinCode/{joinCode}
+     * <p>
+     * Updates an existing lobby by its join code. Only updates fields provided in the request body.
+     *
+     * @param joinCode     the join code of the lobby to update
+     * @param lobbyDetails the {@link Lobby} object containing fields to update
+     * @return JSON string indicating success or failure
+     */
     @PutMapping(path= {"/Lobby/joinCode/{joinCode}"})
     public String updateLobbyByCode(@PathVariable String joinCode, @RequestBody Lobby lobbyDetails){
         Lobby oldLobby= this.LobbyRepository.findByJoinCode(joinCode);
@@ -284,6 +323,16 @@ public class LobbyController {
         return this.success;
     }
 
+    /**
+     * PUT /Lobby/joinCode/{joinCode}/{username}
+     * <p>
+     * Adds or removes a user from a lobby by join code.
+     * If the user is already in the lobby, they are removed; otherwise, they are added.
+     *
+     * @param joinCode the join code of the lobby
+     * @param username the username of the user to add or remove
+     * @return JSON string indicating success or failure
+     */
     @PutMapping(path= {"/Lobby/joinCode/{joinCode}/{username}"})
     public String updateLobbyUsersByCode(@PathVariable String joinCode, @PathVariable String username){
         Lobby lobby = this.LobbyRepository.findByJoinCode(joinCode);
@@ -338,6 +387,14 @@ public class LobbyController {
     }
 
 
+    /**
+     * DELETE /Lobby/joinCode/{joinCode}
+     * <p>
+     * Deletes a lobby by its join code and clears relationships with users.
+     *
+     * @param joinCode the join code of the lobby to delete
+     * @return JSON string indicating success or failure
+     */
     @DeleteMapping(path = {"/Lobby/joinCode/{joinCode}"})
     String deleteLobbyByCode(@PathVariable String joinCode) {
         Lobby lobby = LobbyRepository.findByJoinCode(joinCode);
