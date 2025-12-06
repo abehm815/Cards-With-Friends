@@ -1,0 +1,608 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CardRenderer.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample.blackjack</a> &gt; <span class="el_source">CardRenderer.java</span></div><h1>CardRenderer.java</h1><pre class="source lang-java linenums">package com.example.androidexample.blackjack;
+
+import android.content.Context;
+import android.graphics.Color;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.core.content.res.ResourcesCompat;
+
+import com.example.androidexample.R;
+import com.example.androidexample.blackjack.BlackjackModels.CardState;
+import com.example.androidexample.blackjack.BlackjackModels.DealerState;
+import com.example.androidexample.blackjack.BlackjackModels.HandState;
+import com.example.androidexample.blackjack.BlackjackModels.PlayerState;
+import com.example.androidexample.services.CardView;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Responsible for rendering card visuals and related UI elements
+ * (like value and bet pills) for both players and the dealer.
+ *
+ * This class encapsulates layout/animation logic only — no game rules.
+ */
+public class CardRenderer {
+
+    /** Android context for inflating views / resources. */
+    private final Context context;
+
+    /** Density multiplier for dp → px. */
+    private final float density;
+
+<span class="nc" id="L37">    public CardRenderer(Context context, float density) {</span>
+<span class="nc" id="L38">        this.context = context;</span>
+<span class="nc" id="L39">        this.density = density;</span>
+<span class="nc" id="L40">    }</span>
+
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    // Old static render (No animation)
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    public void renderPlayerHands(LinearLayout container, PlayerState player) {
+<span class="nc" id="L46">        container.removeAllViews();</span>
+<span class="nc bnc" id="L47" title="All 4 branches missed.">        if (player == null || player.hands == null) return;</span>
+
+<span class="nc" id="L49">        container.setOrientation(LinearLayout.HORIZONTAL);</span>
+<span class="nc" id="L50">        container.setGravity(Gravity.CENTER_HORIZONTAL);</span>
+
+<span class="nc" id="L52">        int totalHands = player.hands.size();</span>
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        boolean isSplit = totalHands &gt; 1;</span>
+
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        for (int h = 0; h &lt; totalHands; h++) {</span>
+<span class="nc" id="L56">            HandState hand = player.hands.get(h);</span>
+<span class="nc bnc" id="L57" title="All 4 branches missed.">            if (hand.hand == null || hand.hand.isEmpty()) continue;</span>
+
+<span class="nc" id="L59">            LinearLayout handContainer = new LinearLayout(context);</span>
+<span class="nc" id="L60">            handContainer.setClipChildren(false);</span>
+<span class="nc" id="L61">            handContainer.setClipToPadding(false);</span>
+<span class="nc" id="L62">            handContainer.setOrientation(LinearLayout.VERTICAL);</span>
+<span class="nc" id="L63">            handContainer.setGravity(Gravity.CENTER_HORIZONTAL);</span>
+<span class="nc" id="L64">            handContainer.setPadding(0, dp(12), 0, dp(12));</span>
+
+<span class="nc" id="L66">            LinearLayout handRow = new LinearLayout(context);</span>
+<span class="nc" id="L67">            handRow.setClipChildren(false);</span>
+<span class="nc" id="L68">            handRow.setClipToPadding(false);</span>
+<span class="nc" id="L69">            handRow.setOrientation(LinearLayout.HORIZONTAL);</span>
+<span class="nc" id="L70">            handRow.setGravity(Gravity.CENTER_HORIZONTAL);</span>
+
+<span class="nc" id="L72">            int cardCount = hand.hand.size();</span>
+
+<span class="nc" id="L74">            int overlap = -dp(Math.min(12 + (cardCount - 2) * 6, 40));</span>
+<span class="nc bnc" id="L75" title="All 2 branches missed.">            if (isSplit) overlap = (int) (overlap * 1.5f);</span>
+
+<span class="nc bnc" id="L77" title="All 2 branches missed.">            for (int i = 0; i &lt; cardCount; i++) {</span>
+<span class="nc" id="L78">                CardState card = hand.hand.get(i);</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">                if (!card.isShowing) continue;</span>
+
+<span class="nc" id="L81">                CardView cv = new CardView(context);</span>
+<span class="nc" id="L82">                LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(70), dp(105));</span>
+<span class="nc bnc" id="L83" title="All 2 branches missed.">                if (i &gt; 0) p.setMargins(overlap, 0, 0, 0);</span>
+<span class="nc" id="L84">                cv.setLayoutParams(p);</span>
+<span class="nc" id="L85">                cv.setCard(String.valueOf(card.value), card.suit, card.isShowing);</span>
+<span class="nc" id="L86">                handRow.addView(cv);</span>
+            }
+
+<span class="nc bnc" id="L89" title="All 2 branches missed.">            if (handRow.getChildCount() &gt; 0) {</span>
+<span class="nc" id="L90">                handContainer.addView(handRow);</span>
+
+<span class="nc" id="L92">                TextView valuePill = makePillText(</span>
+<span class="nc" id="L93">                        String.valueOf(hand.handValue),</span>
+                        R.font.inter_bold,
+                        18,
+                        Color.WHITE,
+                        0.95f
+                );
+<span class="nc" id="L99">                LinearLayout.LayoutParams valueParams = new LinearLayout.LayoutParams(</span>
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+<span class="nc" id="L103">                valueParams.topMargin = dp(8);</span>
+<span class="nc" id="L104">                valuePill.setLayoutParams(valueParams);</span>
+<span class="nc" id="L105">                handContainer.addView(valuePill);</span>
+
+<span class="nc" id="L107">                TextView betPill = makePillText(</span>
+                        &quot;$&quot; + hand.bet,
+                        R.font.inter_regular,
+                        16,
+                        Color.LTGRAY,
+                        0.8f
+                );
+<span class="nc" id="L114">                LinearLayout.LayoutParams betParams = new LinearLayout.LayoutParams(</span>
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+<span class="nc" id="L118">                betParams.topMargin = dp(4);</span>
+<span class="nc" id="L119">                betPill.setLayoutParams(betParams);</span>
+<span class="nc" id="L120">                handContainer.addView(betPill);</span>
+
+<span class="nc" id="L122">                LinearLayout.LayoutParams handParams = new LinearLayout.LayoutParams(</span>
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+<span class="nc bnc" id="L126" title="All 2 branches missed.">                int spacing = isSplit ? dp(40) : dp(16);</span>
+<span class="nc" id="L127">                handParams.setMargins(spacing, 0, spacing, 0);</span>
+
+<span class="nc" id="L129">                handContainer.setLayoutParams(handParams);</span>
+<span class="nc" id="L130">                container.addView(handContainer);</span>
+            }
+        }
+<span class="nc" id="L133">    }</span>
+
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    // Dealer
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    public void renderDealer(LinearLayout container, DealerState dealer, boolean isRoundOver, List&lt;CardState&gt; previousDealerHand) {
+<span class="nc bnc" id="L139" title="All 6 branches missed.">        if (dealer == null || dealer.hand == null || dealer.hand.isEmpty()) return;</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (previousDealerHand == null) previousDealerHand = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L142">        int oldCount = previousDealerHand.size();</span>
+
+        // Create or reuse dealer layout
+        LinearLayout dealerLayout;
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (container.getChildCount() == 0) {</span>
+<span class="nc" id="L147">            dealerLayout = new LinearLayout(context);</span>
+<span class="nc" id="L148">            dealerLayout.setOrientation(LinearLayout.VERTICAL);</span>
+<span class="nc" id="L149">            dealerLayout.setGravity(Gravity.CENTER_HORIZONTAL);</span>
+<span class="nc" id="L150">            dealerLayout.setClipChildren(false);</span>
+<span class="nc" id="L151">            dealerLayout.setClipToPadding(false);</span>
+<span class="nc" id="L152">            container.addView(dealerLayout);</span>
+        } else {
+<span class="nc" id="L154">            dealerLayout = (LinearLayout) container.getChildAt(0);</span>
+        }
+
+        // Create or reuse card row
+        LinearLayout row;
+<span class="nc bnc" id="L159" title="All 4 branches missed.">        if (dealerLayout.getChildCount() &gt; 0 &amp;&amp; dealerLayout.getChildAt(0) instanceof LinearLayout) {</span>
+<span class="nc" id="L160">            row = (LinearLayout) dealerLayout.getChildAt(0);</span>
+        } else {
+<span class="nc" id="L162">            row = new LinearLayout(context);</span>
+<span class="nc" id="L163">            row.setOrientation(LinearLayout.HORIZONTAL);</span>
+<span class="nc" id="L164">            row.setGravity(Gravity.CENTER_HORIZONTAL);</span>
+<span class="nc" id="L165">            row.setClipChildren(false);</span>
+<span class="nc" id="L166">            row.setClipToPadding(false);</span>
+<span class="nc" id="L167">            dealerLayout.addView(row);</span>
+        }
+
+<span class="nc" id="L170">        int screenHeight = context.getResources().getDisplayMetrics().heightPixels;</span>
+<span class="nc" id="L171">        float offscreenY = -screenHeight * 0.25f;</span>
+
+<span class="nc bnc" id="L173" title="All 2 branches missed.">        for (int i = 0; i &lt; dealer.hand.size(); i++) {</span>
+<span class="nc" id="L174">            CardState card = dealer.hand.get(i);</span>
+            CardView cv;
+
+<span class="nc bnc" id="L177" title="All 2 branches missed.">            if (i &lt; row.getChildCount()) {</span>
+<span class="nc" id="L178">                cv = (CardView) row.getChildAt(i);</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">                if (i &lt; oldCount) {</span>
+<span class="nc" id="L180">                    CardState old = previousDealerHand.get(i);</span>
+<span class="nc bnc" id="L181" title="All 6 branches missed.">                    if (!old.isShowing &amp;&amp; card.isShowing &amp;&amp; !cv.isFaceUp()) {</span>
+<span class="nc" id="L182">                        cv.flipCard();</span>
+                    }
+<span class="nc" id="L184">                }</span>
+            } else {
+<span class="nc" id="L186">                cv = new CardView(context);</span>
+<span class="nc" id="L187">                LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(dp(80), dp(120));</span>
+<span class="nc" id="L188">                p.setMargins(dp(6), 0, dp(6), 0);</span>
+<span class="nc" id="L189">                cv.setLayoutParams(p);</span>
+<span class="nc" id="L190">                cv.setCard(String.valueOf(card.value), card.suit, card.isShowing);</span>
+
+<span class="nc" id="L192">                cv.setTranslationY(offscreenY);</span>
+<span class="nc" id="L193">                row.addView(cv);</span>
+
+<span class="nc" id="L195">                cv.animate()</span>
+<span class="nc" id="L196">                        .translationY(0f)</span>
+<span class="nc" id="L197">                        .setDuration(500)</span>
+<span class="nc" id="L198">                        .setStartDelay(i * 250)</span>
+<span class="nc" id="L199">                        .setInterpolator(new android.view.animation.DecelerateInterpolator(1.5f))</span>
+<span class="nc" id="L200">                        .start();</span>
+            }
+        }
+
+<span class="nc" id="L204">        int totalCards = row.getChildCount();</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">        if (totalCards &gt; 1) {</span>
+            int overlap;
+<span class="nc bnc" id="L207" title="All 2 branches missed.">            if (totalCards &lt;= 2) {</span>
+<span class="nc" id="L208">                overlap = dp(12);</span>
+            } else {
+<span class="nc" id="L210">                overlap = Math.max(-dp(90 / totalCards), -dp(45));</span>
+            }
+
+<span class="nc bnc" id="L213" title="All 2 branches missed.">            for (int i = 0; i &lt; totalCards; i++) {</span>
+<span class="nc" id="L214">                View cardView = row.getChildAt(i);</span>
+<span class="nc" id="L215">                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) cardView.getLayoutParams();</span>
+<span class="nc bnc" id="L216" title="All 2 branches missed.">                if (i == 0) {</span>
+<span class="nc" id="L217">                    lp.setMargins(0, 0, 0, 0);</span>
+                } else {
+<span class="nc" id="L219">                    lp.setMargins(overlap, 0, 0, 0);</span>
+                }
+<span class="nc" id="L221">                cardView.setLayoutParams(lp);</span>
+
+<span class="nc" id="L223">                cardView.animate()</span>
+<span class="nc" id="L224">                        .translationX(0f)</span>
+<span class="nc" id="L225">                        .setDuration(250)</span>
+<span class="nc" id="L226">                        .setStartDelay(500 + (i * 50))</span>
+<span class="nc" id="L227">                        .start();</span>
+            }
+        }
+
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        if (!isRoundOver) {</span>
+<span class="nc bnc" id="L232" title="All 4 branches missed.">            if (dealerLayout.getChildCount() &gt; 1 &amp;&amp; dealerLayout.getChildAt(1) instanceof TextView) {</span>
+<span class="nc" id="L233">                dealerLayout.removeViewAt(1);</span>
+            }
+        }
+
+<span class="nc bnc" id="L237" title="All 2 branches missed.">        if (isRoundOver) {</span>
+<span class="nc" id="L238">            long delay = 600 + ((dealer.hand.size() - 1) * 600);</span>
+
+<span class="nc" id="L240">            row.postDelayed(() -&gt; {</span>
+                TextView valuePill;
+<span class="nc bnc" id="L242" title="All 4 branches missed.">                if (dealerLayout.getChildCount() &gt; 1 &amp;&amp; dealerLayout.getChildAt(1) instanceof TextView) {</span>
+<span class="nc" id="L243">                    valuePill = (TextView) dealerLayout.getChildAt(1);</span>
+<span class="nc" id="L244">                    valuePill.setText(String.valueOf(dealer.handValue));</span>
+                } else {
+<span class="nc" id="L246">                    valuePill = makePillText(</span>
+<span class="nc" id="L247">                            String.valueOf(dealer.handValue),</span>
+                            R.font.inter_bold,
+                            18,
+                            Color.WHITE,
+                            0.95f
+                    );
+<span class="nc" id="L253">                    LinearLayout.LayoutParams valueParams = new LinearLayout.LayoutParams(</span>
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT
+                    );
+<span class="nc" id="L257">                    valueParams.topMargin = dp(8);</span>
+<span class="nc" id="L258">                    valuePill.setLayoutParams(valueParams);</span>
+<span class="nc" id="L259">                    dealerLayout.addView(valuePill);</span>
+                }
+<span class="nc" id="L261">                valuePill.setAlpha(1f);</span>
+<span class="nc" id="L262">                valuePill.requestLayout();</span>
+<span class="nc" id="L263">                valuePill.invalidate();</span>
+<span class="nc" id="L264">            }, delay);</span>
+        }
+<span class="nc" id="L266">    }</span>
+
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    // Public utility: animate everything off (used between rounds).
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    public void animateAllCardsOut(LinearLayout containerRoot) {
+<span class="nc bnc" id="L272" title="All 2 branches missed.">        if (containerRoot == null) return;</span>
+<span class="nc" id="L273">        animateGroupCardsOut(containerRoot);</span>
+<span class="nc" id="L274">    }</span>
+
+    private void animateGroupCardsOut(ViewGroup group) {
+<span class="nc bnc" id="L277" title="All 2 branches missed.">        for (int i = 0; i &lt; group.getChildCount(); i++) {</span>
+<span class="nc" id="L278">            View child = group.getChildAt(i);</span>
+
+<span class="nc bnc" id="L280" title="All 2 branches missed.">            if (child instanceof TextView) {</span>
+<span class="nc" id="L281">                child.animate()</span>
+<span class="nc" id="L282">                        .alpha(0f)</span>
+<span class="nc" id="L283">                        .translationYBy(-40f)</span>
+<span class="nc" id="L284">                        .setDuration(400)</span>
+<span class="nc" id="L285">                        .withEndAction(() -&gt; child.setVisibility(View.INVISIBLE))</span>
+<span class="nc" id="L286">                        .start();</span>
+
+<span class="nc bnc" id="L288" title="All 2 branches missed.">            } else if (child instanceof ViewGroup) {</span>
+<span class="nc" id="L289">                animateGroupCardsOut((ViewGroup) child);</span>
+            }
+        }
+
+<span class="nc" id="L293">        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -&gt; {</span>
+<span class="nc" id="L294">            int screenWidth = group.getResources().getDisplayMetrics().widthPixels;</span>
+<span class="nc" id="L295">            int screenHeight = group.getResources().getDisplayMetrics().heightPixels;</span>
+
+<span class="nc bnc" id="L297" title="All 2 branches missed.">            for (int i = 0; i &lt; group.getChildCount(); i++) {</span>
+<span class="nc" id="L298">                View child = group.getChildAt(i);</span>
+
+<span class="nc bnc" id="L300" title="All 2 branches missed.">                if (child instanceof CardView) {</span>
+<span class="nc" id="L301">                    float targetX = -screenWidth * 0.8f;</span>
+<span class="nc" id="L302">                    float targetY = -screenHeight * 0.8f;</span>
+
+<span class="nc" id="L304">                    child.animate()</span>
+<span class="nc" id="L305">                            .translationXBy(targetX)</span>
+<span class="nc" id="L306">                            .translationYBy(targetY)</span>
+<span class="nc" id="L307">                            .rotationBy(-15f)</span>
+<span class="nc" id="L308">                            .setDuration(800)</span>
+<span class="nc" id="L309">                            .withEndAction(() -&gt; {</span>
+<span class="nc" id="L310">                                ViewGroup parent = (ViewGroup) child.getParent();</span>
+<span class="nc bnc" id="L311" title="All 2 branches missed.">                                if (parent != null) parent.removeView(child);</span>
+<span class="nc" id="L312">                            })</span>
+<span class="nc" id="L313">                            .start();</span>
+                }
+            }
+<span class="nc" id="L316">        }, 450);</span>
+<span class="nc" id="L317">    }</span>
+
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    // Player: Incremental, animated renderer (HIT/FLIP/SPLIT/RE-SPLIT)
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    /**
+     * Animated rendering for player hands.
+     * Incremental updates only (no full redraw):
+     *  - Reuses CardViews in-place; new cards are dealt from above.
+     *  - Flips when a hidden card becomes visible.
+     *  - On split/re-split, moves the CardView from donor hand to recipient hand (no cloning).
+     *  - Hands are spaced evenly and re-centered when returning to one hand.
+     *  - Value/bet pills render only if a hand has at least one card.
+     */
+    public void renderPlayerHandsAnimated(LinearLayout container, PlayerState player, List&lt;HandState&gt; previous) {
+<span class="nc bnc" id="L332" title="All 4 branches missed.">        if (player == null || player.hands == null) return;</span>
+<span class="nc bnc" id="L333" title="All 2 branches missed.">        if (previous == null) previous = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L335">        container.setOrientation(LinearLayout.HORIZONTAL);</span>
+<span class="nc" id="L336">        container.setGravity(Gravity.CENTER_HORIZONTAL);</span>
+<span class="nc" id="L337">        container.setClipChildren(false);</span>
+<span class="nc" id="L338">        container.setClipToPadding(false);</span>
+        // Defensive: container might have padding from layout; ensure it's not skewing centering
+<span class="nc" id="L340">        container.setPadding(0, container.getPaddingTop(), 0, container.getPaddingBottom());</span>
+
+<span class="nc" id="L342">        final int currCount = player.hands.size();</span>
+<span class="nc" id="L343">        final int prevCount = previous.size();</span>
+
+        // Ensure hand containers &amp; rows exist up to current count
+<span class="nc bnc" id="L346" title="All 2 branches missed.">        for (int h = 0; h &lt; currCount; h++) {</span>
+<span class="nc" id="L347">            LinearLayout hc = getOrCreateHandContainer(container, h);</span>
+<span class="nc" id="L348">            zeroMargins(hc);                              // normalize margins every time</span>
+<span class="nc" id="L349">            LinearLayout row = getOrCreateCardRow(hc);</span>
+<span class="nc" id="L350">            zeroMargins(row);                             // normalize margins every time</span>
+        }
+
+        // Hard reset when returning to a single hand (typical after new round)
+<span class="nc bnc" id="L354" title="All 2 branches missed.">        if (currCount == 1) {</span>
+<span class="nc bnc" id="L355" title="All 2 branches missed.">            for (int i = 0; i &lt; container.getChildCount(); i++) {</span>
+<span class="nc" id="L356">                View v = container.getChildAt(i);</span>
+<span class="nc" id="L357">                v.animate().cancel();</span>
+<span class="nc" id="L358">                v.setTranslationX(0f);</span>
+<span class="nc" id="L359">                zeroMargins(v);                           // CRITICAL: wipe old split margins</span>
+            }
+<span class="nc bnc" id="L361" title="All 2 branches missed.">            while (container.getChildCount() &gt; 1) {</span>
+<span class="nc" id="L362">                container.removeViewAt(container.getChildCount() - 1);</span>
+            }
+<span class="nc" id="L364">            container.requestLayout();</span>
+        }
+
+        // Detect split/re-split: move the last card view from donor to recipient (no cloning)
+<span class="nc bnc" id="L368" title="All 6 branches missed.">        if (currCount &gt; prevCount &amp;&amp; prevCount &gt; 0 &amp;&amp; container.getChildCount() &gt;= currCount) {</span>
+<span class="nc" id="L369">            int donorIdx = -1;</span>
+<span class="nc" id="L370">            int recipientIdx = -1;</span>
+
+<span class="nc bnc" id="L372" title="All 2 branches missed.">            for (int i = 0; i &lt; Math.min(prevCount, currCount); i++) {</span>
+<span class="nc" id="L373">                HandState oldH = previous.get(i);</span>
+<span class="nc" id="L374">                HandState newH = player.hands.get(i);</span>
+<span class="nc bnc" id="L375" title="All 4 branches missed.">                int oldSize = (oldH != null &amp;&amp; oldH.hand != null) ? oldH.hand.size() : 0;</span>
+<span class="nc bnc" id="L376" title="All 4 branches missed.">                int newSize = (newH != null &amp;&amp; newH.hand != null) ? newH.hand.size() : 0;</span>
+<span class="nc bnc" id="L377" title="All 2 branches missed.">                if (oldSize - newSize == 1) donorIdx = i;</span>
+<span class="nc bnc" id="L378" title="All 2 branches missed.">                if (newSize - oldSize == 1) recipientIdx = i;</span>
+            }
+<span class="nc bnc" id="L380" title="All 4 branches missed.">            if (recipientIdx == -1 &amp;&amp; currCount &gt; prevCount) {</span>
+<span class="nc" id="L381">                recipientIdx = currCount - 1;</span>
+            }
+
+<span class="nc bnc" id="L384" title="All 4 branches missed.">            if (donorIdx &gt;= 0 &amp;&amp; recipientIdx &gt;= 0 &amp;&amp;</span>
+<span class="nc bnc" id="L385" title="All 4 branches missed.">                    donorIdx &lt; container.getChildCount() &amp;&amp; recipientIdx &lt; container.getChildCount()) {</span>
+<span class="nc" id="L386">                LinearLayout donorHC = (LinearLayout) container.getChildAt(donorIdx);</span>
+<span class="nc" id="L387">                LinearLayout recipHC = (LinearLayout) container.getChildAt(recipientIdx);</span>
+<span class="nc" id="L388">                LinearLayout donorRow = (LinearLayout) donorHC.getChildAt(0);</span>
+<span class="nc" id="L389">                LinearLayout recipRow = (LinearLayout) recipHC.getChildAt(0);</span>
+
+<span class="nc bnc" id="L391" title="All 2 branches missed.">                if (donorRow.getChildCount() &gt; 0) {</span>
+<span class="nc" id="L392">                    View moved = donorRow.getChildAt(donorRow.getChildCount() - 1);</span>
+<span class="nc" id="L393">                    donorRow.removeViewAt(donorRow.getChildCount() - 1);</span>
+
+<span class="nc bnc" id="L395" title="All 2 branches missed.">                    float sign = (recipientIdx &gt; donorIdx) ? 1f : -1f;</span>
+<span class="nc" id="L396">                    moved.setTranslationX(sign * -dp(140));</span>
+<span class="nc" id="L397">                    recipRow.addView(moved);</span>
+
+<span class="nc" id="L399">                    moved.animate()</span>
+<span class="nc" id="L400">                            .translationX(0f)</span>
+<span class="nc" id="L401">                            .setDuration(350)</span>
+<span class="nc" id="L402">                            .setInterpolator(new android.view.animation.DecelerateInterpolator(1.25f))</span>
+<span class="nc" id="L403">                            .start();</span>
+                }
+            }
+        }
+
+        // Evenly position/center hands when more than one
+<span class="nc bnc" id="L409" title="All 2 branches missed.">        if (currCount &gt; 1) {</span>
+<span class="nc" id="L410">            positionHandsEvenly(container, currCount, 500);</span>
+        }
+
+        // Per-hand incremental updates
+<span class="nc bnc" id="L414" title="All 2 branches missed.">        for (int h = 0; h &lt; currCount; h++) {</span>
+<span class="nc" id="L415">            HandState newHand = player.hands.get(h);</span>
+<span class="nc bnc" id="L416" title="All 2 branches missed.">            HandState oldHand = (h &lt; prevCount) ? previous.get(h) : null;</span>
+
+<span class="nc" id="L418">            LinearLayout handContainer = (LinearLayout) container.getChildAt(h);</span>
+<span class="nc" id="L419">            LinearLayout cardRow = (LinearLayout) handContainer.getChildAt(0);</span>
+
+<span class="nc bnc" id="L421" title="All 4 branches missed.">            int oldSize = (oldHand != null &amp;&amp; oldHand.hand != null) ? oldHand.hand.size() : 0;</span>
+<span class="nc bnc" id="L422" title="All 2 branches missed.">            int newSize = (newHand.hand != null) ? newHand.hand.size() : 0;</span>
+
+            // Trim any extra views if server corrected size
+<span class="nc bnc" id="L425" title="All 2 branches missed.">            while (cardRow.getChildCount() &gt; newSize) {</span>
+<span class="nc" id="L426">                View toRemove = cardRow.getChildAt(cardRow.getChildCount() - 1);</span>
+<span class="nc" id="L427">                cardRow.removeViewAt(cardRow.getChildCount() - 1);</span>
+<span class="nc" id="L428">            }</span>
+
+            // Update existing indices and append new cards
+<span class="nc bnc" id="L431" title="All 2 branches missed.">            for (int i = 0; i &lt; newSize; i++) {</span>
+<span class="nc" id="L432">                CardState card = newHand.hand.get(i);</span>
+
+<span class="nc bnc" id="L434" title="All 2 branches missed.">                if (i &lt; cardRow.getChildCount()) {</span>
+<span class="nc" id="L435">                    CardView cv = (CardView) cardRow.getChildAt(i);</span>
+<span class="nc" id="L436">                    cv.setCard(String.valueOf(card.value), card.suit, card.isShowing);</span>
+<span class="nc bnc" id="L437" title="All 4 branches missed.">                    if (oldHand != null &amp;&amp; i &lt; oldSize) {</span>
+<span class="nc" id="L438">                        CardState oldCard = oldHand.hand.get(i);</span>
+<span class="nc bnc" id="L439" title="All 6 branches missed.">                        if (!oldCard.isShowing &amp;&amp; card.isShowing &amp;&amp; !cv.isFaceUp()) {</span>
+<span class="nc" id="L440">                            cv.flipCard();</span>
+                        }
+                    }
+<span class="nc" id="L443">                } else {</span>
+<span class="nc" id="L444">                    CardView cv = new CardView(context);</span>
+<span class="nc" id="L445">                    LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(dp(70), dp(105));</span>
+<span class="nc" id="L446">                    lp.setMargins(dp(6), 0, dp(6), 0);</span>
+<span class="nc" id="L447">                    cv.setLayoutParams(lp);</span>
+<span class="nc" id="L448">                    cv.setCard(String.valueOf(card.value), card.suit, card.isShowing);</span>
+
+<span class="nc" id="L450">                    int screenHeight = context.getResources().getDisplayMetrics().heightPixels;</span>
+<span class="nc" id="L451">                    float offscreenY = -screenHeight * 0.7f;</span>
+<span class="nc" id="L452">                    cv.setTranslationY(offscreenY);</span>
+<span class="nc" id="L453">                    cardRow.addView(cv);</span>
+
+<span class="nc" id="L455">                    cv.animate()</span>
+<span class="nc" id="L456">                            .translationY(0f)</span>
+<span class="nc" id="L457">                            .setDuration(520)</span>
+<span class="nc" id="L458">                            .setStartDelay(i * 160)</span>
+<span class="nc" id="L459">                            .setInterpolator(new android.view.animation.DecelerateInterpolator(1.7f))</span>
+<span class="nc" id="L460">                            .start();</span>
+                }
+            }
+
+            // Recompute simple overlap fan
+<span class="nc" id="L465">            int totalCards = cardRow.getChildCount();</span>
+<span class="nc bnc" id="L466" title="All 2 branches missed.">            if (totalCards &gt; 1) {</span>
+<span class="nc" id="L467">                int overlap = Math.max(-dp(50 / Math.max(totalCards, 1)), -dp(40));</span>
+<span class="nc bnc" id="L468" title="All 2 branches missed.">                for (int i = 0; i &lt; totalCards; i++) {</span>
+<span class="nc" id="L469">                    View v = cardRow.getChildAt(i);</span>
+<span class="nc" id="L470">                    LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) v.getLayoutParams();</span>
+<span class="nc bnc" id="L471" title="All 2 branches missed.">                    lp.setMargins(i == 0 ? 0 : overlap, 0, 0, 0);</span>
+<span class="nc" id="L472">                    v.setLayoutParams(lp);</span>
+                }
+            }
+
+            // Pills only when the hand actually has cards
+<span class="nc bnc" id="L477" title="All 2 branches missed.">            while (handContainer.getChildCount() &gt; 1) handContainer.removeViewAt(1);</span>
+<span class="nc bnc" id="L478" title="All 4 branches missed.">            if (newHand.hand != null &amp;&amp; !newHand.hand.isEmpty()) {</span>
+<span class="nc" id="L479">                TextView valuePill = makePillText(</span>
+<span class="nc" id="L480">                        String.valueOf(newHand.handValue),</span>
+                        R.font.inter_bold, 18, Color.WHITE, 0.95f
+                );
+<span class="nc" id="L483">                LinearLayout.LayoutParams vParams = new LinearLayout.LayoutParams(</span>
+                        LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+<span class="nc" id="L486">                vParams.topMargin = dp(8);</span>
+<span class="nc" id="L487">                valuePill.setLayoutParams(vParams);</span>
+<span class="nc" id="L488">                handContainer.addView(valuePill);</span>
+
+<span class="nc" id="L490">                TextView betPill = makePillText(</span>
+                        &quot;$&quot; + newHand.bet,
+                        R.font.inter_regular, 16, Color.LTGRAY, 0.8f
+                );
+<span class="nc" id="L494">                LinearLayout.LayoutParams bParams = new LinearLayout.LayoutParams(</span>
+                        LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT
+                );
+<span class="nc" id="L497">                bParams.topMargin = dp(4);</span>
+<span class="nc" id="L498">                betPill.setLayoutParams(bParams);</span>
+<span class="nc" id="L499">                handContainer.addView(betPill);</span>
+            }
+        }
+
+        // Safety: trim any extra hand containers
+<span class="nc bnc" id="L504" title="All 2 branches missed.">        while (container.getChildCount() &gt; currCount) {</span>
+<span class="nc" id="L505">            container.removeViewAt(container.getChildCount() - 1);</span>
+        }
+<span class="nc" id="L507">    }</span>
+
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    // Private helpers
+    // ─────────────────────────────────────────────────────────────────────────────────────────────
+    /** Creates a pill-styled text view. */
+    private TextView makePillText(String text, int fontRes, int sizeSp, int color, float alpha) {
+<span class="nc" id="L514">        TextView tv = new TextView(context);</span>
+<span class="nc" id="L515">        tv.setText(text);</span>
+<span class="nc" id="L516">        tv.setTextSize(sizeSp);</span>
+<span class="nc" id="L517">        tv.setTextColor(color);</span>
+<span class="nc" id="L518">        tv.setTypeface(ResourcesCompat.getFont(context, fontRes));</span>
+<span class="nc" id="L519">        tv.setGravity(Gravity.CENTER);</span>
+<span class="nc" id="L520">        tv.setPadding(dp(24), dp(8), dp(24), dp(8));</span>
+<span class="nc" id="L521">        tv.setBackgroundResource(R.drawable.bj_hand_value_pill);</span>
+<span class="nc" id="L522">        tv.setAlpha(alpha);</span>
+<span class="nc" id="L523">        return tv;</span>
+    }
+
+    /** dp → px helper. */
+    private int dp(int v) {
+<span class="nc" id="L528">        return (int) (v * density);</span>
+    }
+
+    /** Ensure a vertical hand container exists at a specific index. */
+    private LinearLayout getOrCreateHandContainer(LinearLayout parent, int index) {
+<span class="nc bnc" id="L533" title="All 4 branches missed.">        if (parent.getChildCount() &gt; index &amp;&amp; parent.getChildAt(index) instanceof LinearLayout) {</span>
+<span class="nc" id="L534">            return (LinearLayout) parent.getChildAt(index);</span>
+        }
+<span class="nc" id="L536">        LinearLayout hand = new LinearLayout(context);</span>
+<span class="nc" id="L537">        hand.setOrientation(LinearLayout.VERTICAL);</span>
+<span class="nc" id="L538">        hand.setGravity(Gravity.CENTER_HORIZONTAL);</span>
+<span class="nc" id="L539">        hand.setClipChildren(false);</span>
+<span class="nc" id="L540">        hand.setClipToPadding(false);</span>
+
+        // Insert at the desired index with clean layout params (no margins)
+<span class="nc" id="L543">        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(</span>
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+<span class="nc" id="L547">        lp.setMargins(0, 0, 0, 0);</span>
+<span class="nc bnc" id="L548" title="All 2 branches missed.">        if (parent.getChildCount() &gt;= index) parent.addView(hand, index, lp);</span>
+<span class="nc" id="L549">        else parent.addView(hand, lp);</span>
+<span class="nc" id="L550">        return hand;</span>
+    }
+
+    /** Ensure child-0 of a hand container is a horizontal card row. */
+    private LinearLayout getOrCreateCardRow(LinearLayout handContainer) {
+<span class="nc bnc" id="L555" title="All 4 branches missed.">        if (handContainer.getChildCount() &gt; 0 &amp;&amp; handContainer.getChildAt(0) instanceof LinearLayout) {</span>
+<span class="nc" id="L556">            return (LinearLayout) handContainer.getChildAt(0);</span>
+        }
+<span class="nc" id="L558">        LinearLayout row = new LinearLayout(context);</span>
+<span class="nc" id="L559">        row.setOrientation(LinearLayout.HORIZONTAL);</span>
+<span class="nc" id="L560">        row.setGravity(Gravity.CENTER_HORIZONTAL);</span>
+<span class="nc" id="L561">        row.setClipChildren(false);</span>
+<span class="nc" id="L562">        row.setClipToPadding(false);</span>
+
+<span class="nc" id="L564">        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(</span>
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+<span class="nc" id="L568">        lp.setMargins(0, 0, 0, 0);</span>
+<span class="nc" id="L569">        handContainer.addView(row, 0, lp);</span>
+<span class="nc" id="L570">        return row;</span>
+    }
+
+    /** Evenly distribute hand containers around center using translationX. */
+    private void positionHandsEvenly(LinearLayout container, int count, long durationMs) {
+<span class="nc bnc" id="L575" title="All 2 branches missed.">        if (count &lt;= 0) return;</span>
+<span class="nc" id="L576">        float spread = dp(110); // distance between each hand's center</span>
+<span class="nc" id="L577">        float totalWidth = spread * (count - 1);</span>
+<span class="nc" id="L578">        float startX = -totalWidth / 2f;</span>
+
+<span class="nc bnc" id="L580" title="All 2 branches missed.">        for (int h = 0; h &lt; container.getChildCount(); h++) {</span>
+<span class="nc" id="L581">            View v = container.getChildAt(h);</span>
+<span class="nc bnc" id="L582" title="All 2 branches missed.">            if (h &gt;= count) break;</span>
+
+            // Ensure no residual margins can bias centering
+<span class="nc" id="L585">            zeroMargins(v);</span>
+
+<span class="nc" id="L587">            float targetX = startX + h * spread;</span>
+<span class="nc" id="L588">            v.animate()</span>
+<span class="nc" id="L589">                    .translationX(targetX)</span>
+<span class="nc" id="L590">                    .setDuration(durationMs)</span>
+<span class="nc" id="L591">                    .setInterpolator(new android.view.animation.DecelerateInterpolator(1.25f))</span>
+<span class="nc" id="L592">                    .start();</span>
+        }
+<span class="nc" id="L594">    }</span>
+
+    /** Zero out margins on a view if it has LinearLayout.LayoutParams. */
+    private void zeroMargins(View v) {
+<span class="nc" id="L598">        ViewGroup.LayoutParams lp = v.getLayoutParams();</span>
+<span class="nc bnc" id="L599" title="All 2 branches missed.">        if (lp instanceof LinearLayout.LayoutParams) {</span>
+<span class="nc" id="L600">            LinearLayout.LayoutParams ll = (LinearLayout.LayoutParams) lp;</span>
+<span class="nc bnc" id="L601" title="All 8 branches missed.">            if (ll.leftMargin != 0 || ll.rightMargin != 0 || ll.topMargin != 0 || ll.bottomMargin != 0) {</span>
+<span class="nc" id="L602">                ll.setMargins(0, 0, 0, 0);</span>
+<span class="nc" id="L603">                v.setLayoutParams(ll);</span>
+            }
+        }
+<span class="nc" id="L606">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

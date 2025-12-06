@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>PlayerTurnBar.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample.blackjack</a> &gt; <span class="el_source">PlayerTurnBar.java</span></div><h1>PlayerTurnBar.java</h1><pre class="source lang-java linenums">package com.example.androidexample.blackjack;
+
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.view.Gravity;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+
+import com.example.androidexample.R;
+import com.example.androidexample.blackjack.BlackjackModels.GameState;
+import com.example.androidexample.blackjack.BlackjackModels.PlayerState;
+
+/**
+ * PlayerTurnBar
+ *
+ * Renders the horizontal list of player chips shown at the top of the blackjack screen.
+ * Each chip represents a player, showing their name and status (selected / current turn).
+ * Handles color, shadow, and pulsing animations for the active player's turn.
+ */
+public class PlayerTurnBar {
+
+    private final LinearLayout container; // Layout container holding player chips
+    private final AppCompatActivity activity; // Reference to the parent activity for context
+
+<span class="nc" id="L31">    public PlayerTurnBar(LinearLayout container, AppCompatActivity activity) {</span>
+<span class="nc" id="L32">        this.container = container;</span>
+<span class="nc" id="L33">        this.activity = activity;</span>
+<span class="nc" id="L34">    }</span>
+
+    /**
+     * Updates the entire turn bar UI based on the latest GameState.
+     *
+     * @param state           The current game state containing player and turn info.
+     * @param selectedPlayer  The username of the player currently being viewed by the user.
+     */
+    public void updateFromGameState(GameState state, String selectedPlayer) {
+        // Clear any existing chips before re-rendering
+<span class="nc" id="L44">        container.removeAllViews();</span>
+
+        // Create one chip for each player in the game
+<span class="nc bnc" id="L47" title="All 2 branches missed.">        for (PlayerState player : state.players) {</span>
+<span class="nc" id="L48">            TextView chip = new TextView(activity);</span>
+<span class="nc" id="L49">            chip.setText(player.username);</span>
+<span class="nc" id="L50">            chip.setTextSize(18);</span>
+<span class="nc" id="L51">            chip.setTypeface(ResourcesCompat.getFont(activity, R.font.inter_bold));</span>
+<span class="nc" id="L52">            chip.setTextColor(Color.WHITE);</span>
+<span class="nc" id="L53">            chip.setGravity(Gravity.CENTER);</span>
+<span class="nc" id="L54">            chip.setPadding(48, 24, 48, 24);</span>
+<span class="nc" id="L55">            chip.setBackgroundResource(R.drawable.bj_player_chip_bg);</span>
+
+<span class="nc" id="L57">            GradientDrawable bg = (GradientDrawable) chip.getBackground().mutate();</span>
+
+            // Flags to determine chip state
+<span class="nc" id="L60">            boolean isSelected = player.username.equals(selectedPlayer);</span>
+<span class="nc" id="L61">            boolean isCurrentTurn = player.username.equals(state.currentTurn);</span>
+
+            // Apply style for the selected (viewed) player
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            if (isSelected) {</span>
+<span class="nc" id="L65">                bg.setColors(new int[]{</span>
+<span class="nc" id="L66">                        ContextCompat.getColor(activity, R.color.my_green),</span>
+<span class="nc" id="L67">                        ContextCompat.getColor(activity, R.color.my_dark_green)</span>
+                });
+<span class="nc" id="L69">                bg.setStroke(3, ContextCompat.getColor(activity, R.color.my_green));</span>
+<span class="nc" id="L70">                chip.setShadowLayer(15, 0, 0,</span>
+<span class="nc" id="L71">                        ContextCompat.getColor(activity, R.color.my_green));</span>
+<span class="nc" id="L72">                chip.setAlpha(1f);</span>
+            }
+            // Apply default style for non-selected players
+            else {
+<span class="nc" id="L76">                bg.setColors(new int[]{</span>
+<span class="nc" id="L77">                        Color.parseColor(&quot;#2E2E2E&quot;),</span>
+<span class="nc" id="L78">                        Color.parseColor(&quot;#111111&quot;)</span>
+                });
+<span class="nc" id="L80">                bg.setStroke(1, Color.parseColor(&quot;#555555&quot;));</span>
+<span class="nc" id="L81">                chip.setShadowLayer(0, 0, 0, Color.TRANSPARENT);</span>
+<span class="nc" id="L82">                chip.setAlpha(0.8f);</span>
+            }
+
+            // Animate chip if this player has the current turn
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            if (isCurrentTurn) {</span>
+<span class="nc" id="L87">                chip.setShadowLayer(20, 0, 0,</span>
+<span class="nc" id="L88">                        ContextCompat.getColor(activity, R.color.my_green));</span>
+<span class="nc" id="L89">                chip.setElevation(10f);</span>
+
+                // Simple pulsing alpha animation to indicate turn
+<span class="nc" id="L92">                ObjectAnimator pulse = ObjectAnimator.ofFloat(chip, &quot;alpha&quot;, 1f, 0.65f, 1f);</span>
+<span class="nc" id="L93">                pulse.setDuration(1000);</span>
+<span class="nc" id="L94">                pulse.setRepeatCount(ValueAnimator.INFINITE);</span>
+<span class="nc" id="L95">                pulse.setRepeatMode(ValueAnimator.REVERSE);</span>
+<span class="nc" id="L96">                pulse.start();</span>
+            }
+
+            // Fade-in animation for chip appearance
+<span class="nc" id="L100">            chip.setAlpha(0f);</span>
+<span class="nc" id="L101">            chip.animate().alpha(1f).setDuration(200).start();</span>
+
+            // Add margins between chips for spacing
+<span class="nc" id="L104">            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(</span>
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+<span class="nc" id="L108">            params.setMargins(20, 0, 20, 0);</span>
+<span class="nc" id="L109">            chip.setLayoutParams(params);</span>
+
+            // Add completed chip to the container
+<span class="nc" id="L112">            container.addView(chip);</span>
+<span class="nc" id="L113">        }</span>
+<span class="nc" id="L114">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BetHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample.blackjack</a> &gt; <span class="el_source">BetHandler.java</span></div><h1>BetHandler.java</h1><pre class="source lang-java linenums">package com.example.androidexample.blackjack;
+
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.TextView;
+import android.view.View;
+import android.util.Log;
+
+import com.example.androidexample.services.WebSocketManager;
+import com.example.androidexample.blackjack.BlackjackModels.*;
+
+import java.util.List;
+
+/**
+ * Handles betting functionality within the Blackjack game.
+ * &lt;p&gt;
+ * This class is responsible for validating user bets, sending bet actions
+ * to the backend WebSocket server, and updating the balance and bet UI
+ * visibility within the BlackjackActivity. It separates betting logic
+ * from the main activity to improve modularity and maintainability.
+ * &lt;/p&gt;
+ */
+public class BetHandler {
+
+    private final EditText betInput;
+    private final ImageButton betButton;
+    private final TextView balanceText;
+    private final String username;
+
+    /**
+     * Constructs a BetHandler instance for managing bet actions and balance updates.
+     *
+     * @param betInput     The EditText input field used to enter bet amounts.
+     * @param betButton    The ImageButton that triggers the bet action.
+     * @param balanceText  The TextView displaying the player's chip balance.
+     * @param username     The username of the current player.
+     */
+<span class="nc" id="L38">    public BetHandler(EditText betInput, ImageButton betButton, TextView balanceText, String username) {</span>
+<span class="nc" id="L39">        this.betInput = betInput;</span>
+<span class="nc" id="L40">        this.betButton = betButton;</span>
+<span class="nc" id="L41">        this.balanceText = balanceText;</span>
+<span class="nc" id="L42">        this.username = username;</span>
+<span class="nc" id="L43">    }</span>
+
+    /**
+     * Sends a bet request to the backend WebSocket server after validating
+     * the entered bet amount and ensuring the player has enough chips.
+     *
+     * @param gameState       The current state of the Blackjack game.
+     * @param selectedPlayer  The username of the player currently being viewed.
+     */
+    public void sendBet(GameState gameState, String selectedPlayer) {
+        //Checks if the request is coming from the this user
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        if (!selectedPlayer.equals(username)) {</span>
+<span class="nc" id="L55">            betInput.setError(&quot;You can only bet as yourself!&quot;);</span>
+<span class="nc" id="L56">            return;</span>
+        }
+
+        //Checks if the input box is empty
+<span class="nc" id="L60">        String betStr = betInput.getText().toString().trim();</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        if (betStr.isEmpty()) {</span>
+<span class="nc" id="L62">            betInput.setError(&quot;Enter an amount&quot;);</span>
+<span class="nc" id="L63">            return;</span>
+        }
+
+        //Makes sure the player requesting the bet exists in the backend
+<span class="nc" id="L67">        int amount = Integer.parseInt(betStr);</span>
+<span class="nc" id="L68">        PlayerState self = getPlayer(gameState.players, username);</span>
+<span class="nc bnc" id="L69" title="All 2 branches missed.">        if (self == null) {</span>
+<span class="nc" id="L70">            betInput.setError(&quot;Player not found.&quot;);</span>
+<span class="nc" id="L71">            return;</span>
+        }
+
+        //Makes sure the bet amount is positive
+<span class="nc bnc" id="L75" title="All 2 branches missed.">        if (amount &lt;= 0) {</span>
+<span class="nc" id="L76">            betInput.setError(&quot;Bet must be greater than 0&quot;);</span>
+<span class="nc" id="L77">            return;</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">        } else if (amount &gt; self.chips) {</span>
+<span class="nc" id="L79">            betInput.setError(&quot;Not enough balance!&quot;);</span>
+<span class="nc" id="L80">            return;</span>
+        }
+
+        //Sends a request to the backend that a player has bet
+<span class="nc" id="L84">        String betMsg = &quot;{ \&quot;action\&quot;: \&quot;BET\&quot;, \&quot;player\&quot;: \&quot;&quot; + username + &quot;\&quot;, \&quot;value\&quot;: &quot; + amount + &quot; }&quot;;</span>
+<span class="nc" id="L85">        WebSocketManager.getInstance().sendMessage(betMsg);</span>
+<span class="nc" id="L86">        Log.d(&quot;BetHandler&quot;, &quot;Sent bet message: &quot; + betMsg);</span>
+
+        //Removes the bet UI from view
+<span class="nc" id="L89">        betInput.setText(&quot;&quot;);</span>
+<span class="nc" id="L90">        betInput.setVisibility(View.GONE);</span>
+<span class="nc" id="L91">        betButton.setVisibility(View.GONE);</span>
+<span class="nc" id="L92">    }</span>
+
+    /**
+     * Updates the displayed chip balance and controls the visibility of
+     * the betting UI (input and button) depending on the game state and
+     * whether the current player has already placed a bet.
+     *
+     * @param gameState       The current game state.
+     * @param selectedPlayer  The username of the player currently being viewed.
+     */
+    public void updateBalanceUI(GameState gameState, String selectedPlayer) {
+        // Figure out who we are viewing
+<span class="nc" id="L104">        PlayerState viewedPlayer = getPlayer(gameState.players, selectedPlayer);</span>
+
+        // Makes sure the player we are currently viewing is actually in the lobby
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (viewedPlayer == null) {</span>
+<span class="nc" id="L108">            balanceText.setText(&quot;Balance: --&quot;);</span>
+<span class="nc" id="L109">            return;</span>
+        }
+
+        // Shows the balance of either your or another person (Depending on who we are viewing)
+<span class="nc bnc" id="L113" title="All 2 branches missed.">        String label = viewedPlayer.username.equals(username)</span>
+<span class="nc" id="L114">                ? &quot;Your Balance&quot;</span>
+<span class="nc" id="L115">                : viewedPlayer.username + &quot;'s Balance&quot;;</span>
+<span class="nc" id="L116">        balanceText.setText(label + &quot;: $&quot; + viewedPlayer.chips);</span>
+
+<span class="nc" id="L118">        boolean isSelf = selectedPlayer.equals(username);</span>
+<span class="nc" id="L119">        int totalBet = 0;</span>
+
+        // Change the amount we have bet locally
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        if (isSelf) {</span>
+<span class="nc bnc" id="L123" title="All 2 branches missed.">            for (HandState h : viewedPlayer.hands) totalBet += h.bet;</span>
+        }
+
+        // Shows Bet UI only if we are viewing ourself and we have not made a bet
+<span class="nc bnc" id="L127" title="All 4 branches missed.">        boolean canShowBetUI = isSelf &amp;&amp; totalBet == 0;</span>
+
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (canShowBetUI) {</span>
+            // Fade + slide in animation
+<span class="nc bnc" id="L131" title="All 2 branches missed.">            if (betInput.getVisibility() != View.VISIBLE) {</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">                for (View v : new View[]{balanceText, betInput, betButton}) {</span>
+<span class="nc" id="L133">                    v.setAlpha(0f);</span>
+<span class="nc" id="L134">                    v.setTranslationY(40f);</span>
+<span class="nc" id="L135">                    v.setVisibility(View.VISIBLE);</span>
+<span class="nc" id="L136">                    v.animate()</span>
+<span class="nc" id="L137">                            .alpha(1f)</span>
+<span class="nc" id="L138">                            .translationY(0f)</span>
+<span class="nc" id="L139">                            .setDuration(350)</span>
+<span class="nc" id="L140">                            .start();</span>
+                }
+            }
+        } else {
+            // Fade + slide out animation
+<span class="nc bnc" id="L145" title="All 2 branches missed.">            if (betInput.getVisibility() == View.VISIBLE) {</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">                for (View v : new View[]{balanceText, betInput, betButton}) {</span>
+<span class="nc" id="L147">                    v.animate()</span>
+<span class="nc" id="L148">                            .alpha(0f)</span>
+<span class="nc" id="L149">                            .translationY(40f)</span>
+<span class="nc" id="L150">                            .setDuration(300)</span>
+<span class="nc" id="L151">                            .withEndAction(() -&gt; {</span>
+<span class="nc bnc" id="L152" title="All 2 branches missed.">                                if (v != balanceText) v.setVisibility(View.GONE);</span>
+<span class="nc" id="L153">                            })</span>
+<span class="nc" id="L154">                            .start();</span>
+                }
+            }
+        }
+<span class="nc" id="L158">    }</span>
+
+    /**
+     * Retrieves a PlayerState object matching a given username from the stored list of players.
+     *
+     * @param players  The list of all players in the current game.
+     * @param name     The username to search for.
+     * @return The PlayerState corresponding to the given username, or null if not found.
+     */
+    private PlayerState getPlayer(List&lt;PlayerState&gt; players, String name) {
+<span class="nc bnc" id="L168" title="All 2 branches missed.">        for (PlayerState p : players) {</span>
+<span class="nc bnc" id="L169" title="All 2 branches missed.">            if (p.username.equals(name)) return p;</span>
+<span class="nc" id="L170">        }</span>
+<span class="nc" id="L171">        return null;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

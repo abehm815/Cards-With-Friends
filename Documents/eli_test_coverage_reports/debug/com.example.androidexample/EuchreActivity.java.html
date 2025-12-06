@@ -1,0 +1,907 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EuchreActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">EuchreActivity.java</span></div><h1>EuchreActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.app.AlertDialog;
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.example.androidexample.services.CardView;
+import com.example.androidexample.services.WebSocketListener;
+import com.example.androidexample.services.WebSocketManager;
+
+import org.java_websocket.handshake.ServerHandshake;
+
+<span class="nc" id="L29">public class EuchreActivity extends AppCompatActivity implements WebSocketListener {</span>
+
+    private static final String TAG = &quot;EuchreActivity&quot;;
+
+    private static final float CENTER_X_BIAS = 0.5f;
+    private static final float CENTER_Y_BIAS = 0.75f;
+    private static final float RADIUS_BIAS = 1.2f;
+    private static final float TOTAL_SPREAD = 25f;
+
+    private static final int CARD_WIDTH = 150;
+    private static final int CARD_HEIGHT = 200;
+
+    private String joinCode;
+    private String username;
+    private boolean isHost;
+    private String gameType;
+    private ArrayList&lt;String&gt; playerList;
+
+<span class="nc" id="L47">    private CardView selectedCard = null;</span>
+    private ConstraintLayout rootLayout;
+    private List&lt;CardView&gt; handCards;
+    private List&lt;CardView&gt; trickCards;
+<span class="nc" id="L51">    private GameState gameState = new GameState();</span>
+<span class="nc" id="L52">    private boolean gameStarted = false;</span>
+
+    // UI Elements
+    private LinearLayout teamScoreLayout;
+    private LinearLayout playerInfoLayout;
+    private Button passButton;
+    private Button pickUpButton;
+    private Button orderUpButton;
+    private Button startGameButton;
+    private TextView gameStatusText;
+    private TextView trumpText;
+    private TextView kittyCardText;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L67">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L68">        setContentView(R.layout.activity_gofish); // Reuse the same layout</span>
+
+<span class="nc" id="L70">        Intent intent = getIntent();</span>
+<span class="nc" id="L71">        gameType = intent.getStringExtra(&quot;GAMETYPE&quot;);</span>
+<span class="nc" id="L72">        username = intent.getStringExtra(&quot;USERNAME&quot;);</span>
+<span class="nc" id="L73">        joinCode = intent.getStringExtra(&quot;JOINCODE&quot;);</span>
+<span class="nc" id="L74">        isHost = intent.getBooleanExtra(&quot;HOST&quot;, false);</span>
+<span class="nc" id="L75">        playerList = intent.getStringArrayListExtra(&quot;PLAYERS&quot;);</span>
+
+<span class="nc" id="L77">        initializeViews();</span>
+<span class="nc" id="L78">        setupListeners();</span>
+<span class="nc" id="L79">    }</span>
+
+    private void initializeViews() {
+<span class="nc" id="L82">        rootLayout = findViewById(R.id.rootLayout);</span>
+<span class="nc" id="L83">        playerInfoLayout = findViewById(R.id.playerList);</span>
+<span class="nc" id="L84">        handCards = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L85">        trickCards = new ArrayList&lt;&gt;();</span>
+
+        // Create team score layout
+<span class="nc" id="L88">        teamScoreLayout = new LinearLayout(this);</span>
+<span class="nc" id="L89">        teamScoreLayout.setId(View.generateViewId());</span>
+<span class="nc" id="L90">        teamScoreLayout.setOrientation(LinearLayout.HORIZONTAL);</span>
+<span class="nc" id="L91">        ConstraintLayout.LayoutParams scoreParams = new ConstraintLayout.LayoutParams(</span>
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                ConstraintLayout.LayoutParams.WRAP_CONTENT
+        );
+<span class="nc" id="L95">        teamScoreLayout.setLayoutParams(scoreParams);</span>
+<span class="nc" id="L96">        rootLayout.addView(teamScoreLayout);</span>
+
+        // Position team score at top
+<span class="nc" id="L99">        ConstraintSet set = new ConstraintSet();</span>
+<span class="nc" id="L100">        set.clone(rootLayout);</span>
+<span class="nc" id="L101">        set.connect(teamScoreLayout.getId(), ConstraintSet.START, rootLayout.getId(), ConstraintSet.START, 0);</span>
+<span class="nc" id="L102">        set.connect(teamScoreLayout.getId(), ConstraintSet.END, rootLayout.getId(), ConstraintSet.END, 0);</span>
+<span class="nc" id="L103">        set.connect(teamScoreLayout.getId(), ConstraintSet.TOP, rootLayout.getId(), ConstraintSet.TOP, 20);</span>
+<span class="nc" id="L104">        set.applyTo(rootLayout);</span>
+
+        // Create trump display
+<span class="nc" id="L107">        trumpText = new TextView(this);</span>
+<span class="nc" id="L108">        trumpText.setId(View.generateViewId());</span>
+<span class="nc" id="L109">        trumpText.setTextSize(20);</span>
+<span class="nc" id="L110">        trumpText.setTextColor(0xFFFFFFFF);</span>
+<span class="nc" id="L111">        trumpText.setVisibility(View.GONE);</span>
+<span class="nc" id="L112">        ConstraintLayout.LayoutParams trumpParams = new ConstraintLayout.LayoutParams(</span>
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                ConstraintLayout.LayoutParams.WRAP_CONTENT
+        );
+<span class="nc" id="L116">        trumpText.setLayoutParams(trumpParams);</span>
+<span class="nc" id="L117">        rootLayout.addView(trumpText);</span>
+
+<span class="nc" id="L119">        set.clone(rootLayout);</span>
+<span class="nc" id="L120">        set.connect(trumpText.getId(), ConstraintSet.START, rootLayout.getId(), ConstraintSet.START, 0);</span>
+<span class="nc" id="L121">        set.connect(trumpText.getId(), ConstraintSet.END, rootLayout.getId(), ConstraintSet.END, 0);</span>
+<span class="nc" id="L122">        set.connect(trumpText.getId(), ConstraintSet.TOP, teamScoreLayout.getId(), ConstraintSet.BOTTOM, 20);</span>
+<span class="nc" id="L123">        set.applyTo(rootLayout);</span>
+
+        // Create kitty card display
+<span class="nc" id="L126">        kittyCardText = new TextView(this);</span>
+<span class="nc" id="L127">        kittyCardText.setId(View.generateViewId());</span>
+<span class="nc" id="L128">        kittyCardText.setTextSize(16);</span>
+<span class="nc" id="L129">        kittyCardText.setTextColor(0xFFFFFFFF);</span>
+<span class="nc" id="L130">        kittyCardText.setVisibility(View.GONE);</span>
+<span class="nc" id="L131">        ConstraintLayout.LayoutParams kittyParams = new ConstraintLayout.LayoutParams(</span>
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                ConstraintLayout.LayoutParams.WRAP_CONTENT
+        );
+<span class="nc" id="L135">        kittyCardText.setLayoutParams(kittyParams);</span>
+<span class="nc" id="L136">        rootLayout.addView(kittyCardText);</span>
+
+<span class="nc" id="L138">        set.clone(rootLayout);</span>
+<span class="nc" id="L139">        set.connect(kittyCardText.getId(), ConstraintSet.START, rootLayout.getId(), ConstraintSet.START, 0);</span>
+<span class="nc" id="L140">        set.connect(kittyCardText.getId(), ConstraintSet.END, rootLayout.getId(), ConstraintSet.END, 0);</span>
+<span class="nc" id="L141">        set.connect(kittyCardText.getId(), ConstraintSet.TOP, trumpText.getId(), ConstraintSet.BOTTOM, 10);</span>
+<span class="nc" id="L142">        set.applyTo(rootLayout);</span>
+
+        // Create action buttons
+<span class="nc" id="L145">        passButton = new Button(this);</span>
+<span class="nc" id="L146">        passButton.setId(View.generateViewId());</span>
+<span class="nc" id="L147">        passButton.setText(&quot;Pass&quot;);</span>
+<span class="nc" id="L148">        passButton.setVisibility(View.GONE);</span>
+<span class="nc" id="L149">        ConstraintLayout.LayoutParams passParams = new ConstraintLayout.LayoutParams(</span>
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                ConstraintLayout.LayoutParams.WRAP_CONTENT
+        );
+<span class="nc" id="L153">        passButton.setLayoutParams(passParams);</span>
+<span class="nc" id="L154">        rootLayout.addView(passButton);</span>
+
+<span class="nc" id="L156">        pickUpButton = new Button(this);</span>
+<span class="nc" id="L157">        pickUpButton.setId(View.generateViewId());</span>
+<span class="nc" id="L158">        pickUpButton.setText(&quot;Pick Up&quot;);</span>
+<span class="nc" id="L159">        pickUpButton.setVisibility(View.GONE);</span>
+<span class="nc" id="L160">        ConstraintLayout.LayoutParams pickUpParams = new ConstraintLayout.LayoutParams(</span>
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                ConstraintLayout.LayoutParams.WRAP_CONTENT
+        );
+<span class="nc" id="L164">        pickUpButton.setLayoutParams(pickUpParams);</span>
+<span class="nc" id="L165">        rootLayout.addView(pickUpButton);</span>
+
+<span class="nc" id="L167">        orderUpButton = new Button(this);</span>
+<span class="nc" id="L168">        orderUpButton.setId(View.generateViewId());</span>
+<span class="nc" id="L169">        orderUpButton.setText(&quot;Order Up&quot;);</span>
+<span class="nc" id="L170">        orderUpButton.setVisibility(View.GONE);</span>
+<span class="nc" id="L171">        ConstraintLayout.LayoutParams orderParams = new ConstraintLayout.LayoutParams(</span>
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                ConstraintLayout.LayoutParams.WRAP_CONTENT
+        );
+<span class="nc" id="L175">        orderUpButton.setLayoutParams(orderParams);</span>
+<span class="nc" id="L176">        rootLayout.addView(orderUpButton);</span>
+
+        // Position action buttons
+<span class="nc" id="L179">        set.clone(rootLayout);</span>
+<span class="nc" id="L180">        set.connect(passButton.getId(), ConstraintSet.START, rootLayout.getId(), ConstraintSet.START, 50);</span>
+<span class="nc" id="L181">        set.connect(passButton.getId(), ConstraintSet.BOTTOM, rootLayout.getId(), ConstraintSet.BOTTOM, 100);</span>
+
+<span class="nc" id="L183">        set.connect(orderUpButton.getId(), ConstraintSet.START, passButton.getId(), ConstraintSet.END, 20);</span>
+<span class="nc" id="L184">        set.connect(orderUpButton.getId(), ConstraintSet.BOTTOM, rootLayout.getId(), ConstraintSet.BOTTOM, 100);</span>
+
+<span class="nc" id="L186">        set.connect(pickUpButton.getId(), ConstraintSet.START, orderUpButton.getId(), ConstraintSet.END, 20);</span>
+<span class="nc" id="L187">        set.connect(pickUpButton.getId(), ConstraintSet.BOTTOM, rootLayout.getId(), ConstraintSet.BOTTOM, 100);</span>
+<span class="nc" id="L188">        set.applyTo(rootLayout);</span>
+
+        // Create start game button
+<span class="nc" id="L191">        startGameButton = new Button(this);</span>
+<span class="nc" id="L192">        startGameButton.setId(View.generateViewId());</span>
+<span class="nc" id="L193">        startGameButton.setText(&quot;Start Game&quot;);</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        startGameButton.setVisibility(isHost ? View.VISIBLE : View.GONE);</span>
+<span class="nc" id="L195">        ConstraintLayout.LayoutParams startParams = new ConstraintLayout.LayoutParams(</span>
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                ConstraintLayout.LayoutParams.WRAP_CONTENT
+        );
+<span class="nc" id="L199">        startGameButton.setLayoutParams(startParams);</span>
+<span class="nc" id="L200">        rootLayout.addView(startGameButton);</span>
+
+<span class="nc" id="L202">        set.clone(rootLayout);</span>
+<span class="nc" id="L203">        set.connect(startGameButton.getId(), ConstraintSet.START, rootLayout.getId(), ConstraintSet.START, 0);</span>
+<span class="nc" id="L204">        set.connect(startGameButton.getId(), ConstraintSet.END, rootLayout.getId(), ConstraintSet.END, 0);</span>
+<span class="nc" id="L205">        set.connect(startGameButton.getId(), ConstraintSet.TOP, rootLayout.getId(), ConstraintSet.TOP, 0);</span>
+<span class="nc" id="L206">        set.connect(startGameButton.getId(), ConstraintSet.BOTTOM, rootLayout.getId(), ConstraintSet.BOTTOM, 0);</span>
+<span class="nc" id="L207">        set.applyTo(rootLayout);</span>
+
+        // Create game status text
+<span class="nc" id="L210">        gameStatusText = new TextView(this);</span>
+<span class="nc" id="L211">        gameStatusText.setId(View.generateViewId());</span>
+<span class="nc" id="L212">        gameStatusText.setTextSize(18);</span>
+<span class="nc" id="L213">        gameStatusText.setTextColor(0xFFFFFFFF);</span>
+<span class="nc" id="L214">        gameStatusText.setText(&quot;Waiting for host to start game...&quot;);</span>
+<span class="nc" id="L215">        gameStatusText.setVisibility(View.VISIBLE);</span>
+<span class="nc" id="L216">        ConstraintLayout.LayoutParams statusParams = new ConstraintLayout.LayoutParams(</span>
+                ConstraintLayout.LayoutParams.WRAP_CONTENT,
+                ConstraintLayout.LayoutParams.WRAP_CONTENT
+        );
+<span class="nc" id="L220">        gameStatusText.setLayoutParams(statusParams);</span>
+<span class="nc" id="L221">        rootLayout.addView(gameStatusText);</span>
+
+<span class="nc" id="L223">        set.clone(rootLayout);</span>
+<span class="nc" id="L224">        set.connect(gameStatusText.getId(), ConstraintSet.START, rootLayout.getId(), ConstraintSet.START, 0);</span>
+<span class="nc" id="L225">        set.connect(gameStatusText.getId(), ConstraintSet.END, rootLayout.getId(), ConstraintSet.END, 0);</span>
+<span class="nc" id="L226">        set.connect(gameStatusText.getId(), ConstraintSet.TOP, rootLayout.getId(), ConstraintSet.TOP, 50);</span>
+<span class="nc" id="L227">        set.applyTo(rootLayout);</span>
+<span class="nc" id="L228">    }</span>
+
+    private void setupListeners() {
+<span class="nc" id="L231">        passButton.setOnClickListener(v -&gt; handlePassButton());</span>
+<span class="nc" id="L232">        pickUpButton.setOnClickListener(v -&gt; handlePickUpButton());</span>
+<span class="nc" id="L233">        orderUpButton.setOnClickListener(v -&gt; handleOrderUpButton());</span>
+<span class="nc" id="L234">        startGameButton.setOnClickListener(v -&gt; startGame());</span>
+<span class="nc" id="L235">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L239">        super.onStart();</span>
+        // Use just the lobby code - backend doesn't expect username in URL
+<span class="nc" id="L241">        String wsUrl = &quot;ws://coms-3090-006.class.las.iastate.edu:8080/euchre/&quot; + joinCode;</span>
+<span class="nc" id="L242">        Log.d(TAG, &quot;Connecting to WebSocket: &quot; + wsUrl);</span>
+<span class="nc" id="L243">        WebSocketManager.getInstance().connectWebSocket(wsUrl);</span>
+<span class="nc" id="L244">        WebSocketManager.getInstance().setWebSocketListener(this);</span>
+<span class="nc" id="L245">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L249">        super.onStop();</span>
+<span class="nc" id="L250">        WebSocketManager.getInstance().disconnectWebSocket();</span>
+<span class="nc" id="L251">    }</span>
+
+    @Override
+    public void onWebSocketOpen(ServerHandshake handshakedata) {
+<span class="nc" id="L255">        runOnUiThread(() -&gt; {</span>
+<span class="nc" id="L256">            Log.d(TAG, &quot;WebSocket connected&quot;);</span>
+<span class="nc" id="L257">            Toast.makeText(this, &quot;Connected to game server&quot;, Toast.LENGTH_SHORT).show();</span>
+
+            // Immediately request game state when connecting
+            // This tells backend we're here and gets current game info
+<span class="nc" id="L261">            requestGameState();</span>
+<span class="nc" id="L262">        });</span>
+<span class="nc" id="L263">    }</span>
+
+    @Override
+    public void onWebSocketMessage(String message) {
+<span class="nc" id="L267">        runOnUiThread(() -&gt; {</span>
+<span class="nc" id="L268">            Log.d(TAG, &quot;Received message: &quot; + message);</span>
+
+<span class="nc bnc" id="L270" title="All 2 branches missed.">            if (!message.trim().startsWith(&quot;{&quot;)) {</span>
+<span class="nc" id="L271">                Log.d(TAG, &quot;Received plain text message: &quot; + message);</span>
+
+<span class="nc bnc" id="L273" title="All 2 branches missed.">                if (!message.toLowerCase().contains(&quot;no game running&quot;)) {</span>
+<span class="nc" id="L274">                    Toast.makeText(this, message, Toast.LENGTH_SHORT).show();</span>
+                }
+
+<span class="nc bnc" id="L277" title="All 4 branches missed.">                if (message.toLowerCase().contains(&quot;started&quot;) || message.toLowerCase().contains(&quot;new game&quot;)) {</span>
+<span class="nc" id="L278">                    requestGameState();</span>
+                }
+<span class="nc" id="L280">                return;</span>
+            }
+
+            try {
+<span class="nc" id="L284">                JSONObject json = new JSONObject(message);</span>
+<span class="nc" id="L285">                Log.d(TAG, &quot;Parsing JSON game state...&quot;);</span>
+<span class="nc" id="L286">                gameState = parseGameState(json);</span>
+<span class="nc" id="L287">                gameStarted = true;</span>
+
+<span class="nc" id="L289">                startGameButton.setVisibility(View.GONE);</span>
+<span class="nc" id="L290">                gameStatusText.setVisibility(View.GONE);</span>
+
+<span class="nc" id="L292">                updateUIFromState();</span>
+
+<span class="nc" id="L294">            } catch (JSONException e) {</span>
+<span class="nc" id="L295">                Log.e(TAG, &quot;Error parsing message: &quot; + message, e);</span>
+<span class="nc" id="L296">            }</span>
+<span class="nc" id="L297">        });</span>
+<span class="nc" id="L298">    }</span>
+
+    @Override
+    public void onWebSocketClose(int code, String reason, boolean remote) {
+<span class="nc" id="L302">        Log.e(TAG, &quot;Closed → code=&quot; + code + &quot;, reason=&quot; + reason + &quot;, remote=&quot; + remote);</span>
+<span class="nc" id="L303">    }</span>
+
+    @Override
+    public void onWebSocketError(Exception ex) {
+<span class="nc" id="L307">        Log.e(TAG, &quot;Error → &quot; + ex.getMessage(), ex);</span>
+<span class="nc" id="L308">    }</span>
+
+    // -------------------------------------------------------------------
+    // WebSocket Message Sending
+    // -------------------------------------------------------------------
+
+    private void startGame() {
+<span class="nc" id="L315">        Log.d(TAG, &quot;Start button clicked!&quot;);</span>
+
+        try {
+<span class="nc" id="L318">            JSONObject message = new JSONObject();</span>
+<span class="nc" id="L319">            message.put(&quot;type&quot;, &quot;start&quot;);</span>
+
+<span class="nc" id="L321">            JSONArray playerArray = new JSONArray();</span>
+<span class="nc bnc" id="L322" title="All 4 branches missed.">            if (playerList != null &amp;&amp; !playerList.isEmpty()) {</span>
+<span class="nc bnc" id="L323" title="All 2 branches missed.">                for (String player : playerList) {</span>
+<span class="nc" id="L324">                    playerArray.put(player);</span>
+<span class="nc" id="L325">                }</span>
+            } else {
+<span class="nc" id="L327">                playerArray.put(username);</span>
+            }
+
+<span class="nc" id="L330">            message.put(&quot;players&quot;, playerArray);</span>
+
+<span class="nc" id="L332">            String msg = message.toString();</span>
+<span class="nc" id="L333">            Log.d(TAG, &quot;Sending start message: &quot; + msg);</span>
+<span class="nc" id="L334">            WebSocketManager.getInstance().sendMessage(msg);</span>
+
+<span class="nc" id="L336">            Toast.makeText(this, &quot;Starting game...&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L337">        } catch (JSONException e) {</span>
+<span class="nc" id="L338">            Log.e(TAG, &quot;Error creating start message&quot;, e);</span>
+<span class="nc" id="L339">            Toast.makeText(this, &quot;Error starting game&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L340">        }</span>
+<span class="nc" id="L341">    }</span>
+
+    private void requestGameState() {
+        try {
+<span class="nc" id="L345">            JSONObject message = new JSONObject();</span>
+<span class="nc" id="L346">            message.put(&quot;type&quot;, &quot;state&quot;);</span>
+
+<span class="nc" id="L348">            String msg = message.toString();</span>
+<span class="nc" id="L349">            Log.d(TAG, &quot;Requesting state: &quot; + msg);</span>
+<span class="nc" id="L350">            WebSocketManager.getInstance().sendMessage(msg);</span>
+<span class="nc" id="L351">        } catch (JSONException e) {</span>
+<span class="nc" id="L352">            Log.e(TAG, &quot;Error creating state request&quot;, e);</span>
+<span class="nc" id="L353">        }</span>
+<span class="nc" id="L354">    }</span>
+
+    private void handlePassButton() {
+        try {
+<span class="nc" id="L358">            JSONObject message = new JSONObject();</span>
+<span class="nc" id="L359">            message.put(&quot;type&quot;, &quot;pass&quot;);</span>
+<span class="nc" id="L360">            message.put(&quot;player&quot;, username);</span>
+
+<span class="nc" id="L362">            Log.d(TAG, &quot;Sending pass: &quot; + message.toString());</span>
+<span class="nc" id="L363">            WebSocketManager.getInstance().sendMessage(message.toString());</span>
+<span class="nc" id="L364">        } catch (JSONException e) {</span>
+<span class="nc" id="L365">            Log.e(TAG, &quot;Error creating pass message&quot;, e);</span>
+<span class="nc" id="L366">        }</span>
+<span class="nc" id="L367">    }</span>
+
+    private void handleOrderUpButton() {
+        // This tells dealer to pick up the kitty card (trump is kitty suit)
+        try {
+<span class="nc" id="L372">            JSONObject message = new JSONObject();</span>
+<span class="nc" id="L373">            message.put(&quot;type&quot;, &quot;orderUp&quot;);</span>
+<span class="nc" id="L374">            message.put(&quot;player&quot;, username);</span>
+
+<span class="nc" id="L376">            Log.d(TAG, &quot;Sending order up: &quot; + message.toString());</span>
+<span class="nc" id="L377">            WebSocketManager.getInstance().sendMessage(message.toString());</span>
+<span class="nc" id="L378">        } catch (JSONException e) {</span>
+<span class="nc" id="L379">            Log.e(TAG, &quot;Error creating order up message&quot;, e);</span>
+<span class="nc" id="L380">        }</span>
+<span class="nc" id="L381">    }</span>
+
+    private void handlePickUpButton() {
+        // Dealer picks up kitty and must discard a card
+<span class="nc bnc" id="L385" title="All 2 branches missed.">        if (selectedCard == null) {</span>
+<span class="nc" id="L386">            Toast.makeText(this, &quot;Select a card to discard&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L387">            return;</span>
+        }
+
+        try {
+<span class="nc" id="L391">            JSONObject message = new JSONObject();</span>
+<span class="nc" id="L392">            message.put(&quot;type&quot;, &quot;pickUp&quot;);</span>
+<span class="nc" id="L393">            message.put(&quot;dealer&quot;, username);</span>
+
+<span class="nc" id="L395">            JSONObject droppedCard = new JSONObject();</span>
+<span class="nc" id="L396">            droppedCard.put(&quot;value&quot;, convertStringToValue(selectedCard.getCardValue()));</span>
+<span class="nc" id="L397">            droppedCard.put(&quot;suit&quot;, selectedCard.getCardSuit());</span>
+<span class="nc" id="L398">            message.put(&quot;droppedCard&quot;, droppedCard);</span>
+
+<span class="nc" id="L400">            Log.d(TAG, &quot;Sending pick up: &quot; + message.toString());</span>
+<span class="nc" id="L401">            WebSocketManager.getInstance().sendMessage(message.toString());</span>
+
+<span class="nc" id="L403">            selectedCard.setSelected(false);</span>
+<span class="nc" id="L404">            selectedCard = null;</span>
+<span class="nc" id="L405">        } catch (JSONException e) {</span>
+<span class="nc" id="L406">            Log.e(TAG, &quot;Error creating pick up message&quot;, e);</span>
+<span class="nc" id="L407">        }</span>
+<span class="nc" id="L408">    }</span>
+
+    private void showSuitSelectionDialog() {
+<span class="nc" id="L411">        String[] suits = {&quot;Hearts ♥&quot;, &quot;Diamonds ♦&quot;, &quot;Clubs ♣&quot;, &quot;Spades ♠&quot;};</span>
+<span class="nc" id="L412">        String[] suitCodes = {&quot;H&quot;, &quot;D&quot;, &quot;C&quot;, &quot;S&quot;};</span>
+
+<span class="nc" id="L414">        AlertDialog.Builder builder = new AlertDialog.Builder(this);</span>
+<span class="nc" id="L415">        builder.setTitle(&quot;Choose Trump Suit&quot;);</span>
+<span class="nc" id="L416">        builder.setItems(suits, (dialog, which) -&gt; {</span>
+<span class="nc" id="L417">            sendChooseSuit(suitCodes[which]);</span>
+<span class="nc" id="L418">        });</span>
+<span class="nc" id="L419">        builder.setNegativeButton(&quot;Cancel&quot;, null);</span>
+<span class="nc" id="L420">        builder.show();</span>
+<span class="nc" id="L421">    }</span>
+
+    private void sendChooseSuit(String suit) {
+        try {
+<span class="nc" id="L425">            JSONObject message = new JSONObject();</span>
+<span class="nc" id="L426">            message.put(&quot;type&quot;, &quot;chooseSuit&quot;);</span>
+<span class="nc" id="L427">            message.put(&quot;player&quot;, username);</span>
+<span class="nc" id="L428">            message.put(&quot;suit&quot;, suit);</span>
+
+<span class="nc" id="L430">            Log.d(TAG, &quot;Sending choose suit: &quot; + message.toString());</span>
+<span class="nc" id="L431">            WebSocketManager.getInstance().sendMessage(message.toString());</span>
+<span class="nc" id="L432">        } catch (JSONException e) {</span>
+<span class="nc" id="L433">            Log.e(TAG, &quot;Error creating choose suit message&quot;, e);</span>
+<span class="nc" id="L434">        }</span>
+<span class="nc" id="L435">    }</span>
+
+    private void playCard(CardView card) {
+        try {
+<span class="nc" id="L439">            JSONObject message = new JSONObject();</span>
+<span class="nc" id="L440">            message.put(&quot;type&quot;, &quot;play&quot;);</span>
+<span class="nc" id="L441">            message.put(&quot;player&quot;, username);</span>
+
+<span class="nc" id="L443">            JSONObject cardObj = new JSONObject();</span>
+<span class="nc" id="L444">            cardObj.put(&quot;value&quot;, convertStringToValue(card.getCardValue()));</span>
+<span class="nc" id="L445">            cardObj.put(&quot;suit&quot;, card.getCardSuit());</span>
+<span class="nc" id="L446">            message.put(&quot;card&quot;, cardObj);</span>
+
+<span class="nc" id="L448">            Log.d(TAG, &quot;Sending play card: &quot; + message.toString());</span>
+<span class="nc" id="L449">            WebSocketManager.getInstance().sendMessage(message.toString());</span>
+
+<span class="nc bnc" id="L451" title="All 2 branches missed.">            if (selectedCard != null) {</span>
+<span class="nc" id="L452">                selectedCard.setSelected(false);</span>
+            }
+<span class="nc" id="L454">            selectedCard = null;</span>
+<span class="nc" id="L455">        } catch (JSONException e) {</span>
+<span class="nc" id="L456">            Log.e(TAG, &quot;Error creating play message&quot;, e);</span>
+<span class="nc" id="L457">        }</span>
+<span class="nc" id="L458">    }</span>
+
+    // -------------------------------------------------------------------
+    // JSON → GameState Parsing
+    // -------------------------------------------------------------------
+
+    private GameState parseGameState(JSONObject json) throws JSONException {
+<span class="nc" id="L465">        GameState state = new GameState();</span>
+
+<span class="nc bnc" id="L467" title="All 2 branches missed.">        JSONObject gameData = json.has(&quot;game&quot;) ? json.getJSONObject(&quot;game&quot;) : json;</span>
+
+        // Parse phase
+<span class="nc" id="L470">        state.phase = gameData.optString(&quot;phase&quot;, &quot;BIDDING&quot;);</span>
+
+        // Parse current player
+<span class="nc" id="L473">        state.currentPlayer = gameData.optString(&quot;currentPlayer&quot;);</span>
+
+        // Parse dealer
+<span class="nc" id="L476">        state.dealer = gameData.optString(&quot;dealer&quot;);</span>
+
+        // Parse trump
+<span class="nc" id="L479">        state.trump = gameData.optString(&quot;trump&quot;);</span>
+
+        // Parse kitty card
+<span class="nc bnc" id="L482" title="All 2 branches missed.">        if (gameData.has(&quot;kittyCard&quot;)) {</span>
+<span class="nc" id="L483">            JSONObject kitty = gameData.getJSONObject(&quot;kittyCard&quot;);</span>
+<span class="nc" id="L484">            state.kittyCard = new CardState();</span>
+<span class="nc" id="L485">            state.kittyCard.value = convertValueToString(kitty.optInt(&quot;value&quot;));</span>
+<span class="nc" id="L486">            state.kittyCard.suit = kitty.optString(&quot;suit&quot;);</span>
+        }
+
+        // Parse teams
+<span class="nc" id="L490">        JSONArray teamsArray = gameData.optJSONArray(&quot;teams&quot;);</span>
+<span class="nc bnc" id="L491" title="All 2 branches missed.">        if (teamsArray != null) {</span>
+<span class="nc bnc" id="L492" title="All 2 branches missed.">            for (int i = 0; i &lt; teamsArray.length(); i++) {</span>
+<span class="nc" id="L493">                JSONObject teamObj = teamsArray.getJSONObject(i);</span>
+<span class="nc" id="L494">                TeamState team = new TeamState();</span>
+<span class="nc" id="L495">                team.score = teamObj.optInt(&quot;score&quot;, 0);</span>
+<span class="nc" id="L496">                team.tricksWon = teamObj.optInt(&quot;tricksWon&quot;, 0);</span>
+
+<span class="nc" id="L498">                JSONArray membersArray = teamObj.optJSONArray(&quot;members&quot;);</span>
+<span class="nc bnc" id="L499" title="All 2 branches missed.">                if (membersArray != null) {</span>
+<span class="nc bnc" id="L500" title="All 2 branches missed.">                    for (int j = 0; j &lt; membersArray.length(); j++) {</span>
+<span class="nc" id="L501">                        team.members.add(membersArray.getString(j));</span>
+                    }
+                }
+<span class="nc" id="L504">                state.teams.add(team);</span>
+            }
+        }
+
+        // Parse players
+<span class="nc" id="L509">        JSONArray playersArray = gameData.optJSONArray(&quot;players&quot;);</span>
+<span class="nc bnc" id="L510" title="All 2 branches missed.">        if (playersArray != null) {</span>
+<span class="nc bnc" id="L511" title="All 2 branches missed.">            for (int i = 0; i &lt; playersArray.length(); i++) {</span>
+<span class="nc" id="L512">                JSONObject p = playersArray.getJSONObject(i);</span>
+<span class="nc" id="L513">                PlayerState ps = new PlayerState();</span>
+<span class="nc" id="L514">                ps.username = p.optString(&quot;username&quot;);</span>
+
+<span class="nc" id="L516">                JSONArray hand = p.optJSONArray(&quot;hand&quot;);</span>
+<span class="nc bnc" id="L517" title="All 2 branches missed.">                if (hand != null) {</span>
+<span class="nc bnc" id="L518" title="All 2 branches missed.">                    for (int j = 0; j &lt; hand.length(); j++) {</span>
+<span class="nc" id="L519">                        JSONObject c = hand.getJSONObject(j);</span>
+<span class="nc" id="L520">                        CardState card = new CardState();</span>
+<span class="nc" id="L521">                        card.value = convertValueToString(c.optInt(&quot;value&quot;));</span>
+<span class="nc" id="L522">                        card.suit = c.optString(&quot;suit&quot;);</span>
+<span class="nc" id="L523">                        ps.hand.add(card);</span>
+                    }
+                }
+
+<span class="nc" id="L527">                state.players.add(ps);</span>
+            }
+        }
+
+        // Parse current trick
+<span class="nc" id="L532">        JSONArray trickArray = gameData.optJSONArray(&quot;currentTrick&quot;);</span>
+<span class="nc bnc" id="L533" title="All 2 branches missed.">        if (trickArray != null) {</span>
+<span class="nc bnc" id="L534" title="All 2 branches missed.">            for (int i = 0; i &lt; trickArray.length(); i++) {</span>
+<span class="nc" id="L535">                JSONObject playedCard = trickArray.getJSONObject(i);</span>
+<span class="nc" id="L536">                PlayedCard pc = new PlayedCard();</span>
+<span class="nc" id="L537">                pc.player = playedCard.optString(&quot;player&quot;);</span>
+
+<span class="nc" id="L539">                JSONObject cardObj = playedCard.optJSONObject(&quot;card&quot;);</span>
+<span class="nc bnc" id="L540" title="All 2 branches missed.">                if (cardObj != null) {</span>
+<span class="nc" id="L541">                    pc.card = new CardState();</span>
+<span class="nc" id="L542">                    pc.card.value = convertValueToString(cardObj.optInt(&quot;value&quot;));</span>
+<span class="nc" id="L543">                    pc.card.suit = cardObj.optString(&quot;suit&quot;);</span>
+                }
+
+<span class="nc" id="L546">                state.currentTrick.add(pc);</span>
+            }
+        }
+
+<span class="nc" id="L550">        return state;</span>
+    }
+
+    private String convertValueToString(int value) {
+<span class="nc bnc" id="L554" title="All 5 branches missed.">        switch (value) {</span>
+<span class="nc" id="L555">            case 14: return &quot;A&quot;;</span>
+<span class="nc" id="L556">            case 13: return &quot;K&quot;;</span>
+<span class="nc" id="L557">            case 12: return &quot;Q&quot;;</span>
+<span class="nc" id="L558">            case 11: return &quot;J&quot;;</span>
+<span class="nc" id="L559">            default: return String.valueOf(value);</span>
+        }
+    }
+
+    private int convertStringToValue(String valueStr) {
+<span class="nc bnc" id="L564" title="All 5 branches missed.">        switch (valueStr.toUpperCase()) {</span>
+<span class="nc" id="L565">            case &quot;A&quot;: return 14;</span>
+<span class="nc" id="L566">            case &quot;K&quot;: return 13;</span>
+<span class="nc" id="L567">            case &quot;Q&quot;: return 12;</span>
+<span class="nc" id="L568">            case &quot;J&quot;: return 11;</span>
+            default:
+                try {
+<span class="nc" id="L571">                    return Integer.parseInt(valueStr);</span>
+<span class="nc" id="L572">                } catch (NumberFormatException e) {</span>
+<span class="nc" id="L573">                    return 0;</span>
+                }
+        }
+    }
+
+    // -------------------------------------------------------------------
+    // UI Update Methods
+    // -------------------------------------------------------------------
+
+    private void updateUIFromState() {
+<span class="nc" id="L583">        updateTeamScores();</span>
+<span class="nc" id="L584">        updatePlayerInfo();</span>
+<span class="nc" id="L585">        updateTrumpDisplay();</span>
+<span class="nc" id="L586">        updateHandCards();</span>
+<span class="nc" id="L587">        updateTrickDisplay();</span>
+<span class="nc" id="L588">        updateActionButtons();</span>
+<span class="nc" id="L589">    }</span>
+
+    private void updateTeamScores() {
+<span class="nc" id="L592">        teamScoreLayout.removeAllViews();</span>
+
+<span class="nc bnc" id="L594" title="All 2 branches missed.">        for (int i = 0; i &lt; gameState.teams.size(); i++) {</span>
+<span class="nc" id="L595">            TeamState team = gameState.teams.get(i);</span>
+<span class="nc" id="L596">            TextView teamView = new TextView(this);</span>
+
+<span class="nc" id="L598">            String teamText = &quot;Team &quot; + (i + 1) + &quot;: &quot; + team.score + &quot; pts&quot;;</span>
+<span class="nc bnc" id="L599" title="All 2 branches missed.">            if (gameState.phase.equals(&quot;PLAYING&quot;)) {</span>
+<span class="nc" id="L600">                teamText += &quot; (&quot; + team.tricksWon + &quot; tricks)&quot;;</span>
+            }
+
+<span class="nc" id="L603">            teamView.setText(teamText);</span>
+<span class="nc" id="L604">            teamView.setTextSize(16);</span>
+<span class="nc" id="L605">            teamView.setTextColor(0xFFFFFFFF);</span>
+<span class="nc" id="L606">            teamView.setPadding(20, 10, 20, 10);</span>
+
+            // Highlight user's team
+<span class="nc" id="L609">            boolean isMyTeam = false;</span>
+<span class="nc bnc" id="L610" title="All 2 branches missed.">            for (String member : team.members) {</span>
+<span class="nc bnc" id="L611" title="All 2 branches missed.">                if (member.equals(username)) {</span>
+<span class="nc" id="L612">                    isMyTeam = true;</span>
+<span class="nc" id="L613">                    break;</span>
+                }
+<span class="nc" id="L615">            }</span>
+<span class="nc bnc" id="L616" title="All 2 branches missed.">            if (isMyTeam) {</span>
+<span class="nc" id="L617">                teamView.setTextColor(0xFF00FF00); // Green for user's team</span>
+<span class="nc" id="L618">                teamView.setTypeface(null, android.graphics.Typeface.BOLD);</span>
+            }
+
+<span class="nc" id="L621">            teamScoreLayout.addView(teamView);</span>
+        }
+<span class="nc" id="L623">    }</span>
+
+    private void updatePlayerInfo() {
+<span class="nc" id="L626">        playerInfoLayout.removeAllViews();</span>
+
+<span class="nc bnc" id="L628" title="All 2 branches missed.">        for (PlayerState player : gameState.players) {</span>
+<span class="nc" id="L629">            TextView playerView = new TextView(this);</span>
+
+<span class="nc" id="L631">            String displayText = player.username;</span>
+
+<span class="nc bnc" id="L633" title="All 2 branches missed.">            if (player.username.equals(gameState.dealer)) {</span>
+<span class="nc" id="L634">                displayText += &quot; (D)&quot;;</span>
+            }
+
+<span class="nc bnc" id="L637" title="All 2 branches missed.">            if (player.username.equals(gameState.currentPlayer)) {</span>
+<span class="nc" id="L638">                displayText = &quot;▶ &quot; + displayText;</span>
+<span class="nc" id="L639">                playerView.setTextColor(0xFFFFFF00); // Yellow</span>
+            } else {
+<span class="nc" id="L641">                playerView.setTextColor(0xFFFFFFFF);</span>
+            }
+
+<span class="nc bnc" id="L644" title="All 2 branches missed.">            if (player.username.equals(username)) {</span>
+<span class="nc" id="L645">                playerView.setTextSize(16);</span>
+<span class="nc" id="L646">                playerView.setTypeface(null, android.graphics.Typeface.BOLD);</span>
+            } else {
+<span class="nc" id="L648">                playerView.setTextSize(14);</span>
+            }
+
+<span class="nc" id="L651">            playerView.setText(displayText);</span>
+<span class="nc" id="L652">            playerView.setPadding(16, 8, 16, 8);</span>
+<span class="nc" id="L653">            playerInfoLayout.addView(playerView);</span>
+<span class="nc" id="L654">        }</span>
+<span class="nc" id="L655">    }</span>
+
+    private void updateTrumpDisplay() {
+<span class="nc bnc" id="L658" title="All 4 branches missed.">        if (gameState.trump != null &amp;&amp; !gameState.trump.isEmpty()) {</span>
+<span class="nc" id="L659">            String suitSymbol = getSuitSymbol(gameState.trump.toLowerCase());</span>
+<span class="nc" id="L660">            trumpText.setText(&quot;Trump: &quot; + suitSymbol);</span>
+<span class="nc" id="L661">            trumpText.setVisibility(View.VISIBLE);</span>
+<span class="nc" id="L662">        } else {</span>
+<span class="nc" id="L663">            trumpText.setVisibility(View.GONE);</span>
+        }
+
+<span class="nc bnc" id="L666" title="All 4 branches missed.">        if (gameState.kittyCard != null &amp;&amp; gameState.phase.equals(&quot;BIDDING&quot;)) {</span>
+<span class="nc" id="L667">            String suitSymbol = getSuitSymbol(gameState.kittyCard.suit);</span>
+<span class="nc" id="L668">            kittyCardText.setText(&quot;Kitty: &quot; + gameState.kittyCard.value + suitSymbol);</span>
+<span class="nc" id="L669">            kittyCardText.setVisibility(View.VISIBLE);</span>
+<span class="nc" id="L670">        } else {</span>
+<span class="nc" id="L671">            kittyCardText.setVisibility(View.GONE);</span>
+        }
+<span class="nc" id="L673">    }</span>
+
+    private void updateHandCards() {
+        // Clear existing hand cards
+<span class="nc bnc" id="L677" title="All 2 branches missed.">        for (CardView card : handCards) {</span>
+<span class="nc" id="L678">            rootLayout.removeView(card);</span>
+<span class="nc" id="L679">        }</span>
+<span class="nc" id="L680">        handCards.clear();</span>
+
+        // Find current player's hand
+<span class="nc" id="L683">        PlayerState currentPlayer = null;</span>
+<span class="nc bnc" id="L684" title="All 2 branches missed.">        for (PlayerState p : gameState.players) {</span>
+<span class="nc bnc" id="L685" title="All 2 branches missed.">            if (p.username.equals(username)) {</span>
+<span class="nc" id="L686">                currentPlayer = p;</span>
+<span class="nc" id="L687">                break;</span>
+            }
+<span class="nc" id="L689">        }</span>
+
+<span class="nc bnc" id="L691" title="All 4 branches missed.">        if (currentPlayer == null || currentPlayer.hand.isEmpty()) {</span>
+<span class="nc" id="L692">            return;</span>
+        }
+
+        // Create card views
+<span class="nc bnc" id="L696" title="All 2 branches missed.">        for (CardState cardData : currentPlayer.hand) {</span>
+<span class="nc" id="L697">            CardView card = createCardFromData(cardData.value, cardData.suit);</span>
+
+            // Make cards clickable during appropriate phases
+<span class="nc bnc" id="L700" title="All 4 branches missed.">            if (gameState.phase.equals(&quot;PLAYING&quot;) &amp;&amp; username.equals(gameState.currentPlayer)) {</span>
+<span class="nc" id="L701">                card.setClickable(true);</span>
+<span class="nc" id="L702">                card.setFocusable(true);</span>
+<span class="nc" id="L703">                card.setOnClickListener(v -&gt; playCard(card));</span>
+<span class="nc bnc" id="L704" title="All 4 branches missed.">            } else if (gameState.phase.equals(&quot;BIDDING&quot;) &amp;&amp; username.equals(gameState.dealer)) {</span>
+                // Dealer can select card to discard when picking up
+<span class="nc" id="L706">                card.setClickable(true);</span>
+<span class="nc" id="L707">                card.setFocusable(true);</span>
+<span class="nc" id="L708">                card.setOnClickListener(v -&gt; {</span>
+<span class="nc bnc" id="L709" title="All 2 branches missed.">                    if (selectedCard != null) {</span>
+<span class="nc" id="L710">                        selectedCard.setSelected(false);</span>
+                    }
+<span class="nc" id="L712">                    selectedCard = card;</span>
+<span class="nc" id="L713">                    card.setSelected(true);</span>
+<span class="nc" id="L714">                });</span>
+            }
+
+<span class="nc" id="L717">            rootLayout.addView(card);</span>
+<span class="nc" id="L718">            handCards.add(card);</span>
+<span class="nc" id="L719">        }</span>
+
+<span class="nc" id="L721">        setupCardLayout();</span>
+<span class="nc" id="L722">        animateCardsIntroduction();</span>
+<span class="nc" id="L723">    }</span>
+
+    private void updateTrickDisplay() {
+        // Clear existing trick cards
+<span class="nc bnc" id="L727" title="All 2 branches missed.">        for (CardView card : trickCards) {</span>
+<span class="nc" id="L728">            rootLayout.removeView(card);</span>
+<span class="nc" id="L729">        }</span>
+<span class="nc" id="L730">        trickCards.clear();</span>
+
+<span class="nc bnc" id="L732" title="All 2 branches missed.">        if (gameState.currentTrick.isEmpty()) {</span>
+<span class="nc" id="L733">            return;</span>
+        }
+
+        // Display cards played in current trick
+<span class="nc" id="L737">        ConstraintSet set = new ConstraintSet();</span>
+<span class="nc" id="L738">        set.clone(rootLayout);</span>
+
+<span class="nc bnc" id="L740" title="All 2 branches missed.">        for (int i = 0; i &lt; gameState.currentTrick.size(); i++) {</span>
+<span class="nc" id="L741">            PlayedCard pc = gameState.currentTrick.get(i);</span>
+<span class="nc" id="L742">            CardView card = createCardFromData(pc.card.value, pc.card.suit);</span>
+<span class="nc" id="L743">            card.setClickable(false);</span>
+
+<span class="nc" id="L745">            rootLayout.addView(card);</span>
+<span class="nc" id="L746">            trickCards.add(card);</span>
+
+            // Position cards in center area in a small grid
+<span class="nc" id="L749">            int col = i % 2;</span>
+<span class="nc" id="L750">            int row = i / 2;</span>
+
+<span class="nc" id="L752">            set.connect(card.getId(), ConstraintSet.LEFT, rootLayout.getId(), ConstraintSet.LEFT, 0);</span>
+<span class="nc" id="L753">            set.connect(card.getId(), ConstraintSet.RIGHT, rootLayout.getId(), ConstraintSet.RIGHT, 0);</span>
+<span class="nc" id="L754">            set.connect(card.getId(), ConstraintSet.TOP, rootLayout.getId(), ConstraintSet.TOP, 0);</span>
+<span class="nc" id="L755">            set.connect(card.getId(), ConstraintSet.BOTTOM, rootLayout.getId(), ConstraintSet.BOTTOM, 0);</span>
+
+<span class="nc" id="L757">            float xBias = 0.35f + (col * 0.3f);</span>
+<span class="nc" id="L758">            float yBias = 0.35f + (row * 0.2f);</span>
+
+<span class="nc" id="L760">            set.setHorizontalBias(card.getId(), xBias);</span>
+<span class="nc" id="L761">            set.setVerticalBias(card.getId(), yBias);</span>
+        }
+
+<span class="nc" id="L764">        set.applyTo(rootLayout);</span>
+<span class="nc" id="L765">    }</span>
+
+    private void updateActionButtons() {
+<span class="nc" id="L768">        boolean isMyTurn = username.equals(gameState.currentPlayer);</span>
+<span class="nc" id="L769">        boolean isDealer = username.equals(gameState.dealer);</span>
+
+        // Hide all buttons by default
+<span class="nc" id="L772">        passButton.setVisibility(View.GONE);</span>
+<span class="nc" id="L773">        pickUpButton.setVisibility(View.GONE);</span>
+<span class="nc" id="L774">        orderUpButton.setVisibility(View.GONE);</span>
+
+<span class="nc bnc" id="L776" title="All 4 branches missed.">        if (gameState.phase.equals(&quot;BIDDING&quot;) &amp;&amp; isMyTurn) {</span>
+<span class="nc" id="L777">            passButton.setVisibility(View.VISIBLE);</span>
+
+<span class="nc bnc" id="L779" title="All 2 branches missed.">            if (isDealer) {</span>
+                // Dealer can pick up the kitty card
+<span class="nc" id="L781">                pickUpButton.setVisibility(View.VISIBLE);</span>
+            } else {
+                // Non-dealer can order dealer to pick up
+<span class="nc" id="L784">                orderUpButton.setVisibility(View.VISIBLE);</span>
+            }
+        }
+<span class="nc" id="L787">    }</span>
+
+    private CardView createCardFromData(String value, String suit) {
+<span class="nc" id="L790">        CardView card = new CardView(this);</span>
+<span class="nc" id="L791">        card.setId(View.generateViewId());</span>
+<span class="nc" id="L792">        card.setLayoutParams(new ConstraintLayout.LayoutParams(CARD_WIDTH, CARD_HEIGHT));</span>
+<span class="nc" id="L793">        card.setCard(value, suit, true);</span>
+<span class="nc" id="L794">        return card;</span>
+    }
+
+    // -------------------------------------------------------------------
+    // Card Layout Methods
+    // -------------------------------------------------------------------
+
+    private void setupCardLayout() {
+<span class="nc" id="L802">        ConstraintSet set = new ConstraintSet();</span>
+<span class="nc" id="L803">        set.clone(rootLayout);</span>
+<span class="nc" id="L804">        applyArcConstraints(set, handCards);</span>
+<span class="nc" id="L805">        set.applyTo(rootLayout);</span>
+<span class="nc" id="L806">    }</span>
+
+    private void applyArcConstraints(ConstraintSet set, List&lt;CardView&gt; cardList) {
+<span class="nc" id="L809">        int n = cardList.size();</span>
+<span class="nc bnc" id="L810" title="All 2 branches missed.">        if (n == 0) return;</span>
+
+<span class="nc" id="L812">        float startAngle = -TOTAL_SPREAD / 2f;</span>
+<span class="nc bnc" id="L813" title="All 2 branches missed.">        float angleStep = (n == 1) ? 0f : TOTAL_SPREAD / (n - 1);</span>
+
+<span class="nc bnc" id="L815" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L816">            CardView card = cardList.get(i);</span>
+<span class="nc" id="L817">            int id = card.getId();</span>
+
+<span class="nc" id="L819">            set.connect(id, ConstraintSet.LEFT, rootLayout.getId(), ConstraintSet.LEFT, 0);</span>
+<span class="nc" id="L820">            set.connect(id, ConstraintSet.RIGHT, rootLayout.getId(), ConstraintSet.RIGHT, 0);</span>
+<span class="nc" id="L821">            set.connect(id, ConstraintSet.TOP, rootLayout.getId(), ConstraintSet.TOP, 0);</span>
+<span class="nc" id="L822">            set.connect(id, ConstraintSet.BOTTOM, rootLayout.getId(), ConstraintSet.BOTTOM, 0);</span>
+
+<span class="nc" id="L824">            float angle = startAngle + i * angleStep;</span>
+<span class="nc" id="L825">            double rad = Math.toRadians(angle);</span>
+<span class="nc" id="L826">            float xBias = (float) (CENTER_X_BIAS + RADIUS_BIAS * Math.sin(rad));</span>
+<span class="nc" id="L827">            float yBias = (float) (CENTER_Y_BIAS + RADIUS_BIAS * (1 - Math.cos(rad)));</span>
+
+<span class="nc" id="L829">            xBias = Math.max(0f, Math.min(1f, xBias));</span>
+<span class="nc" id="L830">            yBias = Math.max(0f, Math.min(1f, yBias));</span>
+
+<span class="nc" id="L832">            set.setHorizontalBias(id, xBias);</span>
+<span class="nc" id="L833">            set.setVerticalBias(id, yBias);</span>
+        }
+<span class="nc" id="L835">    }</span>
+
+    private void animateCardsIntroduction() {
+<span class="nc" id="L838">        int n = handCards.size();</span>
+<span class="nc" id="L839">        float startAngle = -TOTAL_SPREAD / 2f;</span>
+<span class="nc bnc" id="L840" title="All 2 branches missed.">        float angleStep = (n == 1) ? 0f : TOTAL_SPREAD / (n - 1);</span>
+
+<span class="nc bnc" id="L842" title="All 2 branches missed.">        for (int i = 0; i &lt; n; i++) {</span>
+<span class="nc" id="L843">            final CardView card = handCards.get(i);</span>
+<span class="nc" id="L844">            final float targetAngle = startAngle + i * angleStep;</span>
+<span class="nc" id="L845">            final int index = i;</span>
+
+<span class="nc" id="L847">            card.post(() -&gt; {</span>
+<span class="nc" id="L848">                card.setPivotX(card.getWidth() / 2f);</span>
+<span class="nc" id="L849">                card.setPivotY(card.getHeight());</span>
+<span class="nc" id="L850">                card.setRotation(0f);</span>
+
+<span class="nc" id="L852">                card.animate()</span>
+<span class="nc" id="L853">                        .rotation(targetAngle)</span>
+<span class="nc" id="L854">                        .setStartDelay(index * 80L)</span>
+<span class="nc" id="L855">                        .setDuration(350)</span>
+<span class="nc" id="L856">                        .start();</span>
+<span class="nc" id="L857">            });</span>
+        }
+<span class="nc" id="L859">    }</span>
+
+    private String getSuitSymbol(String suit) {
+<span class="nc bnc" id="L862" title="All 5 branches missed.">        switch (suit.toLowerCase()) {</span>
+<span class="nc" id="L863">            case &quot;h&quot;: return &quot;♥&quot;;</span>
+<span class="nc" id="L864">            case &quot;d&quot;: return &quot;♦&quot;;</span>
+<span class="nc" id="L865">            case &quot;c&quot;: return &quot;♣&quot;;</span>
+<span class="nc" id="L866">            case &quot;s&quot;: return &quot;♠&quot;;</span>
+<span class="nc" id="L867">            default: return &quot;?&quot;;</span>
+        }
+    }
+
+    // -------------------------------------------------------------------
+    // Data Models
+    // -------------------------------------------------------------------
+
+<span class="nc" id="L875">    private static class GameState {</span>
+<span class="nc" id="L876">        String phase = &quot;BIDDING&quot;; // BIDDING or PLAYING</span>
+        String currentPlayer;
+        String dealer;
+        String trump;
+        CardState kittyCard;
+<span class="nc" id="L881">        List&lt;TeamState&gt; teams = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L882">        List&lt;PlayerState&gt; players = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L883">        List&lt;PlayedCard&gt; currentTrick = new ArrayList&lt;&gt;();</span>
+    }
+
+<span class="nc" id="L886">    private static class TeamState {</span>
+        int score;
+        int tricksWon;
+<span class="nc" id="L889">        List&lt;String&gt; members = new ArrayList&lt;&gt;();</span>
+    }
+
+<span class="nc" id="L892">    private static class PlayerState {</span>
+        String username;
+<span class="nc" id="L894">        List&lt;CardState&gt; hand = new ArrayList&lt;&gt;();</span>
+    }
+
+    private static class CardState {
+        String value;
+        String suit;
+    }
+
+    private static class PlayedCard {
+        String player;
+        CardState card;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

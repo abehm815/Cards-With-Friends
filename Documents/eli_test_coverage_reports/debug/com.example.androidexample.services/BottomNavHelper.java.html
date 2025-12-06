@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BottomNavHelper.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample.services</a> &gt; <span class="el_source">BottomNavHelper.java</span></div><h1>BottomNavHelper.java</h1><pre class="source lang-java linenums">package com.example.androidexample.services;
+
+import android.app.Activity;
+import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.widget.ImageButton;
+import androidx.core.content.ContextCompat;
+
+import com.example.androidexample.HomeActivity;
+import com.example.androidexample.ProfileActivity;
+import com.example.androidexample.R;
+import com.example.androidexample.StatsActivity;
+import com.example.androidexample.LeaderboardActivity;
+
+<span class="nc" id="L15">public class BottomNavHelper {</span>
+
+    public static void setupBottomNav(Activity activity, String username) {
+<span class="nc" id="L18">        ImageButton homeBtn = activity.findViewById(R.id.nav_home);</span>
+<span class="nc" id="L19">        ImageButton statsBtn = activity.findViewById(R.id.nav_stats);</span>
+<span class="nc" id="L20">        ImageButton leaderboardBtn = activity.findViewById(R.id.nav_leaderboard);</span>
+<span class="nc" id="L21">        ImageButton profileBtn = activity.findViewById(R.id.nav_profile);</span>
+
+<span class="nc bnc" id="L23" title="All 8 branches missed.">        if (homeBtn == null || statsBtn == null || leaderboardBtn == null || profileBtn == null) return;</span>
+
+<span class="nc" id="L25">        int active = ContextCompat.getColor(activity, R.color.my_green);</span>
+<span class="nc" id="L26">        int inactive = ContextCompat.getColor(activity, android.R.color.white);</span>
+
+        // --- Highlight the active screen ---
+<span class="nc bnc" id="L29" title="All 2 branches missed.">        if (activity instanceof HomeActivity) {</span>
+<span class="nc" id="L30">            homeBtn.setImageTintList(ColorStateList.valueOf(active));</span>
+<span class="nc" id="L31">            statsBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc" id="L32">            leaderboardBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc" id="L33">            profileBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc bnc" id="L34" title="All 2 branches missed.">        } else if (activity instanceof StatsActivity) {</span>
+<span class="nc" id="L35">            statsBtn.setImageTintList(ColorStateList.valueOf(active));</span>
+<span class="nc" id="L36">            homeBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc" id="L37">            leaderboardBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc" id="L38">            profileBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">        } else if (activity instanceof LeaderboardActivity) {</span>
+<span class="nc" id="L40">            leaderboardBtn.setImageTintList(ColorStateList.valueOf(active));</span>
+<span class="nc" id="L41">            homeBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc" id="L42">            statsBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc" id="L43">            profileBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        } else if (activity instanceof ProfileActivity) {</span>
+<span class="nc" id="L45">            profileBtn.setImageTintList(ColorStateList.valueOf(active));</span>
+<span class="nc" id="L46">            homeBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc" id="L47">            statsBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc" id="L48">            leaderboardBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+        } else {
+<span class="nc" id="L50">            homeBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc" id="L51">            statsBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc" id="L52">            leaderboardBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+<span class="nc" id="L53">            profileBtn.setImageTintList(ColorStateList.valueOf(inactive));</span>
+        }
+
+        // --- Navigation actions ---
+<span class="nc" id="L57">        homeBtn.setOnClickListener(v -&gt; {</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">            if (!(activity instanceof HomeActivity)) {</span>
+<span class="nc" id="L59">                Intent i = new Intent(activity, HomeActivity.class);</span>
+<span class="nc" id="L60">                i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L61">                activity.startActivity(i);</span>
+            }
+<span class="nc" id="L63">        });</span>
+
+<span class="nc" id="L65">        statsBtn.setOnClickListener(v -&gt; {</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">            if (!(activity instanceof StatsActivity)) {</span>
+<span class="nc" id="L67">                Intent i = new Intent(activity, StatsActivity.class);</span>
+<span class="nc" id="L68">                i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L69">                activity.startActivity(i);</span>
+            }
+<span class="nc" id="L71">        });</span>
+
+<span class="nc" id="L73">        leaderboardBtn.setOnClickListener(v -&gt; {</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">            if (!(activity instanceof LeaderboardActivity)) {</span>
+<span class="nc" id="L75">                Intent i = new Intent(activity, LeaderboardActivity.class);</span>
+<span class="nc" id="L76">                i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L77">                activity.startActivity(i);</span>
+            }
+<span class="nc" id="L79">        });</span>
+
+<span class="nc" id="L81">        profileBtn.setOnClickListener(v -&gt; {</span>
+<span class="nc bnc" id="L82" title="All 2 branches missed.">            if (!(activity instanceof ProfileActivity)) {</span>
+<span class="nc" id="L83">                Intent i = new Intent(activity, ProfileActivity.class);</span>
+<span class="nc" id="L84">                i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L85">                activity.startActivity(i);</span>
+            }
+<span class="nc" id="L87">        });</span>
+<span class="nc" id="L88">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

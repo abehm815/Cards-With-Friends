@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameStateParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample.blackjack</a> &gt; <span class="el_source">GameStateParser.java</span></div><h1>GameStateParser.java</h1><pre class="source lang-java linenums">package com.example.androidexample.blackjack;
+
+import com.example.androidexample.blackjack.BlackjackModels.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+/**
+ * Converts raw WebSocket JSON messages into structured {@link GameState} objects.
+ *
+ * &lt;p&gt;This class is responsible for taking the server-sent JSON game snapshot
+ * and converting it into the hierarchy of model classes used by the client:
+ * {@link GameState}, {@link DealerState}, {@link PlayerState}, {@link HandState}, and {@link CardState}.&lt;/p&gt;
+ *
+ */
+<span class="nc" id="L16">public class GameStateParser {</span>
+
+    /**
+     * Parses a JSONObject into a fully populated {@link GameState} instance.
+     *
+     * @param json A JSON object representing the full game state sent from the WebSocket.
+     * @return A structured {@link GameState} containing all dealer, player, and card data.
+     * @throws JSONException If a malformed JSON structure is encountered.
+     */
+    public static GameState fromJson(JSONObject json) throws JSONException {
+        // Create a new empty GameState object
+<span class="nc" id="L27">        GameState state = new GameState();</span>
+
+        // Basic game-level fields (lobby code, round state, current turn)
+<span class="nc" id="L30">        state.lobbyCode = json.optString(&quot;lobbyCode&quot;);</span>
+<span class="nc" id="L31">        state.roundInProgress = json.optBoolean(&quot;roundInProgress&quot;);</span>
+<span class="nc" id="L32">        state.currentTurn = json.optString(&quot;currentTurn&quot;);</span>
+
+        // ==========================================================
+        // Parse Dealer Information
+        // ==========================================================
+<span class="nc" id="L37">        JSONObject dealerObj = json.optJSONObject(&quot;dealer&quot;);</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">        if (dealerObj != null) {</span>
+<span class="nc" id="L39">            DealerState dealer = new DealerState();</span>
+<span class="nc" id="L40">            dealer.handValue = dealerObj.optInt(&quot;handValue&quot;);</span>
+
+            // Parse dealer's cards (if present)
+<span class="nc" id="L43">            JSONArray cards = dealerObj.optJSONArray(&quot;hand&quot;);</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">            if (cards != null) {</span>
+<span class="nc bnc" id="L45" title="All 2 branches missed.">                for (int i = 0; i &lt; cards.length(); i++) {</span>
+<span class="nc" id="L46">                    JSONObject c = cards.getJSONObject(i);</span>
+
+                    // Construct each card from JSON
+<span class="nc" id="L49">                    CardState card = new CardState();</span>
+<span class="nc" id="L50">                    card.value = c.optInt(&quot;value&quot;);</span>
+<span class="nc" id="L51">                    card.suit = c.optString(&quot;suit&quot;);</span>
+<span class="nc" id="L52">                    card.isShowing = c.optBoolean(&quot;isShowing&quot;);</span>
+
+                    // Add card to dealer hand list
+<span class="nc" id="L55">                    dealer.hand.add(card);</span>
+                }
+            }
+            // Assign parsed dealer to overall state
+<span class="nc" id="L59">            state.dealer = dealer;</span>
+        }
+
+        // ==========================================================
+        // Parse Player Information
+        // ==========================================================
+<span class="nc" id="L65">        JSONArray playersArray = json.optJSONArray(&quot;players&quot;);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (playersArray != null) {</span>
+            // Loop through all player entries in the JSON
+<span class="nc bnc" id="L68" title="All 2 branches missed.">            for (int i = 0; i &lt; playersArray.length(); i++) {</span>
+<span class="nc" id="L69">                JSONObject p = playersArray.getJSONObject(i);</span>
+
+<span class="nc" id="L71">                PlayerState ps = new PlayerState();</span>
+<span class="nc" id="L72">                ps.username = p.optString(&quot;username&quot;);</span>
+<span class="nc" id="L73">                ps.chips = p.optInt(&quot;chips&quot;);</span>
+<span class="nc" id="L74">                ps.hasBet = p.optBoolean(&quot;hasBet&quot;);</span>
+
+                // Parse each player's hand list
+<span class="nc" id="L77">                JSONArray hands = p.optJSONArray(&quot;hands&quot;);</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">                if (hands != null) {</span>
+<span class="nc bnc" id="L79" title="All 2 branches missed.">                    for (int j = 0; j &lt; hands.length(); j++) {</span>
+<span class="nc" id="L80">                        JSONObject h = hands.getJSONObject(j);</span>
+
+<span class="nc" id="L82">                        HandState hs = new HandState();</span>
+<span class="nc" id="L83">                        hs.handIndex = h.optInt(&quot;handIndex&quot;);</span>
+<span class="nc" id="L84">                        hs.handValue = h.optInt(&quot;handValue&quot;);</span>
+<span class="nc" id="L85">                        hs.bet = h.optInt(&quot;bet&quot;);</span>
+<span class="nc" id="L86">                        hs.hasStood = h.optBoolean(&quot;hasStood&quot;);</span>
+<span class="nc" id="L87">                        hs.canSplit = h.optBoolean(&quot;canSplit&quot;);</span>
+
+                        // Parse all cards within this hand
+<span class="nc" id="L90">                        JSONArray cards = h.optJSONArray(&quot;hand&quot;);</span>
+<span class="nc bnc" id="L91" title="All 2 branches missed.">                        if (cards != null) {</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">                            for (int k = 0; k &lt; cards.length(); k++) {</span>
+<span class="nc" id="L93">                                JSONObject c = cards.getJSONObject(k);</span>
+
+<span class="nc" id="L95">                                CardState card = new CardState();</span>
+<span class="nc" id="L96">                                card.value = c.optInt(&quot;value&quot;);</span>
+<span class="nc" id="L97">                                card.suit = c.optString(&quot;suit&quot;);</span>
+<span class="nc" id="L98">                                card.isShowing = c.optBoolean(&quot;isShowing&quot;);</span>
+
+                                // Add card to the current hand
+<span class="nc" id="L101">                                hs.hand.add(card);</span>
+                            }
+                        }
+
+                        // Add the completed hand to the player's hand list
+<span class="nc" id="L106">                        ps.hands.add(hs);</span>
+                    }
+                }
+
+                // Add the player (with all parsed hands) to the game state
+<span class="nc" id="L111">                state.players.add(ps);</span>
+            }
+        }
+
+        // Return the fully built game state
+<span class="nc" id="L116">        return state;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

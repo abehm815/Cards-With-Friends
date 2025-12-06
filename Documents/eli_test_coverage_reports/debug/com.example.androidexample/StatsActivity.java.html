@@ -1,0 +1,222 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>StatsActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">StatsActivity.java</span></div><h1>StatsActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.services.BottomNavHelper;
+import com.example.androidexample.services.VolleySingleton;
+import com.google.android.material.card.MaterialCardView;
+
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+<span class="nc" id="L25">public class StatsActivity extends AppCompatActivity {</span>
+
+    private static final String DB_URL = &quot;http://coms-3090-006.class.las.iastate.edu:8080&quot;;
+
+    private LinearLayout statsContainer;
+    private String username;
+
+    private TextView blackjackBtn, euchreBtn, gofishBtn;
+
+<span class="nc" id="L34">    private JSONObject cachedStats = null;</span>
+<span class="nc" id="L35">    private String currentGame = &quot;Blackjack&quot;;</span>
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L39">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L40">        setContentView(R.layout.activity_stats);</span>
+
+<span class="nc" id="L42">        Intent intent = getIntent();</span>
+<span class="nc" id="L43">        username = intent.getStringExtra(&quot;USERNAME&quot;);</span>
+
+<span class="nc" id="L45">        BottomNavHelper.setupBottomNav(this, username);</span>
+
+<span class="nc" id="L47">        statsContainer = findViewById(R.id.stats_text_container);</span>
+<span class="nc" id="L48">        blackjackBtn = findViewById(R.id.stats_blackjack_btn);</span>
+<span class="nc" id="L49">        euchreBtn = findViewById(R.id.stats_euchre_btn);</span>
+<span class="nc" id="L50">        gofishBtn = findViewById(R.id.stats_gofish_btn);</span>
+
+<span class="nc" id="L52">        blackjackBtn.setOnClickListener(v -&gt; selectGame(&quot;Blackjack&quot;));</span>
+<span class="nc" id="L53">        euchreBtn.setOnClickListener(v -&gt; selectGame(&quot;Euchre&quot;));</span>
+<span class="nc" id="L54">        gofishBtn.setOnClickListener(v -&gt; selectGame(&quot;GoFish&quot;));</span>
+
+<span class="nc" id="L56">        fetchStats(); // initial load</span>
+<span class="nc" id="L57">        updateButtonStyles();</span>
+<span class="nc" id="L58">    }</span>
+
+    /** Handles switching between game tabs **/
+    private void selectGame(String game) {
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        if (game.equals(currentGame)) return;</span>
+<span class="nc" id="L63">        currentGame = game;</span>
+<span class="nc" id="L64">        updateButtonStyles();</span>
+
+<span class="nc" id="L66">        statsContainer.animate().alpha(0f).setDuration(150).withEndAction(() -&gt; {</span>
+<span class="nc" id="L67">            showGameStats();</span>
+<span class="nc" id="L68">            statsContainer.animate().alpha(1f).setDuration(150).start();</span>
+<span class="nc" id="L69">        }).start();</span>
+<span class="nc" id="L70">    }</span>
+
+    /** Updates visual highlight for the selected button **/
+    private void updateButtonStyles() {
+<span class="nc" id="L74">        blackjackBtn.setBackgroundResource(R.drawable.btn_dark);</span>
+<span class="nc" id="L75">        euchreBtn.setBackgroundResource(R.drawable.btn_dark);</span>
+<span class="nc" id="L76">        gofishBtn.setBackgroundResource(R.drawable.btn_dark);</span>
+
+<span class="nc bnc" id="L78" title="All 4 branches missed.">        switch (currentGame) {</span>
+            case &quot;Blackjack&quot;:
+<span class="nc" id="L80">                blackjackBtn.setBackgroundResource(R.drawable.btn_red);</span>
+<span class="nc" id="L81">                break;</span>
+            case &quot;Euchre&quot;:
+<span class="nc" id="L83">                euchreBtn.setBackgroundResource(R.drawable.btn_blue);</span>
+<span class="nc" id="L84">                break;</span>
+            case &quot;GoFish&quot;:
+<span class="nc" id="L86">                gofishBtn.setBackgroundResource(R.drawable.btn_green);</span>
+                break;
+        }
+<span class="nc" id="L89">    }</span>
+
+    /** Fetches stats from the backend **/
+    private void fetchStats() {
+<span class="nc" id="L93">        String url = DB_URL + &quot;/AppUser/username/&quot; + username;</span>
+
+<span class="nc" id="L95">        JsonObjectRequest userReq = new JsonObjectRequest(</span>
+                Request.Method.GET, url, null,
+                userRes -&gt; {
+                    try {
+<span class="nc" id="L99">                        int userID = userRes.getInt(&quot;userID&quot;);</span>
+<span class="nc" id="L100">                        String statsUrl = DB_URL + &quot;/UserStats/&quot; + userID;</span>
+
+<span class="nc" id="L102">                        JsonObjectRequest statsReq = new JsonObjectRequest(</span>
+                                Request.Method.GET, statsUrl, null,
+                                statsRes -&gt; {
+<span class="nc" id="L105">                                    cachedStats = statsRes;</span>
+<span class="nc" id="L106">                                    showGameStats();</span>
+<span class="nc" id="L107">                                },</span>
+<span class="nc" id="L108">                                err -&gt; showUnavailableMessage()</span>
+                        );
+
+<span class="nc" id="L111">                        VolleySingleton.getInstance(this).addToRequestQueue(statsReq);</span>
+<span class="nc" id="L112">                    } catch (Exception e) {</span>
+<span class="nc" id="L113">                        Log.e(&quot;Stats&quot;, &quot;Error parsing user info&quot;, e);</span>
+<span class="nc" id="L114">                        showUnavailableMessage();</span>
+<span class="nc" id="L115">                    }</span>
+<span class="nc" id="L116">                },</span>
+<span class="nc" id="L117">                err -&gt; showUnavailableMessage()</span>
+        );
+
+<span class="nc" id="L120">        VolleySingleton.getInstance(this).addToRequestQueue(userReq);</span>
+<span class="nc" id="L121">    }</span>
+
+    /** Displays stats for the selected game **/
+    private void showGameStats() {
+<span class="nc" id="L125">        statsContainer.removeAllViews();</span>
+
+<span class="nc bnc" id="L127" title="All 2 branches missed.">        if (cachedStats == null) {</span>
+<span class="nc" id="L128">            addTextBox(&quot;Stats are unavailable for &quot; + currentGame + &quot; right now.&quot;);</span>
+<span class="nc" id="L129">            return;</span>
+        }
+
+        try {
+<span class="nc" id="L133">            JSONObject allGameStats = cachedStats.optJSONObject(&quot;allGameStats&quot;);</span>
+<span class="nc bnc" id="L134" title="All 2 branches missed.">            if (allGameStats == null) {</span>
+<span class="nc" id="L135">                addTextBox(&quot;Stats are unavailable for &quot; + currentGame + &quot; right now.&quot;);</span>
+<span class="nc" id="L136">                return;</span>
+            }
+
+<span class="nc" id="L139">            JSONObject gameStats = allGameStats.optJSONObject(currentGame);</span>
+<span class="nc bnc" id="L140" title="All 2 branches missed.">            if (gameStats == null) {</span>
+<span class="nc" id="L141">                addTextBox(&quot;No data for &quot; + currentGame + &quot;.&quot;);</span>
+<span class="nc" id="L142">                return;</span>
+            }
+
+<span class="nc" id="L145">            List&lt;String&gt; lines = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L146" title="All 4 branches missed.">            switch (currentGame) {</span>
+                case &quot;Blackjack&quot;:
+<span class="nc" id="L148">                    lines.add(&quot;Games played: &quot; + gameStats.optInt(&quot;gamesPlayed&quot;));</span>
+<span class="nc" id="L149">                    lines.add(&quot;Money won: &quot; + gameStats.optInt(&quot;moneyWon&quot;));</span>
+<span class="nc" id="L150">                    lines.add(&quot;Bets won: &quot; + gameStats.optInt(&quot;betsWon&quot;));</span>
+<span class="nc" id="L151">                    lines.add(&quot;Times doubled down: &quot; + gameStats.optInt(&quot;timesDoubledDown&quot;));</span>
+<span class="nc" id="L152">                    lines.add(&quot;Times split: &quot; + gameStats.optInt(&quot;timesSplit&quot;));</span>
+<span class="nc" id="L153">                    lines.add(&quot;Times hit: &quot; + gameStats.optInt(&quot;timesHit&quot;));</span>
+<span class="nc" id="L154">                    lines.add(&quot;Games won: &quot; + gameStats.optInt(&quot;gamesWon&quot;));</span>
+<span class="nc" id="L155">                    break;</span>
+                case &quot;Euchre&quot;:
+<span class="nc" id="L157">                    lines.add(&quot;Games played: &quot; + gameStats.optInt(&quot;gamesPlayed&quot;));</span>
+<span class="nc" id="L158">                    lines.add(&quot;Games won: &quot; + gameStats.optInt(&quot;gamesWon&quot;));</span>
+<span class="nc" id="L159">                    lines.add(&quot;Tricks taken: &quot; + gameStats.optInt(&quot;tricksTaken&quot;));</span>
+<span class="nc" id="L160">                    lines.add(&quot;Times picked up: &quot; + gameStats.optInt(&quot;timesPickedUp&quot;));</span>
+<span class="nc" id="L161">                    lines.add(&quot;Times gone alone: &quot; + gameStats.optInt(&quot;timesGoneAlone&quot;));</span>
+<span class="nc" id="L162">                    lines.add(&quot;Sweeps won: &quot; + gameStats.optInt(&quot;sweepsWon&quot;));</span>
+<span class="nc" id="L163">                    break;</span>
+                case &quot;GoFish&quot;:
+<span class="nc" id="L165">                    lines.add(&quot;Games played: &quot; + gameStats.optInt(&quot;gamesPlayed&quot;));</span>
+<span class="nc" id="L166">                    lines.add(&quot;Times went fishing: &quot; + gameStats.optInt(&quot;timesWentFishing&quot;));</span>
+<span class="nc" id="L167">                    lines.add(&quot;Questions asked: &quot; + gameStats.optInt(&quot;questionsAsked&quot;));</span>
+<span class="nc" id="L168">                    lines.add(&quot;Books collected: &quot; + gameStats.optInt(&quot;booksCollected&quot;));</span>
+<span class="nc" id="L169">                    lines.add(&quot;Games won: &quot; + gameStats.optInt(&quot;gamesWon&quot;));</span>
+                    break;
+            }
+
+<span class="nc bnc" id="L173" title="All 2 branches missed.">            if (lines.isEmpty()) {</span>
+<span class="nc" id="L174">                addTextBox(&quot;Stats are unavailable for &quot; + currentGame + &quot; right now.&quot;);</span>
+<span class="nc" id="L175">                return;</span>
+            }
+
+<span class="nc bnc" id="L178" title="All 2 branches missed.">            for (String line : lines) addTextBox(line);</span>
+
+<span class="nc" id="L180">        } catch (Exception e) {</span>
+<span class="nc" id="L181">            Log.e(&quot;Stats&quot;, &quot;Error showing stats&quot;, e);</span>
+<span class="nc" id="L182">            addTextBox(&quot;Stats are unavailable for &quot; + currentGame + &quot; right now.&quot;);</span>
+<span class="nc" id="L183">        }</span>
+<span class="nc" id="L184">    }</span>
+
+    /** Displays an unavailable message **/
+    private void showUnavailableMessage() {
+<span class="nc" id="L188">        statsContainer.removeAllViews();</span>
+<span class="nc" id="L189">        addTextBox(&quot;Stats are unavailable for &quot; + currentGame + &quot; right now.&quot;);</span>
+<span class="nc" id="L190">    }</span>
+
+    /** Builds a styled stat card **/
+    private void addTextBox(String text) {
+        int accent;
+<span class="nc bnc" id="L195" title="All 3 branches missed.">        switch (currentGame) {</span>
+            case &quot;Blackjack&quot;:
+<span class="nc" id="L197">                accent = getColor(R.color.my_red);</span>
+<span class="nc" id="L198">                break;</span>
+            case &quot;Euchre&quot;:
+<span class="nc" id="L200">                accent = getColor(R.color.my_blue);</span>
+<span class="nc" id="L201">                break;</span>
+            case &quot;GoFish&quot;:
+            default:
+<span class="nc" id="L204">                accent = getColor(R.color.my_green);</span>
+                break;
+        }
+
+<span class="nc" id="L208">        View cardView = getLayoutInflater().inflate(R.layout.item_stat_card, statsContainer, false);</span>
+<span class="nc" id="L209">        MaterialCardView card = (MaterialCardView) cardView;</span>
+<span class="nc" id="L210">        card.setStrokeColor(accent);</span>
+
+<span class="nc" id="L212">        ImageView icon = card.findViewById(R.id.stat_icon);</span>
+<span class="nc" id="L213">        icon.setColorFilter(accent);</span>
+
+<span class="nc" id="L215">        TextView tv = card.findViewById(R.id.stat_text);</span>
+<span class="nc" id="L216">        tv.setText(text);</span>
+
+<span class="nc" id="L218">        card.startAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));</span>
+<span class="nc" id="L219">        statsContainer.addView(card);</span>
+<span class="nc" id="L220">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

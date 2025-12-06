@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JoinActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">JoinActivity.java</span></div><h1>JoinActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.util.Log;
+import android.view.View;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.services.VolleySingleton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+<span class="nc" id="L23">public class JoinActivity extends AppCompatActivity {</span>
+
+    private TextView delButton, joinButton, codeText, titleText;
+    private View backButton;
+    private String code;
+    private String gameType;
+    private String username;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L33">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L34">        setContentView(R.layout.activity_join);</span>
+
+        // === Get intent extras ===
+<span class="nc" id="L37">        Intent incomingIntent = getIntent();</span>
+<span class="nc" id="L38">        gameType = incomingIntent.getStringExtra(&quot;GAMETYPE&quot;);</span>
+<span class="nc" id="L39">        username = incomingIntent.getStringExtra(&quot;USERNAME&quot;);</span>
+<span class="nc" id="L40">        code = &quot;&quot;;</span>
+
+        // === Find views ===
+<span class="nc" id="L43">        backButton = findViewById(R.id.join_back_btn);</span>
+<span class="nc" id="L44">        delButton = findViewById(R.id.join_backspace_btn);</span>
+<span class="nc" id="L45">        codeText = findViewById(R.id.join_code_display);</span>
+<span class="nc" id="L46">        joinButton = findViewById(R.id.join_submit_btn);</span>
+<span class="nc" id="L47">        titleText = findViewById(R.id.join_code_title);</span>
+
+        // === Set title and JOIN button colors dynamically ===
+<span class="nc bnc" id="L50" title="All 2 branches missed.">        if (gameType != null) {</span>
+            int colorRes;
+            String gameWord;
+
+<span class="nc bnc" id="L54" title="All 4 branches missed.">            switch (gameType) {</span>
+                case &quot;BLACKJACK&quot;:
+<span class="nc" id="L56">                    colorRes = R.color.my_red;</span>
+<span class="nc" id="L57">                    gameWord = &quot;BLACKJACK&quot;;</span>
+<span class="nc" id="L58">                    joinButton.setBackground(ContextCompat.getDrawable(this, R.drawable.btn_red));</span>
+<span class="nc" id="L59">                    break;</span>
+                case &quot;EUCHRE&quot;:
+<span class="nc" id="L61">                    colorRes = R.color.my_blue;</span>
+<span class="nc" id="L62">                    gameWord = &quot;EUCHRE&quot;;</span>
+<span class="nc" id="L63">                    joinButton.setBackground(ContextCompat.getDrawable(this, R.drawable.btn_blue));</span>
+<span class="nc" id="L64">                    break;</span>
+                case &quot;GO_FISH&quot;:
+<span class="nc" id="L66">                    colorRes = R.color.my_green;</span>
+<span class="nc" id="L67">                    gameWord = &quot;GO FISH&quot;;</span>
+<span class="nc" id="L68">                    joinButton.setBackground(ContextCompat.getDrawable(this, R.drawable.btn_green));</span>
+<span class="nc" id="L69">                    break;</span>
+                default:
+<span class="nc" id="L71">                    colorRes = R.color.white;</span>
+<span class="nc" id="L72">                    gameWord = gameType;</span>
+<span class="nc" id="L73">                    joinButton.setBackground(ContextCompat.getDrawable(this, R.drawable.btn_white));</span>
+                    break;
+            }
+
+            // Create styled title: ENTER {colored game} CODE
+<span class="nc" id="L78">            String fullTitle = &quot;ENTER &quot; + gameWord + &quot; CODE&quot;;</span>
+<span class="nc" id="L79">            SpannableString styled = new SpannableString(fullTitle);</span>
+
+<span class="nc" id="L81">            int start = fullTitle.indexOf(gameWord);</span>
+<span class="nc" id="L82">            int end = start + gameWord.length();</span>
+
+<span class="nc" id="L84">            styled.setSpan(</span>
+<span class="nc" id="L85">                    new ForegroundColorSpan(ContextCompat.getColor(this, colorRes)),</span>
+                    start,
+                    end,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+
+<span class="nc" id="L91">            titleText.setText(styled);</span>
+        }
+
+        // === Digit buttons ===
+<span class="nc" id="L95">        int[] numberButtonIds = {</span>
+                R.id.join_0_btn, R.id.join_1_btn, R.id.join_2_btn, R.id.join_3_btn, R.id.join_4_btn,
+                R.id.join_5_btn, R.id.join_6_btn, R.id.join_7_btn, R.id.join_8_btn, R.id.join_9_btn
+        };
+
+<span class="nc" id="L100">        View.OnClickListener numberClickListener = v -&gt; {</span>
+<span class="nc" id="L101">            TextView t = (TextView) v;</span>
+<span class="nc" id="L102">            handleCode(t.getText().toString());</span>
+<span class="nc" id="L103">        };</span>
+
+<span class="nc bnc" id="L105" title="All 2 branches missed.">        for (int id : numberButtonIds) {</span>
+<span class="nc" id="L106">            findViewById(id).setOnClickListener(numberClickListener);</span>
+        }
+
+        // === Delete button ===
+<span class="nc" id="L110">        delButton.setOnClickListener(v -&gt; {</span>
+<span class="nc bnc" id="L111" title="All 2 branches missed.">            if (!code.isEmpty()) {</span>
+<span class="nc" id="L112">                code = code.substring(0, code.length() - 1);</span>
+<span class="nc" id="L113">                codeText.setText(code);</span>
+            }
+<span class="nc" id="L115">        });</span>
+
+        // === Back button ===
+<span class="nc" id="L118">        backButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L119">            Intent intent = new Intent(JoinActivity.this, LobbyActivity.class);</span>
+<span class="nc" id="L120">            intent.putExtra(&quot;GAMETYPE&quot;, gameType);</span>
+<span class="nc" id="L121">            intent.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L122">            startActivity(intent);</span>
+<span class="nc" id="L123">        });</span>
+
+        // === JOIN button ===
+<span class="nc" id="L126">        joinButton.setOnClickListener(v -&gt; {</span>
+<span class="nc bnc" id="L127" title="All 2 branches missed.">            if (code.isEmpty()) {</span>
+<span class="nc" id="L128">                Toast.makeText(this, &quot;Enter a code first&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L129">                return;</span>
+            }
+
+<span class="nc" id="L132">            String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/&quot;</span>
+                    + code + &quot;/&quot; + username;
+<span class="nc" id="L134">            Log.d(&quot;ENDPOINT URL&quot;, url);</span>
+
+<span class="nc" id="L136">            JsonObjectRequest postRequest = new JsonObjectRequest(</span>
+                    Request.Method.PUT,
+                    url,
+                    null,
+                    response -&gt; {
+                        try {
+<span class="nc" id="L142">                            String message = response.getString(&quot;message&quot;);</span>
+<span class="nc bnc" id="L143" title="All 2 branches missed.">                            if (message.equals(&quot;success&quot;)) {</span>
+<span class="nc" id="L144">                                Intent intent = new Intent(JoinActivity.this, LobbyViewActivity.class);</span>
+<span class="nc" id="L145">                                intent.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L146">                                intent.putExtra(&quot;GAMETYPE&quot;, gameType);</span>
+<span class="nc" id="L147">                                intent.putExtra(&quot;JOINCODE&quot;, code);</span>
+<span class="nc" id="L148">                                intent.putExtra(&quot;HOST&quot;, false);</span>
+<span class="nc" id="L149">                                startActivity(intent);</span>
+<span class="nc" id="L150">                            } else {</span>
+<span class="nc" id="L151">                                Toast.makeText(getApplicationContext(), &quot;Failed to find lobby.&quot;, Toast.LENGTH_SHORT).show();</span>
+                            }
+<span class="nc" id="L153">                        } catch (JSONException e) {</span>
+<span class="nc" id="L154">                            e.printStackTrace();</span>
+<span class="nc" id="L155">                        }</span>
+<span class="nc" id="L156">                    },</span>
+<span class="nc" id="L157">                    error -&gt; Toast.makeText(getApplicationContext(), &quot;Lobby Join Failed&quot;, Toast.LENGTH_LONG).show()</span>
+            );
+
+<span class="nc" id="L160">            VolleySingleton.getInstance(JoinActivity.this).addToRequestQueue(postRequest);</span>
+<span class="nc" id="L161">        });</span>
+<span class="nc" id="L162">    }</span>
+
+    // === Append digit ===
+    private void handleCode(String digit) {
+<span class="nc bnc" id="L166" title="All 2 branches missed.">        if (code.length() &lt;= 3) {</span>
+<span class="nc" id="L167">            code += digit;</span>
+<span class="nc" id="L168">            codeText.setText(code);</span>
+        }
+<span class="nc" id="L170">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

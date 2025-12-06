@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UpdateActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">UpdateActivity.java</span></div><h1>UpdateActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.services.VolleySingleton;
+
+import org.json.JSONObject;
+import org.json.JSONException;
+
+
+<span class="nc" id="L23">public class UpdateActivity extends AppCompatActivity{</span>
+
+    private EditText usernameEditText;
+    private EditText passwordEditText;
+    private EditText confirmEditText;
+    private EditText firstnameEditText;
+    private EditText lastnameEditText;
+    private EditText emailEditText;
+    private EditText ageEditText;
+    private Button updateButton;
+    private Button backButton;
+
+    private String username;
+
+    protected void onCreate(Bundle savedInstanceState) {
+
+<span class="nc" id="L39">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L40">        setContentView(R.layout.activity_update);</span>
+
+<span class="nc" id="L42">        firstnameEditText = findViewById(R.id.update_firstname_edt);</span>
+<span class="nc" id="L43">        lastnameEditText = findViewById(R.id.update_lastname_edt);</span>
+<span class="nc" id="L44">        emailEditText = findViewById(R.id.update_email_edt);</span>
+<span class="nc" id="L45">        ageEditText = findViewById(R.id.update_age_edt);</span>
+<span class="nc" id="L46">        usernameEditText = findViewById(R.id.update_username_edt);</span>
+<span class="nc" id="L47">        passwordEditText = findViewById(R.id.update_password_edt);</span>
+<span class="nc" id="L48">        confirmEditText = findViewById(R.id.update_confirm_edt);</span>
+<span class="nc" id="L49">        updateButton = findViewById(R.id.update_update_btn);</span>
+<span class="nc" id="L50">        backButton = findViewById(R.id.update_back_btn);</span>
+
+<span class="nc" id="L52">        Intent incomingIntent = getIntent();</span>
+<span class="nc" id="L53">        username = incomingIntent.getStringExtra(&quot;USERNAME&quot;);</span>
+
+<span class="nc" id="L55">        updateButton.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L58">                String firstName = firstnameEditText.getText().toString().trim();</span>
+<span class="nc" id="L59">                String lastName = lastnameEditText.getText().toString().trim();</span>
+<span class="nc" id="L60">                String email = emailEditText.getText().toString().trim();</span>
+<span class="nc" id="L61">                String age = ageEditText.getText().toString().trim();</span>
+<span class="nc" id="L62">                String username = usernameEditText.getText().toString().trim();</span>
+<span class="nc" id="L63">                String password = passwordEditText.getText().toString();</span>
+<span class="nc" id="L64">                String confirm = confirmEditText.getText().toString();</span>
+
+
+
+<span class="nc bnc" id="L68" title="All 2 branches missed.">                if (!password.equals(confirm)) {</span>
+<span class="nc" id="L69">                    Toast.makeText(getApplicationContext(), &quot;Passwords do not match&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L70">                    return;</span>
+                }
+
+<span class="nc" id="L73">                sendUpdate(firstName, lastName, email, age, username, password);</span>
+<span class="nc" id="L74">            }</span>
+        });
+
+<span class="nc" id="L77">        backButton.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L80">                Intent intent = new Intent(UpdateActivity.this, ProfileActivity.class);</span>
+<span class="nc" id="L81">                intent.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L82">                startActivity(intent);</span>
+<span class="nc" id="L83">            }</span>
+        });
+
+<span class="nc" id="L86">    }</span>
+
+    private void sendUpdate(String firstName, String lastName, String email, String age, String username, String password) {
+<span class="nc" id="L89">        JSONObject body = new JSONObject();</span>
+        try {
+<span class="nc" id="L91">            body.put(&quot;firstName&quot;, firstName);</span>
+<span class="nc" id="L92">            body.put(&quot;lastName&quot;, lastName);</span>
+<span class="nc" id="L93">            body.put(&quot;email&quot;, email);</span>
+<span class="nc" id="L94">            body.put(&quot;age&quot;, age);</span>
+<span class="nc" id="L95">            body.put(&quot;username&quot;, username);</span>
+<span class="nc" id="L96">            body.put(&quot;password&quot;, password);</span>
+<span class="nc" id="L97">        } catch (JSONException e) {</span>
+<span class="nc" id="L98">            Toast.makeText(getApplicationContext(), &quot;Error Creating Request&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L99">            return;</span>
+<span class="nc" id="L100">        }</span>
+
+<span class="nc" id="L102">        Log.d(&quot;TEST FN: &quot;,firstName);</span>
+<span class="nc" id="L103">        Log.d(&quot;TEST LN: &quot;, lastName);</span>
+<span class="nc" id="L104">        Log.d(&quot;TEST E: &quot;, email);</span>
+<span class="nc" id="L105">        Log.d(&quot;TEST A: &quot;, age);   //Testing bullshit</span>
+<span class="nc" id="L106">        Log.d(&quot;TEST UN: &quot;, username);</span>
+<span class="nc" id="L107">        Log.d(&quot;TEST PW: &quot;, password);</span>
+
+
+<span class="nc" id="L110">        String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080/AppUser/username/&quot; + username;</span>
+
+<span class="nc" id="L112">        JsonObjectRequest postRequest = new JsonObjectRequest(</span>
+                Request.Method.PUT,
+                url,
+                body,
+<span class="nc" id="L116">                new Response.Listener&lt;JSONObject&gt;() {</span>
+                    @Override
+                    public void onResponse(JSONObject response) {
+<span class="nc" id="L119">                        Toast.makeText(getApplicationContext(), &quot;Update successful!&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L120">                        Intent intent = new Intent(UpdateActivity.this, ProfileActivity.class);</span>
+<span class="nc" id="L121">                        intent.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L122">                        startActivity(intent);</span>
+<span class="nc" id="L123">                        finish();</span>
+<span class="nc" id="L124">                    }</span>
+                },
+<span class="nc" id="L126">                new Response.ErrorListener() {</span>
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+<span class="nc" id="L129">                        Toast.makeText(getApplicationContext(), &quot;Update Failed&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L130">                    }</span>
+                }
+        );
+        //Volley
+<span class="nc" id="L134">        VolleySingleton.getInstance(UpdateActivity.this).addToRequestQueue(postRequest);</span>
+<span class="nc" id="L135">    }</span>
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

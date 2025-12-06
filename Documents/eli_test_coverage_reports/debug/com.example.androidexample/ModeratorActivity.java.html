@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ModeratorActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">ModeratorActivity.java</span></div><h1>ModeratorActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.services.VolleySingleton;
+
+import org.json.JSONObject;
+
+
+<span class="nc" id="L21">public class ModeratorActivity extends AppCompatActivity{</span>
+
+    private EditText usernameText;
+    private Button statCreateButton;
+
+
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L31">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L32">        setContentView(R.layout.activity_moderator);</span>
+
+<span class="nc" id="L34">        usernameText = findViewById(R.id.moderator_user_input);</span>
+<span class="nc" id="L35">        statCreateButton = findViewById(R.id.moderator_update_stats_button);</span>
+
+<span class="nc" id="L37">        statCreateButton.setOnClickListener(new View.OnClickListener(){</span>
+            @Override
+            public void onClick(View v){
+<span class="nc" id="L40">                createUserStats(usernameText.getText().toString());</span>
+<span class="nc" id="L41">            }</span>
+        });
+
+<span class="nc" id="L44">    }</span>
+
+    private void createUserStats(String user){
+
+
+<span class="nc" id="L49">        String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080&quot; + &quot;/AppUser/username/&quot; + user;</span>
+
+<span class="nc" id="L51">        JsonObjectRequest request = new JsonObjectRequest(</span>
+                Request.Method.GET,
+                url,
+                null,
+                response -&gt; {
+                    try {
+                        ;
+<span class="nc" id="L58">                        int userID = response.getInt(&quot;userID&quot;);;</span>
+<span class="nc" id="L59">                        createUserStatFromID(userID);</span>
+<span class="nc" id="L60">                    } catch (Exception e) {</span>
+<span class="nc" id="L61">                        e.printStackTrace();</span>
+<span class="nc" id="L62">                    }</span>
+<span class="nc" id="L63">                },</span>
+                error -&gt; {
+<span class="nc" id="L65">                    Log.e(&quot;Volley&quot;, &quot;Error fetching user: &quot; + error.toString());</span>
+<span class="nc" id="L66">                    Toast.makeText(this, &quot;Failed to fetch userID&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L67">                }</span>
+        );
+
+        // Add to the request queue
+<span class="nc" id="L71">        VolleySingleton.getInstance(this).addToRequestQueue(request);</span>
+
+<span class="nc" id="L73">    }</span>
+
+    private void createUserStatFromID(int userID){
+<span class="nc" id="L76">        String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080&quot; + &quot;/UserStats/&quot; + userID;</span>
+
+
+<span class="nc" id="L79">        JsonObjectRequest postRequest = new JsonObjectRequest(</span>
+                Request.Method.POST,
+                url,
+                null,
+<span class="nc" id="L83">                new Response.Listener&lt;JSONObject&gt;() {</span>
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+<span class="nc" id="L87">                    }</span>
+                },
+<span class="nc" id="L89">                new Response.ErrorListener() {</span>
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+<span class="nc" id="L92">                        Toast.makeText(getApplicationContext(), &quot;Update Failed&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L93">                    }</span>
+                }
+        );
+        //Volley
+<span class="nc" id="L97">        VolleySingleton.getInstance(ModeratorActivity.this).addToRequestQueue(postRequest);</span>
+
+<span class="nc" id="L99">    }</span>
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

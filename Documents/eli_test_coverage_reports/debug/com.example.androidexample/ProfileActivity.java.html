@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ProfileActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">ProfileActivity.java</span></div><h1>ProfileActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.services.BottomNavHelper;
+import com.example.androidexample.services.VolleySingleton;
+
+<span class="nc" id="L16">public class ProfileActivity extends AppCompatActivity {</span>
+
+    private TextView deleteButton, updateButton, logoutButton, usernameDisplayText;
+    private String username;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L23">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L24">        setContentView(R.layout.activity_profile);</span>
+
+<span class="nc" id="L26">        Intent intent = getIntent();</span>
+<span class="nc" id="L27">        username = intent.getStringExtra(&quot;USERNAME&quot;);</span>
+
+        // Setup bottom navigation bar
+<span class="nc" id="L30">        BottomNavHelper.setupBottomNav(this, username);</span>
+
+        // Link UI elements
+<span class="nc" id="L33">        updateButton = findViewById(R.id.profile_update_btn);</span>
+<span class="nc" id="L34">        deleteButton = findViewById(R.id.profile_delete_btn);</span>
+<span class="nc" id="L35">        logoutButton = findViewById(R.id.profile_logout_btn);</span>
+<span class="nc" id="L36">        usernameDisplayText = findViewById(R.id.profile_username_text);</span>
+
+<span class="nc" id="L38">        usernameDisplayText.setText(username);</span>
+
+        // --- Update Button ---
+<span class="nc" id="L41">        updateButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L42">            Intent i = new Intent(ProfileActivity.this, UpdateActivity.class);</span>
+<span class="nc" id="L43">            i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L44">            startActivity(i);</span>
+<span class="nc" id="L45">        });</span>
+
+        // --- Delete Button ---
+<span class="nc" id="L48">        deleteButton.setOnClickListener(v -&gt; deleteStats(username));</span>
+
+        // --- Logout Button ---
+<span class="nc" id="L51">        logoutButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L52">            Toast.makeText(this, &quot;Logged out&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L53">            startActivity(new Intent(ProfileActivity.this, LoginActivity.class));</span>
+<span class="nc" id="L54">            finish();</span>
+<span class="nc" id="L55">        });</span>
+<span class="nc" id="L56">    }</span>
+
+    private void deleteStats(String username) {
+<span class="nc" id="L59">        String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080/AppUser/username/&quot; + username;</span>
+
+<span class="nc" id="L61">        JsonObjectRequest request = new JsonObjectRequest(</span>
+                Request.Method.GET,
+                url,
+                null,
+                response -&gt; {
+                    try {
+<span class="nc" id="L67">                        int userID = response.getInt(&quot;userID&quot;);</span>
+<span class="nc" id="L68">                        deleteStatsFromID(userID);</span>
+<span class="nc" id="L69">                    } catch (Exception e) {</span>
+<span class="nc" id="L70">                        e.printStackTrace();</span>
+<span class="nc" id="L71">                    }</span>
+<span class="nc" id="L72">                },</span>
+                error -&gt; {
+<span class="nc" id="L74">                    Log.e(&quot;Volley&quot;, &quot;Error fetching user: &quot; + error);</span>
+<span class="nc" id="L75">                    Toast.makeText(this, &quot;Failed to delete user&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L76">                }</span>
+        );
+
+<span class="nc" id="L79">        VolleySingleton.getInstance(this).addToRequestQueue(request);</span>
+<span class="nc" id="L80">    }</span>
+
+    private void deleteStatsFromID(int userID) {
+<span class="nc" id="L83">        String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080/UserStats/&quot; + userID;</span>
+
+<span class="nc" id="L85">        JsonObjectRequest deleteRequest = new JsonObjectRequest(</span>
+                Request.Method.DELETE,
+                url,
+                null,
+                response -&gt; {
+<span class="nc" id="L90">                    Toast.makeText(this, &quot;Deleted profile stats successfully!&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L91">                    Intent i = new Intent(ProfileActivity.this, MainActivity.class);</span>
+<span class="nc" id="L92">                    startActivity(i);</span>
+<span class="nc" id="L93">                },</span>
+<span class="nc" id="L94">                error -&gt; Toast.makeText(this, &quot;Failed to delete user stats&quot;, Toast.LENGTH_LONG).show()</span>
+        );
+
+<span class="nc" id="L97">        VolleySingleton.getInstance(this).addToRequestQueue(deleteRequest);</span>
+<span class="nc" id="L98">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>
