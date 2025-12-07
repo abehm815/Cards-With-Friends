@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+//Test
 @Component
 @ServerEndpoint("/euchre/{lobbyCode}")
 public class EuchreServer {
