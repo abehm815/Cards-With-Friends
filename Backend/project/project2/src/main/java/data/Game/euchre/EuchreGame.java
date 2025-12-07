@@ -1,5 +1,7 @@
 package data.Game.euchre;
 
+import data.User.Stats.EuchreStats;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -137,6 +139,10 @@ public class EuchreGame {
      */
     public Boolean playerPicksUp(EuchreCard droppedCard) {
         EuchrePlayer dealer = players.get(currentDealerIndex);
+
+        // Get Dealer Stats
+        EuchreStats dealerStats = dealer.getStats();
+
         if (isBidding && dealer.getHand().contains(droppedCard)) {
             dealer.addCard(optionCard);
             dealer.removeCard(droppedCard);
@@ -153,6 +159,10 @@ public class EuchreGame {
             System.out.println(dealer.getUsername() + " picked up the " + optionCard.toString());
             currentPlayerIndex = nextPlayerIndex(currentDealerIndex);
             System.out.println("It is now " + players.get(currentPlayerIndex).getUsername() + "'s turn!");
+
+            // Increment time's picked up stat
+            if (dealerStats != null) { dealerStats.addTimePickedUp(); }
+
             return true;
         } else {
             System.out.println("Not currently in bidding round or dropped card invalid!");
@@ -232,6 +242,12 @@ public class EuchreGame {
         // === 2. Award trick to the correct team ===
         EuchrePlayer winner = winningCard.getOwner();
 
+        // Get winner's stats
+        EuchreStats winnerStats = winner.getStats();
+
+        // Increment winner's tricks taken
+        if (winnerStats != null) { winnerStats.addTrickTaken(); }
+
         if (teamOne.getTeamMembers().contains(winner)) {
             teamOne.incrementTricksTaken();
         } else {
@@ -268,6 +284,17 @@ public class EuchreGame {
             if (teamOne.getTricksTaken() == 5) {
                 teamOne.incrementScore(2);
                 System.out.println("Team One marched Team Two and gets two points!");
+
+                // Keep track of stat for sweeps
+                // Get both player's stats
+                List<EuchrePlayer> winningTeam = teamOne.getTeamMembers();
+                EuchreStats winnerStatsOne = winningTeam.get(0).getStats();
+                EuchreStats winnerStatsTwo = winningTeam.get(1).getStats();
+
+                // Increment Sweep for both players
+                winnerStatsOne.addSweepWon();
+                winnerStatsTwo.addSweepWon();
+
             } else if (teamOne.getTricksTaken() >= 3) {
                 // Team One got the majority, they get one point
                 teamOne.incrementScore(1);
@@ -283,6 +310,17 @@ public class EuchreGame {
             if (teamTwo.getTricksTaken() == 5) {
                 teamTwo.incrementScore(2);
                 System.out.println("Team Two marched Team One and gets two points!");
+
+                // Keep track of stat for sweeps
+                // Get both player's stats
+                List<EuchrePlayer> winningTeam = teamTwo.getTeamMembers();
+                EuchreStats winnerStatsOne = winningTeam.get(0).getStats();
+                EuchreStats winnerStatsTwo = winningTeam.get(1).getStats();
+
+                // Increment Sweep for both players
+                winnerStatsOne.addSweepWon();
+                winnerStatsTwo.addSweepWon();
+
             } else if (teamTwo.getTricksTaken() >= 3) {
                 // Team Two got the majority, they get one point
                 teamTwo.incrementScore(1);
@@ -302,11 +340,33 @@ public class EuchreGame {
     public EuchreTeam getWinner() {
         if (teamOne.getScore() >= 10) {
             System.out.println("Team One has won!");
+
+            // Keep track of stat for wins
+            // Get both player's stats
+            List<EuchrePlayer> winningTeam = teamTwo.getTeamMembers();
+            EuchreStats winnerStatsOne = winningTeam.get(0).getStats();
+            EuchreStats winnerStatsTwo = winningTeam.get(1).getStats();
+
+            // Increment Wins for both players
+            winnerStatsOne.addGameWon();
+            winnerStatsTwo.addGameWon();
+
             return teamOne;
         }
 
         if (teamTwo.getScore() >= 10) {
             System.out.println("Team Two has won!");
+
+            // Keep track of stat for wins
+            // Get both player's stats
+            List<EuchrePlayer> winningTeam = teamTwo.getTeamMembers();
+            EuchreStats winnerStatsOne = winningTeam.get(0).getStats();
+            EuchreStats winnerStatsTwo = winningTeam.get(1).getStats();
+
+            // Increment Wins for both players
+            winnerStatsOne.addGameWon();
+            winnerStatsTwo.addGameWon();
+
             return teamTwo;
         }
 
