@@ -1,25 +1,17 @@
-stages:
-  - mavenbuild
-  - maventest
-  - mavendeploy
-  - androidbuild
-  - androidtest
+stages:             # these stages (jobs) form the CICD pipeline
+  - mavenbuild      # JOB to build Spring Boot app
+  - maventest       # JOB to run Spring Boot tests
+  - mavendeploy     # JOB to deploy Spring Boot app
+  - androidbuild    # JOB to build Android app
+  - androidtest     # JOB to run Android tests
 
-# ============================================
-# MAVEN BUILD (Backend)
-# ============================================
 maven-build:
-  image: maven:3.9.4-eclipse-temurin-17
   stage: mavenbuild
   tags:
     - springboot_tag
   script:
-    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
-    - export PATH=$JAVA_HOME/bin:$PATH
-    - java -version
-    - mvn -version
     - cd Backend/project/project2
-    - mvn clean package -DskipTests
+    - mvn package
   artifacts:
     paths:
       - Backend/project/project2/target/*.jar
@@ -29,19 +21,11 @@ maven-build:
     changes:
       - Backend/**/*
 
-# ============================================
-# MAVEN TEST (Backend)
-# ============================================
 maven-test:
-  image: maven:3.9.4-eclipse-temurin-17
   stage: maventest
   tags:
     - springboot_tag
   script:
-    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
-    - export PATH=$JAVA_HOME/bin:$PATH
-    - java -version
-    - mvn -version
     - cd Backend/project/project2
     - mvn test
   only:
@@ -50,43 +34,22 @@ maven-test:
     changes:
       - Backend/**/*
 
-# ============================================
-# AUTO DEPLOY (Backend)
-# ============================================
 auto-deploy:
-  image: maven:3.9.4-eclipse-temurin-17
   stage: mavendeploy
   tags:
     - springboot_tag
   script:
-    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
-    - export PATH=$JAVA_HOME/bin:$PATH
-    - java -version
-    - mvn -version
     - cd Backend/project/project2
-    
-    # Build clean jar
     - mvn clean package
-
-    # Kill old server if running
-    - pkill -f 'web-demo.jar' || true
-    - sleep 2
-
-    # Deploy jar
-    - cp target/onetoone-1.0.0.jar ~/web-demo.jar
-
-    # Restart server
-    - nohup java -jar ~/web-demo.jar > ~/web-demo.log 2>&1 &
-    - disown
+    - sudo mv target/onetoone-1.0.0.jar /target/web-demo.jar
+    - sudo systemctl stop system-web-demo
+    - sudo systemctl start system-web-demo
   only:
     refs:
       - main
     changes:
       - Backend/**/*
 
-# ============================================
-# ANDROID BUILD
-# ============================================
 android-build:
   image: afirefly/android-ci:java17
   stage: androidbuild
@@ -104,22 +67,10 @@ android-build:
     changes:
       - Frontend/CardsWithFriends/**/*
 
-# ============================================
-# ANDROID TEST
-# ============================================
 android-test:
   image: afirefly/android-ci:java17
   stage: androidtest
   tags:
     - android_tag
   before_script:
-    - export GRADLE_USER_HOME=`pwd`/.gradle
-    - chmod +x ./Frontend/CardsWithFriends/gradlew
-  script:
-    - cd Frontend/CardsWithFriends
-    - ./gradlew test
-  only:
-    refs:
-      - main
-    changes:
-      - Frontend/CardsWithFriends/**/*
+    - export GRAD
