@@ -5,9 +5,9 @@ stages:
   - androidbuild
   - androidtest
 
-# -------------------------------
-# MAVEN BUILD (Java 17)
-# -------------------------------
+# ============================================
+# MAVEN BUILD (Backend)
+# ============================================
 maven-build:
   image: maven:3.9.4-eclipse-temurin-17
   stage: mavenbuild
@@ -17,8 +17,7 @@ maven-build:
     - cd Backend/project/project2
     - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
     - export PATH=$JAVA_HOME/bin:$PATH
-    - java -version
-    - mvn package
+    - mvn clean package -DskipTests
   artifacts:
     paths:
       - Backend/project/project2/target/*.jar
@@ -28,9 +27,9 @@ maven-build:
     changes:
       - Backend/**/*
 
-# -------------------------------
-# MAVEN TEST (Java 17)
-# -------------------------------
+# ============================================
+# MAVEN TEST (Backend)
+# ============================================
 maven-test:
   image: maven:3.9.4-eclipse-temurin-17
   stage: maventest
@@ -40,7 +39,6 @@ maven-test:
     - cd Backend/project/project2
     - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
     - export PATH=$JAVA_HOME/bin:$PATH
-    - java -version
     - mvn test
   only:
     refs:
@@ -48,9 +46,9 @@ maven-test:
     changes:
       - Backend/**/*
 
-# -------------------------------
-# MAVEN DEPLOY (Java 17)
-# -------------------------------
+# ============================================
+# AUTO DEPLOY (Backend)
+# ============================================
 auto-deploy:
   image: maven:3.9.4-eclipse-temurin-17
   stage: mavendeploy
@@ -60,22 +58,28 @@ auto-deploy:
     - cd Backend/project/project2
     - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
     - export PATH=$JAVA_HOME/bin:$PATH
-    - java -version
+
+    # Build clean jar
     - mvn clean package
-    # Avoid sudo if runner cannot use it; deploy to your home directory
+
+    # Kill old running server if exists
+    - pkill -f 'web-demo.jar' || true
+
+    # Deploy jar to home directory
     - mv target/onetoone-1.0.0.jar ~/web-demo.jar
-    # If you control a systemd service locally, use sudo; otherwise skip these
-    #- sudo systemctl stop system-web-demo
-    #- sudo systemctl start system-web-demo
+
+    # Start new server in background
+    - nohup java -jar ~/web-demo.jar > ~/web-demo.log 2>&1 &
+    - disown
   only:
     refs:
       - main
     changes:
       - Backend/**/*
 
-# -------------------------------
+# ============================================
 # ANDROID BUILD
-# -------------------------------
+# ============================================
 android-build:
   image: afirefly/android-ci:java17
   stage: androidbuild
@@ -93,9 +97,9 @@ android-build:
     changes:
       - Frontend/CardsWithFriends/**/*
 
-# -------------------------------
+# ============================================
 # ANDROID TEST
-# -------------------------------
+# ============================================
 android-test:
   image: afirefly/android-ci:java17
   stage: androidtest
