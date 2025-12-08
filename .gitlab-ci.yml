@@ -11,7 +11,7 @@ maven-build:
     - springboot_tag
   script:
     - cd Backend/project/project2
-    - mvn -package
+    - mvn clean package
   artifacts:
     paths:
       - Backend/project/project2/target/*.jar
