@@ -1,5 +1,6 @@
 package data.Game.goFish;
 
+import data.Game.goFish.history.GoFishMatchHistoryRepository;
 import data.User.AppUser;
 import data.User.AppUserRepository;
 import data.User.Stats.GameStats;
@@ -11,6 +12,7 @@ import jakarta.websocket.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -39,6 +41,9 @@ public class GoFishService {
     @Autowired
     private UserStatsRepository userStatsRepository;
 
+    @Autowired
+    private GoFishMatchHistoryRepository goFishMatchHistoryRepository;
+
     // Map joinCode -> game instance
     private final Map<String, GoFishGame> activeGames = new ConcurrentHashMap<>();
 
@@ -62,13 +67,12 @@ public class GoFishService {
         // Start a new game with the players
         GoFishGame game = new GoFishGame(players);
 
-        // Deal cards to all players
-        game.dealCards();
+        // Start logging
+        game.initMatchHistory(lobbyCode);
+        game.getMatchHistory().setStartTime(LocalDateTime.now());
 
-        // Clean matches in hand
-        for (GoFishPlayer p : players) {
-            p.cleanMatchesInHand();
-        }
+        // Clean Matches in Hand
+        game.cleanMatchesHelper();
 
         // Add game to list of active games
         activeGames.put(lobbyCode, game);
@@ -112,6 +116,7 @@ public class GoFishService {
         GoFishGame game = activeGames.get(lobbyCode);
         if (game == null) return;
 
+        // Save data for each player
         for (GoFishPlayer player : game.getPlayers()) {
             AppUser detached = player.getUserRef(); // the instance in the game
             if (detached == null) continue;
@@ -139,6 +144,9 @@ public class GoFishService {
                 newManaged.setUserStats(managed.getUserStats());
                 managed.getUserStats().addGameStats("GoFish", newManaged);
             }
+
+            // Save game history
+            saveMatchHistory(game);
 
             // persist managed user (cascades to userStats -> gameStats)
             appUserRepository.save(managed);
@@ -203,5 +211,16 @@ public class GoFishService {
             }
         }
         return null;
+    }
+
+    /**
+     * Saves the data from the game
+     * @param game current game
+     */
+    @Transactional
+    public void saveMatchHistory(GoFishGame game) {
+        game.getMatchHistory().setWinner(game.getWinner().getUsername());
+        game.getMatchHistory().setEndTime(LocalDateTime.now());
+        goFishMatchHistoryRepository.save(game.getMatchHistory());
     }
 }

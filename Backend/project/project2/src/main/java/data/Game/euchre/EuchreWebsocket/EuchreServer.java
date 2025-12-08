@@ -20,7 +20,10 @@ import java.util.concurrent.ConcurrentHashMap;
 @ServerEndpoint("/euchre/{lobbyCode}")
 public class EuchreServer {
         private static EuchreService euchreService;
-        private static final ObjectMapper mapper = new ObjectMapper();
+        private static ObjectMapper objectMapper = new ObjectMapper();
+
+        @Autowired
+        public void setObjectMapper(ObjectMapper mapper) { EuchreServer.objectMapper = mapper; }
         private static final Map<String, Set<Session>> lobbySessions = new ConcurrentHashMap<>();
 
         @Autowired
@@ -38,7 +41,7 @@ public class EuchreServer {
         @OnMessage
         public void onMessage(Session session, String message, @PathParam("lobbyCode") String lobbyCode) {
             try {
-                Map<String, Object> msg = mapper.readValue(message, Map.class);
+                Map<String, Object> msg = objectMapper.readValue(message, Map.class);
                 String type = (String) msg.get("type");
 
                 switch (type) {
@@ -144,7 +147,7 @@ public class EuchreServer {
 
         private void sendJson(Session session, Object obj) {
             try {
-                session.getBasicRemote().sendText(mapper.writeValueAsString(obj));
+                session.getBasicRemote().sendText(objectMapper.writeValueAsString(obj));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -154,13 +157,14 @@ public class EuchreServer {
             EuchreGame game = euchreService.getGame(lobbyCode);
             if (game == null) return;
 
+            Map<String, Object> payload = Map.of(
+                "type", "gameState",
+                "game", game,
+                "currentTurn", game.getCurrentPlayerUsername()
+            );
+
             try {
-                Map<String, Object> state = Map.of(
-                        "type", "gameState",
-                        "currentTurn", game.getCurrentPlayerUsername(),
-                        "trump", game.getWinner() == null ? null : game // keep simple; clients can inspect game object
-                );
-                String json = mapper.writeValueAsString(Map.of("type", "gameState", "game", game, "currentTurn", game.getCurrentPlayerUsername()));
+                String json = objectMapper.writeValueAsString(payload);
                 for (Session s : lobbySessions.getOrDefault(lobbyCode, Set.of())) {
                     s.getBasicRemote().sendText(json);
                 }
@@ -168,4 +172,4 @@ public class EuchreServer {
                 e.printStackTrace();
             }
         }
-    }
+}

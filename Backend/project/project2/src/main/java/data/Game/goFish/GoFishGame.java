@@ -1,8 +1,11 @@
 package data.Game.goFish;
 
 import data.Game.MyCard;
+import data.Game.goFish.history.GoFishMatchEventEntity;
+import data.Game.goFish.history.GoFishMatchHistoryEntity;
 import data.User.Stats.GoFishStats;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -17,6 +20,7 @@ public class GoFishGame {
     private List<GoFishPlayer> players;
     private GoFishDeck deck;
     private int currentPlayerIndex;
+    private GoFishMatchHistoryEntity matchHistory;
 
     /**
      * Basic constructor that takes a list of players in the game
@@ -27,6 +31,7 @@ public class GoFishGame {
         this.deck = new GoFishDeck();
         deck.shuffle();
         this.currentPlayerIndex = 0;
+        dealCards();
     }
 
     /**
@@ -51,7 +56,7 @@ public class GoFishGame {
     }
 
     /**
-     * Takes all of the information needed for a turn and sees if a player has those cards
+     * Takes all the information needed for a turn and sees if a player has those cards
      * @param askingPlayer (Player asking for a card)
      * @param targetPlayer (Player we are searching for value)
      * @param value (Value of the card)
@@ -81,16 +86,18 @@ public class GoFishGame {
 
             // Checks if Deck is empty
             if (drawn == null) {
+                logEvent(askingPlayer.getUsername(), "goFishing", targetPlayer.getUsername(), value, "Deck Empty!");
                 return askingPlayer.getUsername() + " went fishing, but the deck is empty!";
             }
 
             // Add card to player's hand and check for matches
             askingPlayer.addCard(drawn);
-            askingPlayer.cleanMatchesInHand();
+            askingPlayer.cleanMatchesInHand(matchHistory);
 
             // Increment Turn and add to went fishing stat
             if (askingPlayerStats != null) { askingPlayerStats.addWentFishing(); }
             nextTurn();
+            logEvent(askingPlayer.getUsername(), "goFishing", targetPlayer.getUsername(), value, drawn.toString());
             return askingPlayer.getUsername() + " went fishing and drew a " + drawn.toString();
         } else {
             // Target Player loses card
@@ -100,9 +107,10 @@ public class GoFishGame {
             // Asking Player gains card
             askingPlayer.addCard(targetCard);
             // Clean matches in askingPlayer's hand
-            askingPlayer.cleanMatchesInHand();
+            askingPlayer.cleanMatchesInHand(matchHistory);
             // Check if asking player's hand is empty
             checkRefresh(askingPlayer);
+            logEvent(askingPlayer.getUsername(), "ask", targetPlayer.getUsername(), value, targetCard.toString());
             return askingPlayer.getUsername() + " received a " + targetCard.toString() + " from " + targetPlayer.getUsername();
         }
     }
@@ -130,7 +138,7 @@ public class GoFishGame {
                 }
             }
             // Clean any new matches made
-            player.cleanMatchesInHand();
+            player.cleanMatchesInHand(matchHistory);
         }
     }
 
@@ -190,5 +198,55 @@ public class GoFishGame {
         }
 
         return winner;
+    }
+
+    /**
+     * Initializes a new match history using the lobby id as match id
+     * @param matchId lobby id
+     */
+    public void initMatchHistory(String matchId) {
+        GoFishMatchHistoryEntity history = new GoFishMatchHistoryEntity();
+        history.setMatchId(matchId);
+        history.setStartTime(LocalDateTime.now());
+        this.matchHistory = history;
+    }
+
+    /**
+     * Helper for logging an event
+     * @param player player who did the action
+     * @param action what action the player did
+     * @param target who the player targeted
+     * @param cardValue value of card
+     * @param cardDrawn card drawn (for fishing)
+     */
+    public void logEvent(String player, String action, String target, Integer cardValue, String cardDrawn) {
+        GoFishMatchEventEntity event = new GoFishMatchEventEntity();
+        event.setMatchHistory(this.matchHistory);
+        event.setTimestamp(LocalDateTime.now());
+        event.setPlayer(player);
+        event.setAction(action);
+        event.setTarget(target);
+        event.setCardValue(cardValue);
+        event.setCardDrawn(cardDrawn);
+
+        this.matchHistory.getEvents().add(event);
+    }
+
+    /**
+     * Gets match history
+     * @return match history
+     */
+    public GoFishMatchHistoryEntity getMatchHistory() {
+        return matchHistory;
+    }
+
+    /**
+     * Helps with persisting match history
+     */
+    public void cleanMatchesHelper() {
+        // Clean matches in hand
+        for (GoFishPlayer p : players) {
+            p.cleanMatchesInHand(matchHistory);
+        }
     }
 }

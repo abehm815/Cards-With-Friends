@@ -1,5 +1,11 @@
 package data.Game.euchre;
 
+import data.Game.euchre.history.EuchreMatchEventEntity;
+import data.Game.euchre.history.EuchreMatchHistoryEntity;
+import data.Game.goFish.history.GoFishMatchHistoryEntity;
+import data.User.Stats.EuchreStats;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,6 +28,7 @@ public class EuchreGame {
     private boolean isChoice;
     private EuchreTeam teamOne;
     private EuchreTeam teamTwo;
+    private EuchreMatchHistoryEntity matchHistory;
 
     /**
      * Basic constructor that takes a list of players in the game
@@ -47,6 +54,23 @@ public class EuchreGame {
         this.isBidding = true;
         this.isChoice = false;
         optionCard = deck.dealCard();
+
+        // Log game start
+        logEvent(
+                "ROUND_START",
+                null,
+                null,
+                null,
+                false,
+                null,
+                null,
+                null,
+                teamOne.getScore(),
+                teamTwo.getScore(),
+                getCurrentDealerUsername(),
+                optionCard.toString()
+        );
+
         System.out.println("New round started Dealer: " + getCurrentDealerUsername() + " || " + getCurrentPlayerUsername() + "'s turn!");
         System.out.println("Option Card: " + optionCard);
     }
@@ -85,6 +109,23 @@ public class EuchreGame {
         this.isChoice = false;
         this.isBidding = true;
         optionCard = deck.dealCard();
+
+        // Log game start
+        logEvent(
+                "ROUND_START",
+                null,
+                null,
+                null,
+                false,
+                null,
+                null,
+                null,
+                teamOne.getScore(),
+                teamTwo.getScore(),
+                getCurrentDealerUsername(),
+                optionCard.toString()
+        );
+
         System.out.println("New round started Dealer: " + getCurrentDealerUsername() + " || " + getCurrentPlayerUsername() + "'s turn!");
         System.out.println("Option Card: " + optionCard);
         return optionCard;
@@ -106,6 +147,22 @@ public class EuchreGame {
         if (!isChoice && currentPlayerIndex == currentDealerIndex) {
             isChoice = true;
         }
+
+        // Log Pass
+        logEvent(
+                "PASS",
+                getCurrentPlayerUsername(),
+                null,
+                null,
+                false,
+                null,
+                null,
+                null,
+                teamOne.getScore(),
+                teamTwo.getScore(),
+                getCurrentDealerUsername(),
+                optionCard.toString()
+        );
     }
 
     /**
@@ -124,6 +181,23 @@ public class EuchreGame {
             teamTwo.setTeamPickedUpCard(true);
         }
 
+        // Log Choose Suit
+        logEvent(
+                "TRUMP_CHOSEN",
+                players.get(currentPlayerIndex).getUsername(),
+                (teamOne.getTeamMembers().contains(players.get(currentPlayerIndex))) ? "TEAM_1" : "TEAM_2",
+                charSuitToString(suit),
+                false,
+                null,
+                null,
+                null,
+                teamOne.getScore(),
+                teamTwo.getScore(),
+                getCurrentDealerUsername(),
+                null
+        );
+
+
         // Set current player to player next to dealer
         System.out.println(players.get(currentPlayerIndex).getUsername() + " has chosen " + charSuitToString(suit) + " as trump!");
         currentPlayerIndex = nextPlayerIndex(currentDealerIndex);
@@ -137,6 +211,10 @@ public class EuchreGame {
      */
     public Boolean playerPicksUp(EuchreCard droppedCard) {
         EuchrePlayer dealer = players.get(currentDealerIndex);
+
+        // Get Dealer Stats
+        EuchreStats dealerStats = dealer.getStats();
+
         if (isBidding && dealer.getHand().contains(droppedCard)) {
             dealer.addCard(optionCard);
             dealer.removeCard(droppedCard);
@@ -150,9 +228,29 @@ public class EuchreGame {
                 teamTwo.setTeamPickedUpCard(true);
             }
 
+            // Log Pickup
+            logEvent(
+                    "PICKED_UP",
+                    dealer.getUsername(),
+                    (teamOne.getTeamMembers().contains(dealer)) ? "TEAM_1" : "TEAM_2",
+                    charSuitToString(trumpSuit),
+                    false,
+                    optionCard.toString(),
+                    null,
+                    null,
+                    teamOne.getScore(),
+                    teamTwo.getScore(),
+                    getCurrentDealerUsername(),
+                    null
+            );
+
             System.out.println(dealer.getUsername() + " picked up the " + optionCard.toString());
             currentPlayerIndex = nextPlayerIndex(currentDealerIndex);
             System.out.println("It is now " + players.get(currentPlayerIndex).getUsername() + "'s turn!");
+
+            // Increment time's picked up stat
+            if (dealerStats != null) { dealerStats.addTimePickedUp(); }
+
             return true;
         } else {
             System.out.println("Not currently in bidding round or dropped card invalid!");
@@ -187,6 +285,23 @@ public class EuchreGame {
 
         // Add card to current trick and remove it from their hand
         currentTrick.add(card);
+
+        // Log Turn
+        logEvent(
+                "CARD_PLAYED",
+                currentPlayer.getUsername(),
+                (teamOne.getTeamMembers().contains(currentPlayer)) ? "TEAM_1" : "TEAM_2",
+                charSuitToString(trumpSuit),
+                false,
+                card.toString(),
+                currentTrick.size(),   // trick position
+                null,
+                teamOne.getScore(),
+                teamTwo.getScore(),
+                getCurrentDealerUsername(),
+                null
+        );
+
         currentPlayer.removeCard(card);
         currentPlayerIndex = nextPlayerIndex(currentPlayerIndex);
 
@@ -232,11 +347,33 @@ public class EuchreGame {
         // === 2. Award trick to the correct team ===
         EuchrePlayer winner = winningCard.getOwner();
 
+        // Get winner's stats
+        EuchreStats winnerStats = winner.getStats();
+
+        // Increment winner's tricks taken
+        if (winnerStats != null) { winnerStats.addTrickTaken(); }
+
         if (teamOne.getTeamMembers().contains(winner)) {
             teamOne.incrementTricksTaken();
         } else {
             teamTwo.incrementTricksTaken();
         }
+
+        // Log trick given
+        logEvent(
+                "TRICK_WON",
+                winner.getUsername(),
+                (teamOne.getTeamMembers().contains(winner)) ? "TEAM_1" : "TEAM_2",
+                charSuitToString(trumpSuit),
+                false,
+                null,
+                null,
+                winner.getUsername(),
+                teamOne.getScore(),
+                teamTwo.getScore(),
+                getCurrentDealerUsername(),
+                null
+        );
 
         System.out.println(winner.getUsername() + "'s " + winningCard + " wins the trick!");
 
@@ -268,6 +405,17 @@ public class EuchreGame {
             if (teamOne.getTricksTaken() == 5) {
                 teamOne.incrementScore(2);
                 System.out.println("Team One marched Team Two and gets two points!");
+
+                // Keep track of stat for sweeps
+                // Get both player's stats
+                List<EuchrePlayer> winningTeam = teamOne.getTeamMembers();
+                EuchreStats winnerStatsOne = winningTeam.get(0).getStats();
+                EuchreStats winnerStatsTwo = winningTeam.get(1).getStats();
+
+                // Increment Sweep for both players
+                winnerStatsOne.addSweepWon();
+                winnerStatsTwo.addSweepWon();
+
             } else if (teamOne.getTricksTaken() >= 3) {
                 // Team One got the majority, they get one point
                 teamOne.incrementScore(1);
@@ -283,6 +431,17 @@ public class EuchreGame {
             if (teamTwo.getTricksTaken() == 5) {
                 teamTwo.incrementScore(2);
                 System.out.println("Team Two marched Team One and gets two points!");
+
+                // Keep track of stat for sweeps
+                // Get both player's stats
+                List<EuchrePlayer> winningTeam = teamTwo.getTeamMembers();
+                EuchreStats winnerStatsOne = winningTeam.get(0).getStats();
+                EuchreStats winnerStatsTwo = winningTeam.get(1).getStats();
+
+                // Increment Sweep for both players
+                winnerStatsOne.addSweepWon();
+                winnerStatsTwo.addSweepWon();
+
             } else if (teamTwo.getTricksTaken() >= 3) {
                 // Team Two got the majority, they get one point
                 teamTwo.incrementScore(1);
@@ -293,6 +452,21 @@ public class EuchreGame {
                 System.out.println("Team Two got euchred and Team One gets two points!");
             }
         }
+        // Log points given
+        logEvent(
+                "POINTS_AWARDED",
+                null,
+                (teamOne.getTricksTaken() > teamTwo.getTricksTaken()) ? "TEAM_1" : "TEAM_2",
+                charSuitToString(trumpSuit),
+                false,
+                null,
+                null,
+                null,
+                teamOne.getScore(),
+                teamTwo.getScore(),
+                getCurrentDealerUsername(),
+                null
+        );
     }
 
     /**
@@ -302,11 +476,65 @@ public class EuchreGame {
     public EuchreTeam getWinner() {
         if (teamOne.getScore() >= 10) {
             System.out.println("Team One has won!");
+
+            // Log Win
+            logEvent(
+                    "GAME_WON",
+                    null,
+                    "TEAM_1",   // or TEAM_2
+                    charSuitToString(trumpSuit),
+                    false,
+                    null,
+                    null,
+                    null,
+                    teamOne.getScore(),
+                    teamTwo.getScore(),
+                    getCurrentDealerUsername(),
+                    null
+            );
+
+            // Keep track of stat for wins
+            // Get both player's stats
+            List<EuchrePlayer> winningTeam = teamTwo.getTeamMembers();
+            EuchreStats winnerStatsOne = winningTeam.get(0).getStats();
+            EuchreStats winnerStatsTwo = winningTeam.get(1).getStats();
+
+            // Increment Wins for both players
+            winnerStatsOne.addGameWon();
+            winnerStatsTwo.addGameWon();
+
             return teamOne;
         }
 
         if (teamTwo.getScore() >= 10) {
             System.out.println("Team Two has won!");
+
+            // Log Win
+            logEvent(
+                    "GAME_WON",
+                    null,
+                    "TEAM_1",   // or TEAM_2
+                    charSuitToString(trumpSuit),
+                    false,
+                    null,
+                    null,
+                    null,
+                    teamOne.getScore(),
+                    teamTwo.getScore(),
+                    getCurrentDealerUsername(),
+                    null
+            );
+
+            // Keep track of stat for wins
+            // Get both player's stats
+            List<EuchrePlayer> winningTeam = teamTwo.getTeamMembers();
+            EuchreStats winnerStatsOne = winningTeam.get(0).getStats();
+            EuchreStats winnerStatsTwo = winningTeam.get(1).getStats();
+
+            // Increment Wins for both players
+            winnerStatsOne.addGameWon();
+            winnerStatsTwo.addGameWon();
+
             return teamTwo;
         }
 
@@ -388,4 +616,57 @@ public class EuchreGame {
     public boolean findIfTrumpOrBower (EuchreCard card) {
         return card.getEffectiveSuit(trumpSuit) == trumpSuit;
     }
+
+    /**
+     * Initializes a new match history using the lobby id as match id
+     * @param matchId lobby id
+     */
+    public void initMatchHistory(String matchId) {
+        EuchreMatchHistoryEntity history = new EuchreMatchHistoryEntity();
+        history.setMatchId(matchId);
+        history.setStartTime(LocalDateTime.now());
+        this.matchHistory = history;
+    }
+
+    public void logEvent(
+            String eventType,
+            String player,
+            String team,
+            String trumpSuit,
+            Boolean alone,
+            String cardPlayed,
+            Integer trickNumber,
+            String trickWinner,
+            Integer teamAScore,
+            Integer teamBScore,
+            String dealer,
+            String upCard
+    ) {
+        EuchreMatchEventEntity event = new EuchreMatchEventEntity();
+
+        event.setMatchHistory(this.matchHistory);
+        event.setTimestamp(LocalDateTime.now());
+
+        event.setEventType(eventType);
+        event.setPlayer(player);
+        event.setTeam(team);
+
+        event.setTrumpSuit(trumpSuit);
+        event.setAlone(alone);
+
+        event.setCardPlayed(cardPlayed);
+        event.setTrickNumber(trickNumber);
+
+        event.setTrickWinner(trickWinner);
+
+        event.setTeamAScore(teamAScore);
+        event.setTeamBScore(teamBScore);
+
+        event.setDealer(dealer);
+        event.setUpCard(upCard);
+
+        this.matchHistory.getEvents().add(event);
+    }
+
+
 }

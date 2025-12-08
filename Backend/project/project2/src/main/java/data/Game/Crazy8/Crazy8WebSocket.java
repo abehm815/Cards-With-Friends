@@ -1,7 +1,6 @@
 package data.Game.Crazy8;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import data.Game.BlackJack.BlackJackGame;
-import data.Game.BlackJack.BlackJackWebSocket;
 import data.Lobby.LobbyRepository;
 import data.User.AppUserRepository;
 import data.User.Stats.UserStatsRepository;
@@ -33,10 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @ServerEndpoint("/ws/Crazy8/{lobbyCode}")
 public class Crazy8WebSocket {
-    /**
-     * Map of lobbyCode → Crazy8Game instance.
-     * Ensures each lobby has exactly one active game model.
-     */
+    // Map of lobbyCode -> Crazy8Game instance
     private static final Map<String, Crazy8Game> games = new ConcurrentHashMap<>();
 
     /**
@@ -57,7 +53,7 @@ public class Crazy8WebSocket {
      */
     private final ObjectMapper mapper = new ObjectMapper();
 
-    // 🔹 Spring-managed repositories
+    // Spring-managed repositories
     private static LobbyRepository lobbyRepository;
     private static AppUserRepository appUserRepository;
     private static UserStatsRepository userStatsRepository;
@@ -96,22 +92,11 @@ public class Crazy8WebSocket {
     @Autowired
     private ApplicationContext applicationContext;
 
-
-    /**
-     * Triggered when a new WebSocket connection opens.
-     * <p>
-     * Creates a new Crazy 8 game for the lobby if one does not already exist,
-     * and registers the player session for broadcasting.
-     *
-     * @param session   the client WebSocket session
-     * @param lobbyCode the lobby the client is joining
-     */
     @OnOpen
     public void onOpen(Session session, @PathParam("lobbyCode") String lobbyCode) {
         System.out.println("New connection: " + session.getId() + " in lobby " + lobbyCode);
 
         // Create or retrieve a Crazy8Game for this lobby
-
         games.computeIfAbsent(lobbyCode, code -> {
             Crazy8Game game = new Crazy8Game(code);
             game.setLobbyRepository(lobbyRepository);
@@ -120,6 +105,7 @@ public class Crazy8WebSocket {
             game.setBroadcastFunction(json -> broadcastToLobby(json, code));
             return game;
         });
+
         // Add this session to the lobby
         lobbySessions.computeIfAbsent(lobbyCode, k -> ConcurrentHashMap.newKeySet()).add(session);
     }
@@ -190,13 +176,13 @@ public class Crazy8WebSocket {
                     game.handlePlayerDecision(player, action, cardcolor, value);
                     break;
 
-                case "SETCOLOR":
+                case "CHOOSECOLOR":
                     // Handle color selection for wild cards
-                    if (json.has("color") && json.get("color").asText().length() > 0) {
-                        char newColor = json.get("color").asText().charAt(0);
-                        // You'll need to add a method to handle this in Crazy8Game
-                        sendConfirmation(session, "Color set to " + newColor);
+                    if (cardcolor == ' ') {
+                        sendError(session, "Must specify a color (R, G, B, or Y)");
+                        break;
                     }
+                    game.handlePlayerDecision(player, action, cardcolor, value);
                     break;
 
                 case "LEAVE":
