@@ -14,7 +14,7 @@ maven-build:
     - mvn clean package
   artifacts:
     paths:
-      - Backend/project/project2/target/*.jar
+      - Backend/project/project2/target/onetoone-1.0.0.jar
   only:
     refs:
       - main
