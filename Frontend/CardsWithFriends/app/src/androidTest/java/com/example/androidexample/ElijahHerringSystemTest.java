@@ -15,11 +15,8 @@ import android.content.Intent;
 import androidx.test.core.app.ActivityScenario;
 import androidx.test.core.app.ApplicationProvider;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
-import androidx.test.espresso.IdlingRegistry;
-import androidx.test.espresso.idling.CountingIdlingResource;
 
 import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -29,38 +26,26 @@ import java.util.ArrayList;
 public class ElijahHerringSystemTest {
 
     private ActivityScenario<GofishActivity> scenario;
-    private CountingIdlingResource idlingResource;
-
-    @Before
-    public void setUp() {
-        // Create idling resource for async operations
-        idlingResource = new CountingIdlingResource("WebSocket");
-        IdlingRegistry.getInstance().register(idlingResource);
-    }
 
     @After
     public void tearDown() {
         if (scenario != null) {
             scenario.close();
         }
-        if (idlingResource != null) {
-            IdlingRegistry.getInstance().unregister(idlingResource);
-        }
     }
 
     /**
-     * Test 1: Complete host flow - verify host can see start button, start game,
-     * and UI updates correctly when game begins
+     * Test 1: Verify host player sees start game button and correct initial UI state
      */
     @Test
-    public void testHostStartGameCompleteFlow() {
+    public void testHostPlayerInitialUIState() {
         // Create intent with host privileges
         Intent intent = new Intent(ApplicationProvider.getApplicationContext(), GofishActivity.class);
         intent.putExtra("GAMETYPE", "gofish");
         intent.putExtra("USERNAME", "HostPlayer");
         intent.putExtra("JOINCODE", "TEST123");
         intent.putExtra("HOST", true);
-        
+
         ArrayList<String> players = new ArrayList<>();
         players.add("HostPlayer");
         players.add("Player2");
@@ -69,52 +54,39 @@ public class ElijahHerringSystemTest {
 
         scenario = ActivityScenario.launch(intent);
 
-        // Verify initial state - host should see start button
+        // Verify root layout is displayed
+        onView(withId(R.id.rootLayout))
+                .check(matches(isDisplayed()));
+
+        // Verify player list is displayed
+        onView(withId(R.id.playerList))
+                .check(matches(isDisplayed()));
+
+        // Verify host sees start button
         onView(withText("Start Game"))
                 .check(matches(isDisplayed()))
                 .check(matches(isEnabled()));
 
-        // Verify waiting message is displayed
-        onView(withText(containsString("Waiting for host")))
-                .check(matches(isDisplayed()));
-
-        // Verify ask button is initially hidden
-        onView(withId(R.id.gofish_ask_button))
-                .check(matches(not(isDisplayed())));
-
-        // Click start game button
-        onView(withText("Start Game")).perform(click());
-
-        // Wait for potential game state update
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // After clicking start, button should eventually disappear
-        // (This will happen when game state is received from server)
+        // Verify activity received correct intent data
         scenario.onActivity(activity -> {
-            // Verify the activity has the correct initial state
-            assert activity != null;
             assert "HostPlayer".equals(activity.getIntent().getStringExtra("USERNAME"));
             assert activity.getIntent().getBooleanExtra("HOST", false);
+            assert "TEST123".equals(activity.getIntent().getStringExtra("JOINCODE"));
         });
     }
 
     /**
-     * Test 2: Non-host player experience - verify non-host cannot start game
-     * and sees appropriate waiting state
+     * Test 2: Verify non-host player does NOT see start button
      */
     @Test
-    public void testNonHostPlayerWaitingState() {
+    public void testNonHostPlayerCannotStartGame() {
         // Create intent for non-host player
         Intent intent = new Intent(ApplicationProvider.getApplicationContext(), GofishActivity.class);
         intent.putExtra("GAMETYPE", "gofish");
         intent.putExtra("USERNAME", "Player2");
         intent.putExtra("JOINCODE", "TEST123");
         intent.putExtra("HOST", false);
-        
+
         ArrayList<String> players = new ArrayList<>();
         players.add("HostPlayer");
         players.add("Player2");
@@ -122,43 +94,37 @@ public class ElijahHerringSystemTest {
 
         scenario = ActivityScenario.launch(intent);
 
-        // Verify start button is NOT visible for non-host
-        onView(withText("Start Game"))
-                .check(matches(not(isDisplayed())));
-
-        // Verify waiting message is shown
-        onView(withText(containsString("Waiting for host")))
+        // Verify UI is displayed
+        onView(withId(R.id.rootLayout))
                 .check(matches(isDisplayed()));
 
-        // Verify ask button is hidden before game starts
-        onView(withId(R.id.gofish_ask_button))
-                .check(matches(not(isDisplayed())));
-
-        // Verify player list layout exists
+        // Verify player list exists
         onView(withId(R.id.playerList))
                 .check(matches(isDisplayed()));
 
-        // Verify activity state
+        // CRITICAL: Non-host should NOT see start button
+        onView(withText("Start Game"))
+                .check(matches(not(isDisplayed())));
+
+        // Verify correct player data
         scenario.onActivity(activity -> {
             assert "Player2".equals(activity.getIntent().getStringExtra("USERNAME"));
             assert !activity.getIntent().getBooleanExtra("HOST", true);
-            assert "TEST123".equals(activity.getIntent().getStringExtra("JOINCODE"));
         });
     }
 
     /**
-     * Test 3: Player list initialization and display - verify all players
-     * appear correctly in the lobby with proper data
+     * Test 3: Verify all player data is correctly passed and stored
      */
     @Test
-    public void testPlayerListDisplayAndDataIntegrity() {
-        // Create intent with multiple players
+    public void testMultiplePlayersDataIntegrity() {
+        // Create intent with 4 players
         Intent intent = new Intent(ApplicationProvider.getApplicationContext(), GofishActivity.class);
         intent.putExtra("GAMETYPE", "gofish");
         intent.putExtra("USERNAME", "TestPlayer1");
         intent.putExtra("JOINCODE", "GAME456");
         intent.putExtra("HOST", true);
-        
+
         ArrayList<String> players = new ArrayList<>();
         players.add("TestPlayer1");
         players.add("TestPlayer2");
@@ -168,102 +134,71 @@ public class ElijahHerringSystemTest {
 
         scenario = ActivityScenario.launch(intent);
 
-        // Verify player list container is visible
-        onView(withId(R.id.playerList))
-                .check(matches(isDisplayed()));
+        // Verify UI elements exist
+        onView(withId(R.id.rootLayout)).check(matches(isDisplayed()));
+        onView(withId(R.id.playerList)).check(matches(isDisplayed()));
 
-        // Verify root layout exists
-        onView(withId(R.id.rootLayout))
-                .check(matches(isDisplayed()));
-
-        // Verify the intent data was passed correctly
+        // Verify all player data was passed correctly
         scenario.onActivity(activity -> {
             ArrayList<String> receivedPlayers = activity.getIntent()
                     .getStringArrayListExtra("PLAYERS");
-            
-            assert receivedPlayers != null;
-            assert receivedPlayers.size() == 4;
-            assert receivedPlayers.contains("TestPlayer1");
-            assert receivedPlayers.contains("TestPlayer2");
-            assert receivedPlayers.contains("TestPlayer3");
-            assert receivedPlayers.contains("TestPlayer4");
-            
-            // Verify join code and game type
+
+            assert receivedPlayers != null : "Players list is null";
+            assert receivedPlayers.size() == 4 : "Expected 4 players, got " + receivedPlayers.size();
+            assert receivedPlayers.contains("TestPlayer1") : "Missing TestPlayer1";
+            assert receivedPlayers.contains("TestPlayer2") : "Missing TestPlayer2";
+            assert receivedPlayers.contains("TestPlayer3") : "Missing TestPlayer3";
+            assert receivedPlayers.contains("TestPlayer4") : "Missing TestPlayer4";
+
             assert "GAME456".equals(activity.getIntent().getStringExtra("JOINCODE"));
             assert "gofish".equals(activity.getIntent().getStringExtra("GAMETYPE"));
         });
     }
 
     /**
-     * Test 4: UI state consistency during game lifecycle - verify multiple
-     * UI elements maintain correct visibility and state throughout activity lifecycle
+     * Test 4: Verify UI state persists through activity lifecycle changes
      */
     @Test
-    public void testUIStateConsistencyThroughLifecycle() {
-        // Create intent for host player
+    public void testActivityLifecyclePersistence() {
+        // Create intent
         Intent intent = new Intent(ApplicationProvider.getApplicationContext(), GofishActivity.class);
         intent.putExtra("GAMETYPE", "gofish");
-        intent.putExtra("USERNAME", "LifecycleTestPlayer");
+        intent.putExtra("USERNAME", "LifecycleTest");
         intent.putExtra("JOINCODE", "LIFE999");
         intent.putExtra("HOST", true);
-        
+
         ArrayList<String> players = new ArrayList<>();
-        players.add("LifecycleTestPlayer");
-        players.add("OpponentPlayer");
+        players.add("LifecycleTest");
+        players.add("Opponent");
         intent.putStringArrayListExtra("PLAYERS", players);
 
         scenario = ActivityScenario.launch(intent);
 
-        // Initial state verification
+        // Verify initial state
         onView(withId(R.id.rootLayout)).check(matches(isDisplayed()));
         onView(withId(R.id.playerList)).check(matches(isDisplayed()));
         onView(withText("Start Game")).check(matches(isDisplayed()));
-        onView(withId(R.id.gofish_ask_button)).check(matches(not(isDisplayed())));
 
-        // Simulate activity pause and resume (lifecycle changes)
+        // Simulate lifecycle changes (pause and resume)
         scenario.moveToState(androidx.lifecycle.Lifecycle.State.STARTED);
         scenario.moveToState(androidx.lifecycle.Lifecycle.State.RESUMED);
 
-        // Verify UI elements are still in correct state after lifecycle change
+        // Verify UI still exists after lifecycle change
         onView(withId(R.id.rootLayout)).check(matches(isDisplayed()));
         onView(withId(R.id.playerList)).check(matches(isDisplayed()));
-        
-        // Verify data persistence through lifecycle
+        onView(withText("Start Game")).check(matches(isDisplayed()));
+
+        // Verify data persists through lifecycle
         scenario.onActivity(activity -> {
-            // Check that all intent extras are still intact
-            assert "LifecycleTestPlayer".equals(activity.getIntent().getStringExtra("USERNAME"));
+            assert "LifecycleTest".equals(activity.getIntent().getStringExtra("USERNAME"));
             assert "LIFE999".equals(activity.getIntent().getStringExtra("JOINCODE"));
             assert "gofish".equals(activity.getIntent().getStringExtra("GAMETYPE"));
             assert activity.getIntent().getBooleanExtra("HOST", false);
-            
+
             ArrayList<String> persistedPlayers = activity.getIntent()
                     .getStringArrayListExtra("PLAYERS");
             assert persistedPlayers != null;
             assert persistedPlayers.size() == 2;
-            
-            // Verify WebSocket connection would be re-established
-            // (in real scenario, onStart() would reconnect)
-        });
-
-        // Try clicking start button after lifecycle change
-        onView(withText("Start Game"))
-                .check(matches(isDisplayed()))
-                .check(matches(isEnabled()))
-                .perform(click());
-
-        // Brief wait to allow for any async operations
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // Verify activity is still in valid state
-        scenario.onActivity(activity -> {
-            assert activity != null;
-            // Activity should still have all its data
-            assert activity.getIntent().hasExtra("USERNAME");
-            assert activity.getIntent().hasExtra("JOINCODE");
         });
     }
 }

@@ -159,8 +159,16 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                     case "START":
                         Log.d(TAG, "START received, switching activity...");
                         WebSocketManager.getInstance().disconnectWebSocket();
-                        Intent i = new Intent(this,
-                                gameType.equals("BLACKJACK") ? BlackjackActivity.class : GofishActivity.class);
+
+                        Intent i;
+                        if (gameType.equalsIgnoreCase("BLACKJACK")) {
+                            i = new Intent(this, BlackjackActivity.class);
+                        } else if (gameType.equalsIgnoreCase("EUCHRE")) {
+                            i = new Intent(this, EuchreActivity.class);
+                        } else {
+                            i = new Intent(this, GofishActivity.class);
+                        }
+
                         i.putExtra("GAMETYPE", gameType);
                         i.putExtra("USERNAME", username);
                         i.putExtra("JOINCODE", joinCode);
