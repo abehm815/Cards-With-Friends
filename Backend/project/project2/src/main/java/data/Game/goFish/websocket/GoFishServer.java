@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArraySet;
 
 @Component
 @ServerEndpoint("/gofish/{lobbyCode}")
@@ -34,7 +33,12 @@ public class GoFishServer {
     }
 
     private static final Map<String, Set<Session>> lobbySessions = new ConcurrentHashMap<>();
-    private static final ObjectMapper mapper = new ObjectMapper();
+    private static ObjectMapper objectMapper = new ObjectMapper();
+
+    @Autowired
+    public void setObjectMapper(ObjectMapper mapper) {
+        GoFishServer.objectMapper = mapper;
+    }
 
     /**
      * Triggered when a WebSocket connection is first opened.
@@ -69,7 +73,7 @@ public class GoFishServer {
     @OnMessage
     public void onMessage(Session session, String message, @PathParam("lobbyCode") String lobbyCode) {
         try {
-            Map<String, Object> msg = mapper.readValue(message, Map.class);
+            Map<String, Object> msg = objectMapper.readValue(message, Map.class);
             String type = (String) msg.get("type");
 
             // Depending on type handle each situation
@@ -214,7 +218,7 @@ public class GoFishServer {
      */
     private void sendJson(Session session, Object obj) {
         try {
-            session.getBasicRemote().sendText(mapper.writeValueAsString(obj));
+            session.getBasicRemote().sendText(objectMapper.writeValueAsString(obj));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -234,7 +238,7 @@ public class GoFishServer {
                         "game", game
                 );
 
-                String json = mapper.writeValueAsString(state);
+                String json = objectMapper.writeValueAsString(state);
 
                 for (Session s : lobbySessions.getOrDefault(lobbyCode, Set.of())) {
                     s.getBasicRemote().sendText(json);

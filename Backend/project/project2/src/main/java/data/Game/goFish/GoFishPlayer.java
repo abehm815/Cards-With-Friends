@@ -1,9 +1,12 @@
 package data.Game.goFish;
 
 import data.Game.MyCard;
+import data.Game.goFish.history.GoFishMatchEventEntity;
+import data.Game.goFish.history.GoFishMatchHistoryEntity;
 import data.User.AppUser;
 import data.User.Stats.GoFishStats;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -124,7 +127,7 @@ public class GoFishPlayer {
      * if one is found, the cards will be removed from the hand and the player's completed books
      * will be increased
      */
-    public void cleanMatchesInHand() {
+    public void cleanMatchesInHand(GoFishMatchHistoryEntity history) {
         int[] cardCount = new int[14];
         // Count all up how much of each value the player has in hand
         for (MyCard card : hand) {
@@ -145,6 +148,18 @@ public class GoFishPlayer {
 
                 // Add card rank pair to books collected
                 completedBooks.add(i);
+
+                // Log event
+                GoFishMatchEventEntity event = new GoFishMatchEventEntity();
+                event.setMatchHistory(history);
+                event.setTimestamp(LocalDateTime.now());
+                event.setPlayer(username);
+                event.setAction("collectPair");
+                event.setTarget(null);
+                event.setCardValue(i);
+                event.setCardDrawn(null);
+                history.getEvents().add(event);
+
                 if (userRef.getUserStats() != null) { this.getStats().addBookCollected(); }
             }
         }
