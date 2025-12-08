@@ -16,6 +16,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.res.ResourcesCompat;
 
@@ -59,6 +60,11 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
 
     private static final String TAG = "LobbyViewActivity";
 
+    // Polling for kick detection
+    private android.os.Handler kickCheckHandler = new android.os.Handler();
+    private Runnable kickCheckRunnable;
+    private static final int KICK_CHECK_INTERVAL = 2000; // Check every 2 seconds
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -91,6 +97,115 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         leaveBtn.setOnClickListener(v -> leaveLobbyRequest());
         findViewById(R.id.chat_button).setOnClickListener(v -> openChatSheet());
         startBtn.setOnClickListener(v -> startGame());
+
+        // Start kick detection polling
+        startKickDetection();
+    }
+
+    // ------------------ Kick Detection ------------------
+
+    /**
+     * Starts periodic checking if the user is still in the lobby
+     */
+    private void startKickDetection() {
+        kickCheckRunnable = new Runnable() {
+            @Override
+            public void run() {
+                checkIfStillInLobby();
+                kickCheckHandler.postDelayed(this, KICK_CHECK_INTERVAL);
+            }
+        };
+        kickCheckHandler.postDelayed(kickCheckRunnable, KICK_CHECK_INTERVAL);
+    }
+
+    /**
+     * Stops the kick detection polling
+     */
+    private void stopKickDetection() {
+        if (kickCheckHandler != null && kickCheckRunnable != null) {
+            kickCheckHandler.removeCallbacks(kickCheckRunnable);
+        }
+    }
+
+    /**
+     * Checks if the current user is still in the lobby
+     * If not, shows a dialog and returns to lobby selection
+     */
+    private void checkIfStillInLobby() {
+        String url = "http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/" + joinCode;
+        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, url, null,
+                response -> {
+                    try {
+                        JSONArray usersArray = response.getJSONArray("users");
+                        boolean stillInLobby = false;
+
+                        for (int i = 0; i < usersArray.length(); i++) {
+                            String user = usersArray.getJSONObject(i).getString("username");
+                            if (user.equals(username)) {
+                                stillInLobby = true;
+                                break;
+                            }
+                        }
+
+                        if (!stillInLobby) {
+                            // User has been kicked!
+                            runOnUiThread(() -> handleKicked());
+                        }
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error checking lobby status", e);
+                    }
+                },
+                error -> {
+                    // Lobby might have been deleted
+                    Log.w(TAG, "Lobby check failed - lobby may have been deleted");
+                    if (error.networkResponse != null && error.networkResponse.statusCode == 404) {
+                        runOnUiThread(() -> handleLobbyDeleted());
+                    }
+                });
+
+        VolleySingleton.getInstance(this).addToRequestQueue(req);
+    }
+
+    /**
+     * Handles when the user has been kicked from the lobby
+     */
+    private void handleKicked() {
+        stopKickDetection();
+        WebSocketManager.getInstance().disconnectWebSocket();
+
+        new AlertDialog.Builder(this)
+                .setTitle("Removed from Lobby")
+                .setMessage("You have been removed from this lobby by an administrator.")
+                .setCancelable(false)
+                .setPositiveButton("OK", (dialog, which) -> returnToLobbySelection())
+                .show();
+    }
+
+    /**
+     * Handles when the lobby has been deleted
+     */
+    private void handleLobbyDeleted() {
+        stopKickDetection();
+        WebSocketManager.getInstance().disconnectWebSocket();
+
+        new AlertDialog.Builder(this)
+                .setTitle("Lobby Closed")
+                .setMessage("This lobby has been closed.")
+                .setCancelable(false)
+                .setPositiveButton("OK", (dialog, which) -> returnToLobbySelection())
+                .show();
+    }
+
+    /**
+     * Returns user to the lobby selection screen
+     */
+    private void returnToLobbySelection() {
+        Intent intent = new Intent(this, LobbyActivity.class);
+        intent.putExtra("USERNAME", username);
+        intent.putExtra("GAMETYPE", gameType);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        finish();
     }
 
     // ------------------ Accent Color Helpers ------------------
@@ -120,11 +235,20 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         String wsUrl = "ws://coms-3090-006.class.las.iastate.edu:8080/ws/lobby/" + joinCode + "/" + username;
         WebSocketManager.getInstance().connectWebSocket(wsUrl);
         WebSocketManager.getInstance().setWebSocketListener(this);
+        startKickDetection(); // Resume kick detection
     }
 
-    @Override protected void onStop() {
+    @Override
+    protected void onStop() {
         super.onStop();
         if (chatDialog != null && chatDialog.isShowing()) chatDialog.dismiss();
+        stopKickDetection(); // Pause kick detection when activity is not visible
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopKickDetection(); // Clean up when activity is destroyed
     }
 
     // ------------------ WebSocket ------------------
@@ -158,6 +282,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                         break;
                     case "START":
                         Log.d(TAG, "START received, switching activity...");
+                        stopKickDetection(); // Stop checking when game starts
                         WebSocketManager.getInstance().disconnectWebSocket();
                         Intent i = new Intent(this,
                                 gameType.equals("BLACKJACK") ? BlackjackActivity.class : GofishActivity.class);
@@ -167,6 +292,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                         i.putExtra("HOST", isHost);
                         i.putStringArrayListExtra("PLAYERS", currentUsers);
                         startActivity(i);
+                        finish();
                         break;
                 }
             } catch (JSONException e) {
@@ -225,7 +351,8 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         for (int i = 0; i < userListLayout.getChildCount(); i++) {
             View v = userListLayout.getChildAt(i);
             if (v instanceof MaterialCardView) {
-                TextView t = (TextView) ((MaterialCardView) v).getChildAt(0);
+                LinearLayout inner = (LinearLayout) ((MaterialCardView) v).getChildAt(0);
+                TextView t = (TextView) inner.getChildAt(1); // Get the TextView (second child)
                 if (t.getText().toString().equals(username)) {
                     userListLayout.removeViewAt(i);
                     break;
@@ -280,11 +407,13 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         String url = "http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/" + joinCode;
         JsonObjectRequest req = new JsonObjectRequest(Request.Method.DELETE, url, null,
                 res -> {
+                    stopKickDetection();
                     Intent i = new Intent(this, LobbyActivity.class);
                     i.putExtra("USERNAME", username);
                     i.putExtra("GAMETYPE", gameType);
                     WebSocketManager.getInstance().disconnectWebSocket();
                     startActivity(i);
+                    finish();
                 },
                 err -> {
                     Toast.makeText(this, "Failed to delete lobby", Toast.LENGTH_LONG).show();
@@ -299,12 +428,14 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                 (Response.Listener<JSONObject>) res -> {
                     try {
                         if ("success".equals(res.getString("message"))) {
+                            stopKickDetection();
                             Toast.makeText(this, "Lobby left!", Toast.LENGTH_SHORT).show();
                             Intent i = new Intent(this, LobbyActivity.class);
                             i.putExtra("USERNAME", username);
                             i.putExtra("GAMETYPE", gameType);
                             WebSocketManager.getInstance().disconnectWebSocket();
                             startActivity(i);
+                            finish();
                         } else Toast.makeText(this, "Can't leave lobby", Toast.LENGTH_SHORT).show();
                     } catch (JSONException e) { throw new RuntimeException(e); }
                 },
