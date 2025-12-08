@@ -7,12 +7,11 @@ stages:             # these stages (jobs) form the CICD pipeline
 
 maven-build:
   stage: mavenbuild
-  image: maven:3.9.9-eclipse-temurin-17
   tags:
     - springboot_tag
   script:
     - cd Backend/project/project2
-    - mvn -Dmaven.test.skip=true package
+    - mvn -package
   artifacts:
     paths:
       - Backend/project/project2/target/*.jar
@@ -24,7 +23,6 @@ maven-build:
 
 maven-test:
   stage: maventest
-  image: maven:3.9.9-eclipse-temurin-17
   tags:
     - springboot_tag
   script:
