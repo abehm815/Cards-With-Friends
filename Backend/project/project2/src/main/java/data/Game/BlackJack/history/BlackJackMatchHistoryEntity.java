@@ -26,9 +26,7 @@ public class BlackJackMatchHistoryEntity {
     // Match end time
     @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss")
     private LocalDateTime endTime;
-
-    // Winner of the match
-    private String winner;
+    
 
     // List of events in the match
     @OneToMany(mappedBy = "matchHistory", cascade = CascadeType.ALL, orphanRemoval = true)

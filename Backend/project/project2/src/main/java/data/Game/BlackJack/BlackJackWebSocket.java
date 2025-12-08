@@ -1,6 +1,8 @@
 package data.Game.BlackJack;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import data.Game.BlackJack.history.BlackJackMatchHistoryEntity;
+import data.Game.BlackJack.history.BlackJackMatchHistoryRepository;
 import data.Lobby.LobbyRepository;
 import data.User.AppUserRepository;
 import data.User.Stats.UserStatsRepository;
@@ -54,6 +56,7 @@ public class BlackJackWebSocket {
     private static LobbyRepository lobbyRepository;
     private static AppUserRepository appUserRepository;
     private static UserStatsRepository userStatsRepository;
+    private static BlackJackMatchHistoryRepository BlackJackMatchHistoryRepository;
 
     @Autowired
     public void setLobbyRepository(LobbyRepository repo) {
@@ -69,6 +72,9 @@ public class BlackJackWebSocket {
     public void setUserStatsRepository(UserStatsRepository repo) {
         BlackJackWebSocket.userStatsRepository = repo;
     }
+
+    @Autowired
+    public void setBlackJackMatchHistory(BlackJackMatchHistoryRepository repo) {BlackJackWebSocket.BlackJackMatchHistoryRepository = repo;}
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -95,6 +101,7 @@ public class BlackJackWebSocket {
             game.setLobbyRepository(lobbyRepository);
             game.setAppUserRepository(appUserRepository);
             game.setUserStatsRepository(userStatsRepository);
+            game.setBlackJackMatchHistoryRepository(BlackJackMatchHistoryRepository);
             game.setBroadcastFunction(json -> broadcastToLobby(json, code));
             return game;
         });

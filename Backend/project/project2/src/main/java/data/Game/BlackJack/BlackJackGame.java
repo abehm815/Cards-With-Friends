@@ -11,7 +11,6 @@ package data.Game.BlackJack;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import data.Game.BlackJack.history.BlackJackMatchEventEntity;
 import data.Game.BlackJack.history.BlackJackMatchHistoryEntity;
-import data.Game.BlackJack.history.BlackJackMatchHistoryEntity;
 import data.Game.BlackJack.history.BlackJackMatchHistoryRepository;
 import data.User.AppUser;
 import data.User.AppUserRepository;
@@ -409,7 +408,7 @@ public class BlackJackGame {
             return;
         }
 
-        //logEvent(player.getUsername(), "SPLIT", null, player.getCurrentHandIndex(), player.getHandValue(), player.getBetOnCurrentHand(), null, dealer.getHand().get(0).toString(), dealer.getHandValue());
+        logEvent(player.getUsername(), "SPLIT", null, null, null, player.getBetOnCurrentHand(), null, dealer.getHand().get(0).toString(), dealer.getHandValue());
 
         // Deduct chips for second hand
         player.setChips(player.getChips() - originalBet);
@@ -420,15 +419,20 @@ public class BlackJackGame {
 
         hand.clear();
         hand.add(firstCard); // first hand keeps first card
-        hand.add(deck.dealCard(true));
+        BlackJackCard tempcard1 = deck.dealCard(true);
+        hand.add(tempcard1);
         player.setBetOnCurrentHand(originalBet); // original bet stays
+
+        logEvent(player.getUsername(), "DRAW_FOR_HAND1", tempcard1.toString(),0, player.getHandValue(hand), player.getBets().get(0),null, dealer.getHand().get(0).toString(), dealer.getHandValue());
 
         // Create second hand
         List<BlackJackCard> secondHand = new ArrayList<>();
         secondHand.add(secondCard);
-        secondHand.add(deck.dealCard(true)); // deal one card to second hand
+        BlackJackCard tempcard2 = deck.dealCard(true);
+        secondHand.add(tempcard2); // deal one card to second hand
         player.addHand(secondHand, originalBet); // second hand bet = original bet
 
+        logEvent(player.getUsername(), "DRAW_FOR_HAND2", tempcard2.toString(),0, player.getHandValue(hand), player.getBets().get(1),null, dealer.getHand().get(0).toString(), dealer.getHandValue());
 
         System.out.println(username + " splits into two hands with separate bets.");
     }
@@ -445,6 +449,7 @@ public class BlackJackGame {
         );
         if (removed) {
             System.out.println("Removed player: " + username);
+            logEvent(username, username + "Left the game", null, null,null, null,null, dealer.getHand().get(0).toString(), dealer.getHandValue());
         } else {
             System.out.println("No player found with username: " + username);
         }
@@ -478,6 +483,7 @@ public class BlackJackGame {
                 if (playerBust) {
                     System.out.println("Bust! Lost bet of " + bet);
                     playerStats.addMoneyWon(-bet);
+                    logEvent(player.getUsername(), "Player Bust", null,i, player.getHandValue(hand), bet , 0, dealer.getHand().get(0).toString(), dealer.getHandValue());
                     // Loss: do nothing since chips already deducted when bet was placed
                 } else if (dealerBust) {
                     System.out.println("Dealer bust! Won " + bet * 2);
@@ -485,18 +491,22 @@ public class BlackJackGame {
                     playerStats.addMoneyWon(bet);
                     playerStats.addBetWon();
                     playerStats.addGameWon();
+                    logEvent(player.getUsername(), "Dealer Bust", null,i, player.getHandValue(hand), bet , bet*2 , dealer.getHand().get(0).toString(), dealer.getHandValue());
                 } else if (playerValue > dealerValue) {
                     System.out.println("Win! Won " + bet * 2);
                     player.setChips(player.getChips() + 2 * bet);
                     playerStats.addMoneyWon(bet);
                     playerStats.addBetWon();
                     playerStats.addGameWon();
+                    logEvent(player.getUsername(), "Player's Hand higher", null,i, player.getHandValue(hand), bet , bet*2, dealer.getHand().get(0).toString(), dealer.getHandValue());
                 } else if (playerValue == dealerValue) {
                     System.out.println("Tie! Bet returned: " + bet);
                     player.setChips(player.getChips() + bet);
+                    logEvent(player.getUsername(), "Player and Dealer Tie", null,i, player.getHandValue(hand), bet , bet, dealer.getHand().get(0).toString(), dealer.getHandValue());
                 } else {
                     System.out.println("Loss! Lost bet of " + bet);
                     playerStats.addMoneyWon(-bet);
+                    logEvent(player.getUsername(), "Player Hand Worse than Dealer", null,i, player.getHandValue(hand), bet , 0, dealer.getHand().get(0).toString(), dealer.getHandValue());
                 }
                 playerStats.addGamePlayed();
                 updateStatsBlackjack();
@@ -641,6 +651,9 @@ public class BlackJackGame {
     public void setUserStatsRepository(UserStatsRepository repo) {
         this.userStatsRepository = repo;
     }
+
+
+    public void setBlackJackMatchHistoryRepository (BlackJackMatchHistoryRepository repo){ this.BlackJackMatchHistoryRepository = repo; }
 
     /**
      * Updates persistent Blackjack statistics for all players in the game.
