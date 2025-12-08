@@ -35,7 +35,6 @@ public class BlackJackMatchEventEntity {
     private Integer handIndex;
 
     // Hand values before/after action
-    private Integer handValueBefore;
     private Integer handValueAfter;
 
     // Betting details (optional depending on action)
@@ -102,13 +101,6 @@ public class BlackJackMatchEventEntity {
         this.handIndex = handIndex;
     }
 
-    public Integer getHandValueBefore() {
-        return handValueBefore;
-    }
-
-    public void setHandValueBefore(Integer handValueBefore) {
-        this.handValueBefore = handValueBefore;
-    }
 
     public Integer getHandValueAfter() {
         return handValueAfter;
