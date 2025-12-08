@@ -9,6 +9,10 @@
  */
 package data.Game.BlackJack;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import data.Game.BlackJack.history.BlackJackMatchEventEntity;
+import data.Game.BlackJack.history.BlackJackMatchHistoryEntity;
+import data.Game.BlackJack.history.BlackJackMatchHistoryEntity;
+import data.Game.BlackJack.history.BlackJackMatchHistoryRepository;
 import data.User.AppUser;
 import data.User.AppUserRepository;
 import data.Lobby.Lobby;
@@ -19,6 +23,8 @@ import data.User.Stats.UserStats;
 import data.User.Stats.UserStatsRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -35,11 +41,17 @@ public class BlackJackGame {
     @Autowired
     UserStatsRepository userStatsRepository;
 
+    @Autowired
+    private BlackJackMatchHistoryRepository BlackJackMatchHistoryRepository;
+
 
     /** Broadcast function used to send JSON messages to WebSocket clients. */
     private Consumer<String> broadcastFunction;
     /** Shared mapper used for JSON serialization of broadcast messages. */
     private static final ObjectMapper mapper = new ObjectMapper();
+    
+    
+    private BlackJackMatchHistoryEntity matchHistory;
 
     /**
      * Sets the WebSocket broadcast function for sending game updates.
@@ -72,6 +84,8 @@ public class BlackJackGame {
         this.players = new ArrayList<>();
         deck = new BlackJackDeck(6);
         this.dealer = new BlackJackDealer();
+        initMatchHistory(lobbyCode);
+        matchHistory.setStartTime(LocalDateTime.now());
     }
 
 
@@ -338,6 +352,7 @@ public class BlackJackGame {
         if (player == null || player.getHasStoodForHand() || !roundInProgress) return;
 
         player.setHasStood(true);
+        logEvent(player.getUsername(), "STAND", null, player.getCurrentHandIndex(),player.getHandValue(), player.getBetOnCurrentHand(), null, dealer.getHand().get(0).toString(), dealer.getHandValue());
         System.out.println(username + " stands.");
     }
 
@@ -349,8 +364,9 @@ public class BlackJackGame {
     public void playerHit(String username) {
         BlackJackPlayer player = getPlayer(username);
         if (player == null || player.getHasStoodForHand() || !roundInProgress) return;
-
-        player.addCard(deck.dealCard(true));
+        BlackJackCard tempcard = deck.dealCard(true);
+        player.addCard(tempcard);
+        logEvent(player.getUsername(), "HIT", tempcard.toString(), player.getCurrentHandIndex(),player.getHandValue(), player.getBetOnCurrentHand(), null, dealer.getHand().get(0).toString(), dealer.getHandValue());
         System.out.println(username + " hits. Hand value: " + player.getHandValue());
 
     }
@@ -365,7 +381,9 @@ public class BlackJackGame {
         if (player == null || player.getHasStoodForHand() || !roundInProgress) return;
         player.setChips(player.getChips() - player.getBetOnCurrentHand());
         player.setBetOnCurrentHand(player.getBetOnCurrentHand()*2);
-        player.addCard(deck.dealCard(true));
+        BlackJackCard tempcard = deck.dealCard(true);
+        player.addCard(tempcard);
+        logEvent(player.getUsername(), "DOUBLE", tempcard.toString(), player.getCurrentHandIndex(),player.getHandValue(), player.getBetOnCurrentHand(), null, dealer.getHand().get(0).toString(), dealer.getHandValue());
         playerStand(username);
     }
 
@@ -390,6 +408,8 @@ public class BlackJackGame {
             System.out.println(username + " does not have enough chips to split.");
             return;
         }
+
+        //logEvent(player.getUsername(), "SPLIT", null, player.getCurrentHandIndex(), player.getHandValue(), player.getBetOnCurrentHand(), null, dealer.getHand().get(0).toString(), dealer.getHandValue());
 
         // Deduct chips for second hand
         player.setChips(player.getChips() - originalBet);
@@ -658,6 +678,7 @@ public class BlackJackGame {
                 managed.getUserStats().addGameStats("Blackjack", newStats);
             }
             AppUserRepository.save(managed);
+            saveMatchHistory();
         }
     }
 
@@ -676,6 +697,54 @@ public class BlackJackGame {
         dst.setTimesDoubledDown(src.getTimesDoubledDown());
         dst.setTimesSplit(src.getTimesSplit());
         // add any other fields your BlackjackStats has
+    }
+
+    public void initMatchHistory(String matchId) {
+        BlackJackMatchHistoryEntity history = new BlackJackMatchHistoryEntity();
+        history.setMatchId(matchId);
+        history.setStartTime(LocalDateTime.now());
+        this.matchHistory = history;
+    }
+
+    public void logEvent(
+            String player,
+            String action,
+            String card,
+            Integer handIndex,
+            Integer handValueAfter,
+            Integer betAmount,
+            Integer payoutAmount,
+            String dealerUpCard,
+            Integer dealerFinalValue
+    ) {
+        BlackJackMatchEventEntity event = new BlackJackMatchEventEntity();
+        event.setMatchHistory(this.matchHistory);
+        event.setTimestamp(LocalDateTime.now());
+
+        event.setPlayer(player);
+        event.setAction(action);
+
+        event.setCard(card);
+        event.setHandIndex(handIndex);
+
+        event.setHandValueAfter(handValueAfter);
+
+        event.setBetAmount(betAmount);
+        event.setPayoutAmount(payoutAmount);
+
+        event.setDealerUpCard(dealerUpCard);
+        event.setDealerFinalValue(dealerFinalValue);
+
+        this.matchHistory.getEvents().add(event);
+    }
+
+    /**
+     * Saves the data from the game
+     */
+    @Transactional
+    public void saveMatchHistory() {
+        matchHistory.setEndTime(LocalDateTime.now());
+        BlackJackMatchHistoryRepository.save(matchHistory);
     }
 }
 
