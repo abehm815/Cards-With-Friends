@@ -66,8 +66,6 @@ android-build:
     - export GRADLE_USER_HOME=`pwd`/.gradle
     - chmod +x ./Frontend/CardsWithFriends/gradlew
   script:
-    -sudo systemctl start docker
-    -sudo systemctl enable docker
     - cd Frontend/CardsWithFriends
     - ./gradlew build
   only:
@@ -85,8 +83,6 @@ android-test:
     - export GRADLE_USER_HOME=`pwd`/.gradle
     - chmod +x ./Frontend/CardsWithFriends/gradlew
   script:
-    -sudo systemctl start docker
-    -sudo systemctl enable docker
     - cd Frontend/CardsWithFriends
     - ./gradlew test
   only:
