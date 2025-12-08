@@ -1,92 +1,351 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fillViewport="true">
 
-    <TextView
-        android:id="@+id/admin_greeting_text"
-        android:layout_width="wrap_content"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:gravity="center"
-        android:text="Here you can update user stats"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.5"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.125" />
+        android:padding="16dp">
 
-    <Button
-        android:id="@+id/admin_update_stats_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="128dp"
-        android:text="Update stats"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.464"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/admin_greeting_text"
-        app:layout_constraintVertical_bias="0.485" />
+        <!-- Header -->
+        <TextView
+            android:id="@+id/admin_header_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Admin Dashboard"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#1976D2"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <EditText
-        android:id="@+id/admin_user_input"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="Username: "
-        android:inputType="text"
-        app:layout_constraintBottom_toTopOf="@+id/admin_update_stats_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.502"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/admin_greeting_text"
-        app:layout_constraintVertical_bias="0.159" />
+        <TextView
+            android:id="@+id/admin_subtitle_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Manage users, stats, and account settings"
+            android:textSize="14sp"
+            android:textColor="#666666"
+            android:layout_marginBottom="24dp"
+            app:layout_constraintTop_toBottomOf="@id/admin_header_text"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-    <EditText
-        android:id="@+id/admin_game_input"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="Game: "
-        android:inputType="text"
-        app:layout_constraintBottom_toTopOf="@+id/admin_update_stats_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/admin_greeting_text"
-        app:layout_constraintVertical_bias="0.369" />
+        <!-- DELETE ACCOUNT SECTION -->
+        <View
+            android:id="@+id/divider1"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="#E0E0E0"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/admin_subtitle_text" />
 
-    <EditText
-        android:id="@+id/admin_stat_input"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="Stat to change: "
-        android:inputType="text"
-        app:layout_constraintBottom_toTopOf="@+id/admin_update_stats_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/admin_greeting_text"
-        app:layout_constraintVertical_bias="0.578" />
+        <TextView
+            android:id="@+id/delete_section_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete Account"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#D32F2F"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/divider1"
+            app:layout_constraintStart_toStartOf="parent" />
 
-    <EditText
-        android:id="@+id/admin_new_stat_input"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:ems="10"
-        android:hint="New stat: "
-        android:inputType="text"
-        app:layout_constraintBottom_toTopOf="@+id/admin_update_stats_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/admin_greeting_text"
-        app:layout_constraintVertical_bias="0.784" />
+        <TextView
+            android:id="@+id/delete_section_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Permanently remove a user account from the system"
+            android:textSize="12sp"
+            android:textColor="#666666"
+            android:layout_marginTop="4dp"
+            app:layout_constraintTop_toBottomOf="@id/delete_section_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
+        <EditText
+            android:id="@+id/admin_delete_username_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Username to delete"
+            android:inputType="text"
+            android:layout_marginTop="12dp"
+            android:padding="12dp"
+            android:background="@android:drawable/edit_text"
+            app:layout_constraintTop_toBottomOf="@id/delete_section_description"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+        <Button
+            android:id="@+id/admin_delete_account_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Delete Account"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#D32F2F"
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/admin_delete_username_input"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- CHIPS MANAGEMENT SECTION -->
+        <View
+            android:id="@+id/divider2"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="#E0E0E0"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/admin_delete_account_button" />
+
+        <TextView
+            android:id="@+id/chips_section_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Manage Chips"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#F57C00"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/divider2"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/chips_section_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Add or remove chips from a player's account"
+            android:textSize="12sp"
+            android:textColor="#666666"
+            android:layout_marginTop="4dp"
+            app:layout_constraintTop_toBottomOf="@id/chips_section_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <EditText
+            android:id="@+id/admin_chips_username_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Username"
+            android:inputType="text"
+            android:layout_marginTop="12dp"
+            android:padding="12dp"
+            android:background="@android:drawable/edit_text"
+            app:layout_constraintTop_toBottomOf="@id/chips_section_description"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <EditText
+            android:id="@+id/admin_chips_amount_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Amount"
+            android:inputType="number"
+            android:layout_marginTop="8dp"
+            android:padding="12dp"
+            android:background="@android:drawable/edit_text"
+            app:layout_constraintTop_toBottomOf="@id/admin_chips_username_input"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <Button
+            android:id="@+id/admin_add_chips_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Add Chips"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#4CAF50"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="4dp"
+            app:layout_constraintTop_toBottomOf="@id/admin_chips_amount_input"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toStartOf="@id/admin_remove_chips_button" />
+
+        <Button
+            android:id="@+id/admin_remove_chips_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Remove Chips"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF9800"
+            android:layout_marginTop="12dp"
+            android:layout_marginStart="4dp"
+            app:layout_constraintTop_toBottomOf="@id/admin_chips_amount_input"
+            app:layout_constraintStart_toEndOf="@id/admin_add_chips_button"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- UPDATE STATS SECTION -->
+        <View
+            android:id="@+id/divider3"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="#E0E0E0"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/admin_add_chips_button" />
+
+        <TextView
+            android:id="@+id/stats_section_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Update User Stats"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#1976D2"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/divider3"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/stats_section_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Modify game statistics for any user"
+            android:textSize="12sp"
+            android:textColor="#666666"
+            android:layout_marginTop="4dp"
+            app:layout_constraintTop_toBottomOf="@id/stats_section_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <EditText
+            android:id="@+id/admin_user_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Username"
+            android:inputType="text"
+            android:layout_marginTop="12dp"
+            android:padding="12dp"
+            android:background="@android:drawable/edit_text"
+            app:layout_constraintTop_toBottomOf="@id/stats_section_description"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <EditText
+            android:id="@+id/admin_game_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Game (e.g. Blackjack, Euchre, GoFish)"
+            android:inputType="text"
+            android:layout_marginTop="8dp"
+            android:padding="12dp"
+            android:background="@android:drawable/edit_text"
+            app:layout_constraintTop_toBottomOf="@id/admin_user_input"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <EditText
+            android:id="@+id/admin_stat_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="Stat to change (e.g. betWon, gameWon)"
+            android:inputType="text"
+            android:layout_marginTop="8dp"
+            android:padding="12dp"
+            android:background="@android:drawable/edit_text"
+            app:layout_constraintTop_toBottomOf="@id/admin_game_input"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <EditText
+            android:id="@+id/admin_new_stat_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:hint="New stat value"
+            android:inputType="text"
+            android:layout_marginTop="8dp"
+            android:padding="12dp"
+            android:background="@android:drawable/edit_text"
+            app:layout_constraintTop_toBottomOf="@id/admin_stat_input"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <Button
+            android:id="@+id/admin_update_stats_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Update Stats"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#1976D2"
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/admin_new_stat_input"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <!-- LOBBY MANAGEMENT SECTION -->
+        <View
+            android:id="@+id/divider4"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            android:background="#E0E0E0"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/admin_update_stats_button" />
+
+        <TextView
+            android:id="@+id/lobby_section_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Manage Active Lobbies"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="#4CAF50"
+            android:layout_marginTop="24dp"
+            app:layout_constraintTop_toBottomOf="@id/divider4"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/lobby_section_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="View active lobbies and remove players if needed"
+            android:textSize="12sp"
+            android:textColor="#666666"
+            android:layout_marginTop="4dp"
+            app:layout_constraintTop_toBottomOf="@id/lobby_section_title"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <Button
+            android:id="@+id/admin_refresh_lobbies_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Refresh Lobbies"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#4CAF50"
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/lobby_section_description"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <Button
+            android:id="@+id/admin_delete_empty_lobbies_button"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:text="Clean Up Empty Lobbies"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#FF5722"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toBottomOf="@id/admin_refresh_lobbies_button"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+        <LinearLayout
+            android:id="@+id/admin_lobbies_container"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="24dp"
+            app:layout_constraintTop_toBottomOf="@id/admin_delete_empty_lobbies_button"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</ScrollView>
