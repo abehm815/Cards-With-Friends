@@ -27,6 +27,8 @@
             android:exported="false"/>
         <activity android:name=".blackjack.BlackjackActivity"
             android:exported="false"/>
+        <activity android:name=".crazy8.Crazy8Activity"
+            android:exported="false"/>
         <activity android:name=".StatsActivity"
             android:exported="false"/>
         <activity android:name=".LobbyViewActivity"
