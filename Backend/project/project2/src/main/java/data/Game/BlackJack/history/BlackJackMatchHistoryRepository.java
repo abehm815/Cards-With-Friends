@@ -1,6 +1,5 @@
 package data.Game.BlackJack.history;
 
-import data.Game.goFish.history.GoFishMatchHistoryEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
