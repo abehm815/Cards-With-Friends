@@ -1,6 +1,9 @@
 package data.Game.Crazy8;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import data.Game.Crazy8.Crazy8WebSocket;
+import data.Game.Crazy8.history.Crazy8MatchHistoryRepository;
+import data.Game.Crazy8.history.Crazy8MatchHistoryRepository;
 import data.Lobby.LobbyRepository;
 import data.User.AppUserRepository;
 import data.User.Stats.UserStatsRepository;
@@ -57,6 +60,7 @@ public class Crazy8WebSocket {
     private static LobbyRepository lobbyRepository;
     private static AppUserRepository appUserRepository;
     private static UserStatsRepository userStatsRepository;
+    private static Crazy8MatchHistoryRepository Crazy8MatchHistoryRepository;
 
     /**
      * Injects the LobbyRepository.
@@ -88,6 +92,10 @@ public class Crazy8WebSocket {
         Crazy8WebSocket.userStatsRepository = repo;
     }
 
+    @Autowired
+    public void setCrazy8MatchHistory(Crazy8MatchHistoryRepository repo) {
+        Crazy8WebSocket.Crazy8MatchHistoryRepository = repo;}
+
 
     @Autowired
     private ApplicationContext applicationContext;
@@ -102,6 +110,7 @@ public class Crazy8WebSocket {
             game.setLobbyRepository(lobbyRepository);
             game.setAppUserRepository(appUserRepository);
             game.setUserStatsRepository(userStatsRepository);
+            game.setCrazy8MatchHistoryRepository(Crazy8MatchHistoryRepository);
             game.setBroadcastFunction(json -> broadcastToLobby(json, code));
             return game;
         });
