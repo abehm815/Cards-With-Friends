@@ -58,6 +58,9 @@ public class LobbyActivity extends AppCompatActivity {
             case "GO_FISH":
                 accentColor = ContextCompat.getColor(this, R.color.my_green);
                 break;
+            case "CRAZY8":
+                accentColor = ContextCompat.getColor(this, R.color.my_orange);
+                break;
             default:
                 accentColor = ContextCompat.getColor(this, android.R.color.white);
         }

@@ -67,12 +67,18 @@ public class JoinActivity extends AppCompatActivity {
                     gameWord = "GO FISH";
                     joinButton.setBackground(ContextCompat.getDrawable(this, R.drawable.btn_green));
                     break;
+                case "CRAZY8":
+                    colorRes = R.color.my_orange;
+                    gameWord = "CRAZY 8";
+                    joinButton.setBackground(ContextCompat.getDrawable(this, R.drawable.btn_orange));
+                    break;
                 default:
                     colorRes = R.color.white;
                     gameWord = gameType;
                     joinButton.setBackground(ContextCompat.getDrawable(this, R.drawable.btn_white));
                     break;
             }
+
 
             // Create styled title: ENTER {colored game} CODE
             String fullTitle = "ENTER " + gameWord + " CODE";
