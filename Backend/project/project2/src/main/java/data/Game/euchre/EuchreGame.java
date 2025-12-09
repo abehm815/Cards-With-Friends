@@ -318,31 +318,7 @@ public class EuchreGame {
     public EuchrePlayer giveTrick() {
 
         // === 1. Determine winning card ===
-        EuchreCard winningCard = currentTrick.get(0);
-
-        for (int i = 1; i < currentTrick.size(); i++) {
-            EuchreCard challenger = currentTrick.get(i);
-
-            boolean challengerIsTrump = findIfTrumpOrBower(challenger);
-            boolean winnerIsTrump = findIfTrumpOrBower(winningCard);
-
-            if (challengerIsTrump && !winnerIsTrump) {
-                // Trump beats non-trump
-                winningCard = challenger;
-            } else if (challengerIsTrump && winnerIsTrump) {
-                // Compare trump values
-                if (challenger.getTrumpValue(trumpSuit) > winningCard.getTrumpValue(trumpSuit)) {
-                    winningCard = challenger;
-                }
-            } else if (!challengerIsTrump && !winnerIsTrump) {
-                // Neither card is trump → check lead suit
-                if (challenger.getSuit() == leadSuit &&
-                        winningCard.getSuit() == leadSuit &&
-                        challenger.getValue() > winningCard.getValue()) {
-                    winningCard = challenger;
-                }
-            }
-        }
+        EuchreCard winningCard = determineWinningCard(currentTrick, trumpSuit, leadSuit);
 
         // === 2. Award trick to the correct team ===
         EuchrePlayer winner = winningCard.getOwner();
@@ -538,7 +514,6 @@ public class EuchreGame {
             return teamTwo;
         }
 
-        System.out.println("No team has won yet!");
         return null;
     }
 
@@ -618,6 +593,73 @@ public class EuchreGame {
     }
 
     /**
+     * Get team one score
+     * @return score
+     */
+    public int getTeamOneScore() {
+        return teamOne.getScore();
+    }
+
+    /**
+     * Get team two score
+     * @return score
+     */
+    public int getTeamTwoScore() {
+        return teamTwo.getScore();
+    }
+
+    /**
+     * Determines winning card
+     * @param trick current trick
+     * @param trumpSuit trump
+     * @param leadSuit lead
+     * @return winning card
+     */
+    private EuchreCard determineWinningCard(List<EuchreCard> trick, char trumpSuit, char leadSuit) {
+        EuchreCard winner = trick.get(0);
+
+        for (int i = 1; i < trick.size(); i++) {
+            EuchreCard challenger = trick.get(i);
+
+            int winnerRank = getEuchreRank(winner, trumpSuit, leadSuit);
+            int challengerRank = getEuchreRank(challenger, trumpSuit, leadSuit);
+
+            if (challengerRank > winnerRank) {
+                winner = challenger;
+            }
+        }
+
+        return winner;
+    }
+
+    /**
+     * Gets the euchre rank of a card
+     * @param card card
+     * @param trump trump suit
+     * @param lead lead suit
+     * @return value of card
+     */
+    private int getEuchreRank(EuchreCard card, char trump, char lead) {
+        char effSuit = card.getEffectiveSuit(trump);
+
+        // Right bower
+        if (card.value == 11 && card.suit == trump) return 100;
+
+        // Left bower
+        if (card.value == 11 && effSuit == trump) return 99;
+
+        // Other trump
+        if (effSuit == trump) return 50 + card.value;
+
+        // Lead suit (only if actually following lead)
+        if (effSuit == lead) return 10 + card.value;
+
+        // Not trump, not lead → cannot win
+        return 0;
+    }
+
+
+    /**
      * Initializes a new match history using the lobby id as match id
      * @param matchId lobby id
      */
@@ -626,6 +668,14 @@ public class EuchreGame {
         history.setMatchId(matchId);
         history.setStartTime(LocalDateTime.now());
         this.matchHistory = history;
+    }
+
+    /**
+     * Get match history
+     * @return matchHistory
+     */
+    public EuchreMatchHistoryEntity getMatchHistory() {
+        return matchHistory;
     }
 
     public void logEvent(
@@ -667,6 +717,4 @@ public class EuchreGame {
 
         this.matchHistory.getEvents().add(event);
     }
-
-
 }
