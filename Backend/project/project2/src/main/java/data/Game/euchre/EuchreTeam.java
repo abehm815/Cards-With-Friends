@@ -47,6 +47,17 @@ public class EuchreTeam {
     }
 
     /**
+     * Gets the members of the team by string
+     * @return teamMembers
+     */
+    public List<String> getTeamMembersAsStrings() {
+        List<String> toReturn = new ArrayList<>();
+        toReturn.add(teamMembers.get(0).getUsername());
+        toReturn.add(teamMembers.get(1).getUsername());
+        return toReturn;
+    }
+
+    /**
      * Increases the score by a given amount
      * @param amount (how much to increase score by)
      */

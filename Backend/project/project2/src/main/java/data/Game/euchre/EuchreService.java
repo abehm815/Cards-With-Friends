@@ -1,5 +1,6 @@
 package data.Game.euchre;
 
+import data.Game.euchre.history.EuchreMatchHistoryRepository;
 import data.User.AppUser;
 import data.User.AppUserRepository;
 import data.User.Stats.EuchreStats;
@@ -11,6 +12,7 @@ import jakarta.websocket.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,11 +32,15 @@ public class EuchreService {
     @Autowired
     private UserStatsRepository userStatsRepository;
 
+    @Autowired
+    private EuchreMatchHistoryRepository euchreMatchHistoryRepository;
+
     private final Map<String, EuchreGame> activeGames = new ConcurrentHashMap<>();
     private final Map<String, Set<Session>> lobbyPlayers = new ConcurrentHashMap<>();
 
     @Transactional
     public EuchreGame startGame(String lobbyCode, List<String> usernames) {
+        // Add players to list, if username not recognized use "Guest"
         List<EuchrePlayer> players = new ArrayList<>();
         for (String name : usernames) {
             AppUser user = appUserRepository.findByUsernameWithStats(name);
@@ -47,6 +53,11 @@ public class EuchreService {
         }
 
         EuchreGame game = new EuchreGame(players);
+
+        // Inititalize Match History
+        game.initMatchHistory(lobbyCode);
+        game.getMatchHistory().setStartTime(LocalDateTime.now());
+
         game.startGame();
         activeGames.put(lobbyCode, game);
         return game;
@@ -96,6 +107,9 @@ public class EuchreService {
 
             appUserRepository.save(managed);
         }
+
+        // Save match history
+        saveMatchHistory(game, game.getWinner().getTeamMembersAsStrings());
 
         activeGames.remove(lobbyCode);
     }
@@ -158,34 +172,34 @@ public class EuchreService {
 
         String result = game.takeTurn(player, card);
 
-        // If trick complete (4 cards) give trick and potentially points/round handling
+        // If trick complete (4 cards) give trick
         if (game.getCurrentTrick().size() == 4) {
             if (game.getPlayers() != null) {
                 try {
-                    EuchrePlayer trickWinner = null;
-                    try {
-                        trickWinner = game.giveTrick();
-                    } catch (Exception ignored) {
-                        // giveTrick may throw if trick incomplete; ignore
-                    }
-
-                    if (trickWinner != null) {
-                        game.givePoints();
-                        result += " | Trick won by " + trickWinner.getUsername();
-                    }
+                    game.giveTrick();
                 } catch (Exception ex) {
                     // ignore; keep server robust
                 }
             }
         }
 
-        // Check for end of game condition
-        EuchreTeam winnerTeam = game.getWinner();
-        if (winnerTeam != null) {
-            // We have a winning team; persist and remove game
-            endGame(lobbyCode);
-            return result + " | Game over! Winning team score: " + winnerTeam.getScore();
+        // If all tricks have been played, add them up and give points
+        if (game.getPlayers().get(0).getHand().isEmpty()) {
+            game.givePoints();
+
+            // Check for end of game condition
+            EuchreTeam winnerTeam = game.getWinner();
+            if (winnerTeam != null) {
+                // We have a winning team; persist and remove game
+                endGame(lobbyCode);
+                return result + " | Game over! Winning team score: " + winnerTeam.getScore();
+            } else {
+                // Winner was not found, begin new round
+                game.startNewRound();
+            }
         }
+
+
 
         return result;
     }
@@ -204,5 +218,17 @@ public class EuchreService {
             if (c.getValue() == value && c.getSuit() == suit) return c;
         }
         return null;
+    }
+
+    /**
+     * Saves the data from the game
+     * @param game current game
+     * @param winningTeam winning team
+     */
+    @Transactional
+    public void saveMatchHistory(EuchreGame game, List<String> winningTeam) {
+        game.getMatchHistory().setWinningPlayers(winningTeam);
+        game.getMatchHistory().setEndTime(LocalDateTime.now());
+        euchreMatchHistoryRepository.save(game.getMatchHistory());
     }
 }
