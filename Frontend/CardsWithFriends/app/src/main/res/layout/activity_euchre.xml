@@ -73,4 +73,82 @@
         android:layout_marginBottom="32dp"
         android:layout_marginEnd="16dp" />
 
+    <!-- Game Over Screen (Hidden by default) -->
+    <LinearLayout
+        android:id="@+id/gameOverScreen"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:background="#CC000000"
+        android:padding="32dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:background="#FF1A1A1A"
+            android:padding="40dp">
+
+            <TextView
+                android:id="@+id/gameOverTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="GAME OVER!"
+                android:textSize="36sp"
+                android:textColor="#FFFFFFFF"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="24dp" />
+
+            <TextView
+                android:id="@+id/winningTeamText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Team 1 Wins!"
+                android:textSize="28sp"
+                android:textColor="#FFFFD700"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginBottom="16dp" />
+
+            <TextView
+                android:id="@+id/winningMembersText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Player1 and Player2"
+                android:textSize="20sp"
+                android:textColor="#FFFFFFFF"
+                android:gravity="center"
+                android:layout_marginBottom="24dp" />
+
+            <TextView
+                android:id="@+id/finalScoreText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Final Score: 10 points"
+                android:textSize="22sp"
+                android:textColor="#FF00FF00"
+                android:gravity="center"
+                android:layout_marginBottom="32dp" />
+
+            <Button
+                android:id="@+id/returnToLobbyButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Return to Lobby"
+                android:textSize="18sp"
+                android:paddingStart="32dp"
+                android:paddingEnd="32dp"
+                android:paddingTop="12dp"
+                android:paddingBottom="12dp" />
+        </LinearLayout>
+    </LinearLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
