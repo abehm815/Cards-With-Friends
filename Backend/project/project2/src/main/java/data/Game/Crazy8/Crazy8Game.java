@@ -603,6 +603,7 @@ public class Crazy8Game {
         if (winnerStats != null) {
             winnerStats.addGameWon();
         }
+        waitingForColorChoice = false;
 
         // Save all stats using transactional update
         matchHistory.setWinner(winner.getUsername());
