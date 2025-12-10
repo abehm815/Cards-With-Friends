@@ -16,7 +16,24 @@ public class EuchrePlayer {
     private List<EuchreCard> hand;
     private List<List<EuchreCard>> tricks;
     private transient AppUser userRef;
+    private int tricksTaken;
+    private int handsWon;
 
+    public int getTricksTaken() {
+        return tricksTaken;
+    }
+
+    public void setTricksTaken(int tricksTaken) {
+        this.tricksTaken = tricksTaken;
+    }
+
+    public int getHandsWon() {
+        return handsWon;
+    }
+
+    public void setHandsWon(int handsWon) {
+        this.handsWon = handsWon;
+    }
 
     /**
      * Constructor for a Euchre Player for the game logic does not keep stats
@@ -26,6 +43,8 @@ public class EuchrePlayer {
         this.username = username;
         this.hand = new ArrayList<>();
         this.tricks = new ArrayList<>();
+        this.tricksTaken = 0;
+        this.handsWon = 0;
     }
 
     /**

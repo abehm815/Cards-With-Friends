@@ -213,7 +213,7 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
         switch (gameType.toUpperCase()) {
             case "BLACKJACK": return getColor(R.color.my_red);
             case "EUCHRE": return getColor(R.color.my_blue);
-            case "GO_FISH":
+            case "CRAZY8": return getColor(R.color.my_orange);
             case "GOFISH": return getColor(R.color.my_green);
             default: return Color.WHITE;
         }
@@ -284,16 +284,24 @@ public class LobbyViewActivity extends AppCompatActivity implements WebSocketLis
                         Log.d(TAG, "START received, switching activity...");
                         stopKickDetection(); // Stop checking when game starts
                         WebSocketManager.getInstance().disconnectWebSocket();
-
                         Intent i;
-                        if (gameType.equalsIgnoreCase("BLACKJACK")) {
-                            i = new Intent(this, BlackjackActivity.class);
-                        } else if (gameType.equalsIgnoreCase("EUCHRE")) {
-                            i = new Intent(this, EuchreActivity.class);
-                        } else {
-                            i = new Intent(this, GofishActivity.class);
+                        switch (gameType) {
+                            case "BLACKJACK":
+                                i = new Intent(this, BlackjackActivity.class);
+                                break;
+                            case "GO_FISH":
+                                i = new Intent(this, GofishActivity.class);
+                                break;
+//                                TODO
+//                            case "EUCHRE":
+//                                i = new Intent(this, EuchreActivity.class);
+//                                break;
+                            case "CRAZY8":
+                                i = new Intent(this, com.example.androidexample.crazy8.Crazy8Activity.class);
+                                break;
+                            default:
+                                return;
                         }
-
                         i.putExtra("GAMETYPE", gameType);
                         i.putExtra("USERNAME", username);
                         i.putExtra("JOINCODE", joinCode);

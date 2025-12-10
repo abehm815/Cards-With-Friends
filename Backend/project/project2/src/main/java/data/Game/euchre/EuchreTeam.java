@@ -39,11 +39,28 @@ public class EuchreTeam {
     }
 
     /**
+     * Sets the score (used for testing)
+     * @param score score
+     */
+    public void setScore(int score) { this.score = score; }
+
+    /**
      * Gets the members of the team
      * @return teamMembers
      */
     public List<EuchrePlayer> getTeamMembers() {
         return teamMembers;
+    }
+
+    /**
+     * Gets the members of the team by string
+     * @return teamMembers
+     */
+    public List<String> getTeamMembersAsStrings() {
+        List<String> toReturn = new ArrayList<>();
+        toReturn.add(teamMembers.get(0).getUsername());
+        toReturn.add(teamMembers.get(1).getUsername());
+        return toReturn;
     }
 
     /**
@@ -108,10 +125,12 @@ public class EuchreTeam {
     }
 
     /**
-     * Increments the count of tricks taken by the team by 1.
+     * Clears all the tricks taken for the team and the player
      */
 
     public void clearTricksTaken() {
         tricksTaken = 0;
+        teamMembers.get(0).clearTricks();
+        teamMembers.get(1).clearTricks();
     }
 }

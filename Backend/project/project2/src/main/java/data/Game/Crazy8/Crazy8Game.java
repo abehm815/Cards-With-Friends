@@ -2,6 +2,9 @@ package data.Game.Crazy8;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import data.Game.Crazy8.history.Crazy8MatchHistoryRepository;
+import data.Game.Crazy8.history.Crazy8MatchHistoryEntity;
+import data.Game.Crazy8.history.Crazy8MatchEventEntity;
 import data.Lobby.Lobby;
 import data.Lobby.LobbyRepository;
 import data.User.AppUser;
@@ -11,10 +14,9 @@ import data.User.Stats.UserStatsRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Consumer;
 
 public class Crazy8Game {
@@ -24,6 +26,11 @@ public class Crazy8Game {
     AppUserRepository AppUserRepository;
     @Autowired
     UserStatsRepository userStatsRepository;
+
+    @Autowired
+    private Crazy8MatchHistoryRepository Crazy8MatchHistoryRepository;
+
+    private Crazy8MatchHistoryEntity matchHistory;
 
     public void setLobbyRepository(LobbyRepository repo) {
         this.LobbyRepository = repo;
@@ -36,6 +43,8 @@ public class Crazy8Game {
     public void setUserStatsRepository(UserStatsRepository repo) {
         this.userStatsRepository = repo;
     }
+
+    public void setCrazy8MatchHistoryRepository (Crazy8MatchHistoryRepository repo){ this.Crazy8MatchHistoryRepository = repo; }
 
     private Consumer<String> broadcastFunction;
     private static final ObjectMapper mapper = new ObjectMapper();
@@ -62,6 +71,8 @@ public class Crazy8Game {
         this.players = new ArrayList<>();
         drawDeck = new Crazy8Deck(1);
         this.playedCards = new ArrayList<>();
+        initMatchHistory(lobbyCode);
+        matchHistory.setStartTime(LocalDateTime.now());
     }
 
     /**
@@ -206,6 +217,8 @@ public class Crazy8Game {
 
         System.out.println(username + " chose color: " + color);
 
+        logEvent(username,"player chose color: " + getColorName(color), null, getColorName(color), null, players.get(currentPlayerIndex).getHandSize());
+
         // Continue with the game
         advanceTurn();
         updatePlayableCards();
@@ -243,7 +256,7 @@ public class Crazy8Game {
         player.removeCard(cardToPlay);
         playedCards.add(cardToPlay);
         upCard = cardToPlay;
-
+        logEvent(player.getUsername(),"player placed a card", cardToPlay.toString(), null, null, player.getHandSize());
         // Update stats for cards played
         Crazy8Stats playerStats = player.getCrazy8Stats();
         if (playerStats != null) {
@@ -372,14 +385,18 @@ public class Crazy8Game {
             // Player is drawing from a draw stack (forced)
             for (int i = 0; i < drawStack; i++) {
                 if (drawDeck.size() > 0) {
-                    player.addCard(drawDeck.dealCard(false));
+                    Crazy8Card tempcard = drawDeck.dealCard(false);
+                    player.addCard(tempcard);
+                    logEvent(player.getUsername(),"player drew a card", tempcard.toString() , null, i +" of "+ drawStack , player.getHandSize());
                     if (playerStats != null) {
                         playerStats.addCardDrawn();
                     }
                 } else {
                     reshuffleDeck();
                     if (drawDeck.size() > 0) {
-                        player.addCard(drawDeck.dealCard(false));
+                        Crazy8Card tempcard = drawDeck.dealCard(false);
+                        player.addCard(tempcard);
+                        logEvent(player.getUsername(),"player drew a card", tempcard.toString() , null, i +" of "+ drawStack , player.getHandSize());
                         if (playerStats != null) {
                             playerStats.addCardDrawn();
                         }
@@ -395,6 +412,7 @@ public class Crazy8Game {
             if (drawDeck.size() > 0) {
                 Crazy8Card drawnCard = drawDeck.dealCard(false);
                 player.addCard(drawnCard);
+                logEvent(player.getUsername(),"player drew a card", drawnCard.toString() , null, "1 of 1", player.getHandSize());
                 if (playerStats != null) {
                     playerStats.addCardDrawn();
                 }
@@ -414,6 +432,7 @@ public class Crazy8Game {
                 if (drawDeck.size() > 0) {
                     Crazy8Card drawnCard = drawDeck.dealCard(false);
                     player.addCard(drawnCard);
+                    logEvent(player.getUsername(),"player drew a card", drawnCard.toString() , null, "1 of 1", player.getHandSize());
                     if (playerStats != null) {
                         playerStats.addCardDrawn();
                     }
@@ -486,14 +505,18 @@ public class Crazy8Game {
             int cardsDrawn = drawStack;
             for (int i = 0; i < drawStack; i++) {
                 if (drawDeck.size() > 0) {
-                    player.addCard(drawDeck.dealCard(false));
+                    Crazy8Card tempcard = drawDeck.dealCard(false);
+                    player.addCard(tempcard);
+                    logEvent(player.getUsername(),"player drew a card", tempcard.toString() , null, i +" of "+ drawStack , player.getHandSize());
                     if (playerStats != null) {
                         playerStats.addCardDrawn();
                     }
                 } else {
                     reshuffleDeck();
                     if (drawDeck.size() > 0) {
-                        player.addCard(drawDeck.dealCard(false));
+                        Crazy8Card tempcard = drawDeck.dealCard(false);
+                        player.addCard(tempcard);
+                        logEvent(player.getUsername(),"player drew a card", tempcard.toString() , null, i +" of "+ drawStack , player.getHandSize());
                         if (playerStats != null) {
                             playerStats.addCardDrawn();
                         }
@@ -509,6 +532,7 @@ public class Crazy8Game {
             if (drawDeck.size() > 0) {
                 Crazy8Card drawnCard = drawDeck.dealCard(false);
                 player.addCard(drawnCard);
+                logEvent(player.getUsername(),"player drew a card", drawnCard.toString() , null, "1 of 1" , player.getHandSize());
                 if (playerStats != null) {
                     playerStats.addCardDrawn();
                 }
@@ -529,6 +553,7 @@ public class Crazy8Game {
                 if (drawDeck.size() > 0) {
                     Crazy8Card drawnCard = drawDeck.dealCard(false);
                     player.addCard(drawnCard);
+                    logEvent(player.getUsername(),"player drew a card", drawnCard.toString() , null, "1 of 1", player.getHandSize());
                     if (playerStats != null) {
                         playerStats.addCardDrawn();
                     }
@@ -563,6 +588,7 @@ public class Crazy8Game {
                 currentPlayerIndex = 0;
             }
             updatePlayableCards();
+            logEvent(username,"player left the game", null , null, null ,null);
             broadcastGameState("Player left: " + username);
         }
     }
@@ -577,8 +603,8 @@ public class Crazy8Game {
         }
 
         // Save all stats using transactional update
+        matchHistory.setWinner(winner.getUsername());
         updateStatsCrazy8();
-
         broadcastGameState("Round ended - Winner: " + winner.getUsername());
     }
 
@@ -611,6 +637,7 @@ public class Crazy8Game {
                 managed.getUserStats().addGameStats("Crazy8", newStats);
             }
             AppUserRepository.save(managed);
+            saveMatchHistory();
         }
     }
 
@@ -699,5 +726,61 @@ public class Crazy8Game {
 
     public boolean isRoundInProgress() {
         return roundInProgress;
+    }
+
+    public void initMatchHistory(String matchId) {
+        Crazy8MatchHistoryEntity history = new Crazy8MatchHistoryEntity();
+        history.setMatchId(matchId);
+        history.setStartTime(LocalDateTime.now());
+        this.matchHistory = history;
+    }
+
+    public void logEvent(
+            String player,
+            String action,
+            String cardPlayed,
+            String chosenColor,
+            String cardsDrawn,
+            Integer playerHandCount
+    ) {
+        Crazy8MatchEventEntity event = new Crazy8MatchEventEntity();
+        event.setMatchHistory(this.matchHistory);
+        event.setTimestamp(LocalDateTime.now());
+
+        event.setPlayer(player);
+        event.setAction(action);
+
+        event.setCardPlayed(cardPlayed);
+        event.setChosenColor(chosenColor);
+
+        event.setCardsDrawn(cardsDrawn);
+
+        event.setPlayerHandCount(playerHandCount);
+
+        this.matchHistory.getEvents().add(event);
+    }
+
+    /**
+     * Saves the data from the game
+     */
+    @Transactional
+    public void saveMatchHistory() {
+        matchHistory.setEndTime(LocalDateTime.now());
+        Crazy8MatchHistoryRepository.save(matchHistory);
+    }
+
+    public String getColorName(char c) {
+        switch (Character.toUpperCase(c)) {
+            case 'R':
+                return "RED";
+            case 'G':
+                return "GREEN";
+            case 'B':
+                return "BLUE";
+            case 'Y':
+                return "YELLOW";
+            default:
+                return "UNKNOWN";
+        }
     }
 }

@@ -1,5 +1,6 @@
 package data.Game.euchre;
 
+import data.Game.euchre.history.EuchreMatchHistoryRepository;
 import data.User.AppUser;
 import data.User.AppUserRepository;
 import data.User.Stats.EuchreStats;
@@ -11,6 +12,7 @@ import jakarta.websocket.Session;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -30,11 +32,15 @@ public class EuchreService {
     @Autowired
     private UserStatsRepository userStatsRepository;
 
+    @Autowired
+    private EuchreMatchHistoryRepository euchreMatchHistoryRepository;
+
     private final Map<String, EuchreGame> activeGames = new ConcurrentHashMap<>();
     private final Map<String, Set<Session>> lobbyPlayers = new ConcurrentHashMap<>();
 
     @Transactional
     public EuchreGame startGame(String lobbyCode, List<String> usernames) {
+        // Add players to list, if username not recognized use "Guest"
         List<EuchrePlayer> players = new ArrayList<>();
         for (String name : usernames) {
             AppUser user = appUserRepository.findByUsernameWithStats(name);
@@ -47,6 +53,11 @@ public class EuchreService {
         }
 
         EuchreGame game = new EuchreGame(players);
+
+        // Inititalize Match History
+        game.initMatchHistory(lobbyCode);
+        game.getMatchHistory().setStartTime(LocalDateTime.now());
+
         game.startGame();
         activeGames.put(lobbyCode, game);
         return game;
@@ -70,35 +81,43 @@ public class EuchreService {
         EuchreGame game = activeGames.get(lobbyCode);
         if (game == null) return;
 
-        // Persist stats per player (pattern copied from GoFishService)
         for (EuchrePlayer player : game.getPlayers()) {
             AppUser detached = player.getUserRef();
             if (detached == null) continue;
+
+            // Load the managed user from DB
             AppUser managed = appUserRepository.findById(detached.getUserID());
             if (managed == null) continue;
 
+            // Ensure managed has UserStats
             if (managed.getUserStats() == null) {
                 managed.setUserStats(new UserStats());
                 managed.getUserStats().setAppUser(managed);
             }
 
-            GameStats detachedEuchre = detached.getUserStats() != null ? detached.getUserStats().getGameStats("Euchre") : null;
-            GameStats managedEuchre = managed.getUserStats().getGameStats("Euchre");
+            // Get or create EuchreStats
+            GameStats detachedStats = detached.getUserStats().getGameStats("Euchre");
+            GameStats managedStats = managed.getUserStats().getGameStats("Euchre");
 
-            if (detachedEuchre instanceof EuchreStats && managedEuchre instanceof EuchreStats) {
-                copyEuchreStats((EuchreStats) detachedEuchre, (EuchreStats) managedEuchre);
-            } else if (detachedEuchre instanceof EuchreStats && managedEuchre == null) {
-                EuchreStats newManaged = new EuchreStats();
-                copyEuchreStats((EuchreStats) detachedEuchre, newManaged);
-                newManaged.setUserStats(managed.getUserStats());
-                managed.getUserStats().addGameStats("Euchre", newManaged);
+            if (detachedStats instanceof EuchreStats && managedStats instanceof EuchreStats) {
+                copyEuchreStats((EuchreStats) detachedStats, (EuchreStats) managedStats);
+            } else if (detachedStats instanceof EuchreStats && managedStats == null) {
+                EuchreStats newStats = new EuchreStats();
+                copyEuchreStats((EuchreStats) detachedStats, newStats);
+                newStats.setUserStats(managed.getUserStats());
+                managed.getUserStats().addGameStats("Euchre", newStats);
             }
 
+            // Persist the managed user
             appUserRepository.save(managed);
         }
 
+        saveMatchHistory(game, game.getWinner().getTeamMembersAsStrings());
+
         activeGames.remove(lobbyCode);
     }
+
+
 
     private void copyEuchreStats(EuchreStats src, EuchreStats dst) {
         // copy relevant fields existing on EuchreStats
@@ -108,6 +127,43 @@ public class EuchreService {
         dst.setSweepsWon(src.getSweepsWon());
         dst.setTimesGoneAlone(src.getTimesGoneAlone());
         dst.setTimesPickedUp(src.getTimesPickedUp());
+    }
+
+    /**
+     * TEST ONLY — Forces a game to end immediately so stats + history saving can be verified.
+     */
+    public void forceEndGameForTesting(String lobbyCode) {
+
+        EuchreGame game = activeGames.get(lobbyCode);
+        if (game == null) {
+            System.out.println("No game found for lobby: " + lobbyCode);
+            return;
+        }
+
+        // Force Team One to win by giving them a winning score
+        game.getTeamOne().setScore(2);
+
+        // OR: force team two to win
+        // game.getTeamTwo().setScore(2);
+
+        // Make sure players exist + stats exist
+        for (EuchrePlayer player : game.getPlayers()) {
+            if (player.getUserRef().getUserStats() == null) {
+                UserStats stats = new UserStats();
+                stats.setAppUser(player.getUserRef());
+                player.getUserRef().setUserStats(stats);
+
+                // Add Euchre stats so your endGame() logic won't break
+                EuchreStats es = new EuchreStats();
+                stats.addGameStats("Euchre", es);
+                es.setUserStats(stats);
+            }
+        }
+
+        // NOW call your real endGame()
+        endGame(lobbyCode);
+
+        System.out.println("Force-ended game for testing (winner: Team One).");
     }
 
     // -- Game action processors --
@@ -142,7 +198,7 @@ public class EuchreService {
         if (dropped == null) return "Dropped card not found in dealer's hand.";
 
         boolean success = game.playerPicksUp(dropped);
-        return success ? dealerUsername + " picked up the option card." : "Pick up failed.";
+        return success ? dealerUsername + " picked up the option card. " + game.getOptionCard().suitConverter(game.getOptionCard().getSuit()) + " are trump!" + " It is now " + game.getCurrentPlayerUsername() + "'s Turn!" : "Pick up failed.";
     }
 
     public String processPlay(String lobbyCode, String username, int value, char suit) {
@@ -158,34 +214,34 @@ public class EuchreService {
 
         String result = game.takeTurn(player, card);
 
-        // If trick complete (4 cards) give trick and potentially points/round handling
+        // If trick complete (4 cards) give trick
         if (game.getCurrentTrick().size() == 4) {
             if (game.getPlayers() != null) {
                 try {
-                    EuchrePlayer trickWinner = null;
-                    try {
-                        trickWinner = game.giveTrick();
-                    } catch (Exception ignored) {
-                        // giveTrick may throw if trick incomplete; ignore
-                    }
-
-                    if (trickWinner != null) {
-                        game.givePoints();
-                        result += " | Trick won by " + trickWinner.getUsername();
-                    }
+                    game.giveTrick();
                 } catch (Exception ex) {
                     // ignore; keep server robust
                 }
             }
         }
 
-        // Check for end of game condition
-        EuchreTeam winnerTeam = game.getWinner();
-        if (winnerTeam != null) {
-            // We have a winning team; persist and remove game
-            endGame(lobbyCode);
-            return result + " | Game over! Winning team score: " + winnerTeam.getScore();
+        // If all tricks have been played, add them up and give points
+        if (game.getPlayers().get(0).getHand().isEmpty() && game.getPlayers().get(1).getHand().isEmpty() && game.getPlayers().get(2).getHand().isEmpty() && game.getPlayers().get(3).getHand().isEmpty()) {
+            game.givePoints();
+
+            // Check for end of game condition
+            EuchreTeam winnerTeam = game.getWinner();
+            if (winnerTeam != null) {
+                // We have a winning team; persist and remove game
+                endGame(lobbyCode);
+                return result + " | Game over! Winning team score: " + winnerTeam.getScore();
+            } else {
+                // Winner was not found, begin new round
+                game.startNewRound();
+            }
         }
+
+
 
         return result;
     }
@@ -204,5 +260,17 @@ public class EuchreService {
             if (c.getValue() == value && c.getSuit() == suit) return c;
         }
         return null;
+    }
+
+    /**
+     * Saves the data from the game
+     * @param game current game
+     * @param winningTeam winning team
+     */
+    @Transactional
+    public void saveMatchHistory(EuchreGame game, List<String> winningTeam) {
+        game.getMatchHistory().setWinningPlayers(winningTeam);
+        game.getMatchHistory().setEndTime(LocalDateTime.now());
+        euchreMatchHistoryRepository.save(game.getMatchHistory());
     }
 }
