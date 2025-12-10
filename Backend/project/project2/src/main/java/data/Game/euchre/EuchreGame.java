@@ -156,18 +156,20 @@ public class EuchreGame {
             return;
         }
 
-        // Increment current player
-        currentPlayerIndex = nextPlayerIndex(currentPlayerIndex);
-
         // If it is the second round and everyone has passed, dealer must choose suit
         if (isChoice && (currentPlayerIndex == currentDealerIndex)) {
             System.out.println("Dealer must choose a suit!");
+            return;
         }
 
         // If we completed the first round of bidding, players now select suit
         if (!isChoice && currentPlayerIndex == currentDealerIndex) {
+            System.out.println("Option card has been passed, now you can choose suit for trump.");
             isChoice = true;
         }
+
+        // Increment current player
+        currentPlayerIndex = nextPlayerIndex(currentPlayerIndex);
 
         // Log Pass
         logEvent(
