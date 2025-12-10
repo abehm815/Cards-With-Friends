@@ -10,6 +10,7 @@ import data.Lobby.LobbyRepository;
 import data.User.AppUser;
 import data.User.AppUserRepository;
 import data.User.Stats.Crazy8Stats;
+import data.User.Stats.GameStats;
 import data.User.Stats.UserStatsRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -388,7 +389,7 @@ public class Crazy8Game {
                 if (drawDeck.size() > 0) {
                     Crazy8Card tempcard = drawDeck.dealCard(false);
                     player.addCard(tempcard);
-                    logEvent(player.getUsername(),"player drew a card", tempcard.toString() , null, i +" of "+ drawStack , player.getHandSize());
+                    logEvent(player.getUsername(),"player drew a card", tempcard.toString() , null, i+1 +" of "+ drawStack , player.getHandSize());
                     if (playerStats != null) {
                         playerStats.addCardDrawn();
                     }
@@ -626,8 +627,8 @@ public class Crazy8Game {
             }
 
             // Get or create Crazy8Stats
-            data.User.Stats.GameStats detachedStats = detached.getUserStats().getGameStats("Crazy8");
-            data.User.Stats.GameStats managedStats = managed.getUserStats().getGameStats("Crazy8");
+            GameStats detachedStats = detached.getUserStats().getGameStats("Crazy8");
+            GameStats managedStats = managed.getUserStats().getGameStats("Crazy8");
 
             if (detachedStats instanceof Crazy8Stats && managedStats instanceof Crazy8Stats) {
                 copyCrazy8Stats((Crazy8Stats) detachedStats, (Crazy8Stats) managedStats);
