@@ -451,7 +451,7 @@ public class EuchreGame {
      * @return winning team
      */
     public EuchreTeam getWinner() {
-        if (teamOne.getScore() >= 2) {
+        if (teamOne.getScore() >= 5) {
             System.out.println("Team One has won!");
 
             EuchreStats winnerOneStats = teamOne.getTeamMembers().get(0).getStats();
@@ -487,7 +487,7 @@ public class EuchreGame {
             return teamOne;
         }
 
-        if (teamTwo.getScore() >= 2) {
+        if (teamTwo.getScore() >= 5) {
             System.out.println("Team Two has won!");
 
             EuchreStats winnerOneStats = teamTwo.getTeamMembers().get(0).getStats();
