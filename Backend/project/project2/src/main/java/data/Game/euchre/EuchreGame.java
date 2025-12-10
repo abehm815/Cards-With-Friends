@@ -151,6 +151,11 @@ public class EuchreGame {
      * Handles passes that occur during the bidding phase
      */
     public void playerPasses() {
+        if (!isBidding && !isChoice) {
+            System.out.println("Cannot pass once bidding is complete.");
+            return;
+        }
+
         // Increment current player
         currentPlayerIndex = nextPlayerIndex(currentPlayerIndex);
 
@@ -186,6 +191,17 @@ public class EuchreGame {
      * @param suit (suit chosen)
      */
     public void playerChoosesSuit(char suit) {
+
+        if (!isChoice && isBidding) {
+            System.out.println("You cannot choose a suit yet.");
+            return;
+        }
+
+        if (!isBidding && !isChoice) {
+            System.out.println("Trump has already been chosen.");
+            return;
+        }
+
         trumpSuit = suit;
         isBidding = false;
         isChoice = false;
@@ -281,6 +297,16 @@ public class EuchreGame {
      * @return (Message describing what happened
      */
     public String takeTurn(EuchrePlayer currentPlayer, EuchreCard card) {
+        // Prevent playing cards during bidding or suit choice
+        if (isBidding || isChoice) {
+            return "You cannot play a card during bidding!";
+        }
+
+        // Enforce turn order
+        if (!players.get(currentPlayerIndex).equals(currentPlayer)) {
+            return "It is not your turn!";
+        }
+
         // Check that player has requested card
         if (!currentPlayer.getHand().contains(card)) {
             return currentPlayer.getUsername() + " does not have the " + card.toString();
