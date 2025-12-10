@@ -78,6 +78,23 @@
             android:clickable="true"
             android:focusable="true" />
 
+        <!-- NEW: History Button -->
+        <TextView
+            android:id="@+id/profile_history_btn"
+            android:layout_width="220dp"
+            android:layout_height="wrap_content"
+            android:text="HISTORY"
+            android:textAllCaps="true"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:fontFamily="@font/inter_black"
+            android:gravity="center"
+            android:background="@drawable/btn_dark_outline"
+            android:paddingVertical="14dp"
+            android:layout_marginBottom="16dp"
+            android:clickable="true"
+            android:focusable="true" />
+
         <!-- Delete Button -->
         <TextView
             android:id="@+id/profile_delete_btn"

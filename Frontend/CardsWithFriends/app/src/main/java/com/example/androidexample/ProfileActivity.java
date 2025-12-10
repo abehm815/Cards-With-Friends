@@ -15,7 +15,7 @@ import com.example.androidexample.services.VolleySingleton;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    private TextView deleteButton, updateButton, logoutButton, usernameDisplayText;
+    private TextView deleteButton, updateButton, logoutButton, historyButton, usernameDisplayText;
     private String username;
 
     @Override
@@ -33,6 +33,7 @@ public class ProfileActivity extends AppCompatActivity {
         updateButton = findViewById(R.id.profile_update_btn);
         deleteButton = findViewById(R.id.profile_delete_btn);
         logoutButton = findViewById(R.id.profile_logout_btn);
+        historyButton = findViewById(R.id.profile_history_btn); // NEW
         usernameDisplayText = findViewById(R.id.profile_username_text);
 
         usernameDisplayText.setText(username);
@@ -40,6 +41,13 @@ public class ProfileActivity extends AppCompatActivity {
         // --- Update Button ---
         updateButton.setOnClickListener(v -> {
             Intent i = new Intent(ProfileActivity.this, UpdateActivity.class);
+            i.putExtra("USERNAME", username);
+            startActivity(i);
+        });
+
+        // --- History Button (NEW) ---
+        historyButton.setOnClickListener(v -> {
+            Intent i = new Intent(ProfileActivity.this, HistoryActivity.class);
             i.putExtra("USERNAME", username);
             startActivity(i);
         });

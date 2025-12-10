@@ -50,6 +50,12 @@
             android:name=".AdminActivity"
             android:exported="false" />
         <activity
+            android:name=".HistoryActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MatchDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".ModeratorActivity"
             android:exported="false" />
         <activity
