@@ -1,0 +1,396 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LobbyViewActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">LobbyViewActivity.java</span></div><h1>LobbyViewActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ScrollView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.blackjack.BlackjackActivity;
+import com.example.androidexample.services.Message;
+import com.example.androidexample.services.VolleySingleton;
+import com.example.androidexample.services.WebSocketListener;
+import com.example.androidexample.services.WebSocketManager;
+import com.google.android.material.bottomsheet.BottomSheetBehavior;
+import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.card.MaterialCardView;
+
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+
+import java.util.ArrayList;
+import java.util.List;
+
+<span class="nc" id="L46">public class LobbyViewActivity extends AppCompatActivity implements WebSocketListener {</span>
+
+    private String gameType, joinCode, username;
+    private boolean isHost;
+    private TextView gameTypeTxt, joinCodeTxt, deleteBtn, startBtn, chatUnreadLabel;
+    private android.widget.Button leaveBtn;
+    private LinearLayout userListLayout, chatMessagesLayout;
+    private ScrollView chatScroll;
+    private BottomSheetDialog chatDialog;
+<span class="nc" id="L55">    private int unreadMessages = 0;</span>
+
+<span class="nc" id="L57">    private final List&lt;Message&gt; chat = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L58">    private final ArrayList&lt;String&gt; currentUsers = new ArrayList&lt;&gt;();</span>
+
+    private static final String TAG = &quot;LobbyViewActivity&quot;;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L64">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L65">        setContentView(R.layout.activity_lobbyview);</span>
+
+<span class="nc" id="L67">        gameTypeTxt = findViewById(R.id.lobbyview_type_txt);</span>
+<span class="nc" id="L68">        joinCodeTxt = findViewById(R.id.lobbyview_code_txt);</span>
+<span class="nc" id="L69">        userListLayout = findViewById(R.id.lobbyview_user_list);</span>
+<span class="nc" id="L70">        deleteBtn = findViewById(R.id.lobbyview_close_btn);</span>
+<span class="nc" id="L71">        leaveBtn = findViewById(R.id.lobbyview_leave_btn);</span>
+<span class="nc" id="L72">        startBtn = findViewById(R.id.lobbyview_start_btn);</span>
+<span class="nc" id="L73">        chatUnreadLabel = findViewById(R.id.chat_unread_label);</span>
+
+<span class="nc" id="L75">        Intent intent = getIntent();</span>
+<span class="nc" id="L76">        gameType = intent.getStringExtra(&quot;GAMETYPE&quot;);</span>
+<span class="nc" id="L77">        username = intent.getStringExtra(&quot;USERNAME&quot;);</span>
+<span class="nc" id="L78">        joinCode = intent.getStringExtra(&quot;JOINCODE&quot;);</span>
+<span class="nc" id="L79">        isHost = intent.getBooleanExtra(&quot;HOST&quot;, false);</span>
+
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        if (!isHost) {</span>
+<span class="nc" id="L82">            startBtn.setVisibility(View.GONE);</span>
+<span class="nc" id="L83">            deleteBtn.setVisibility(View.GONE);</span>
+        }
+
+<span class="nc" id="L86">        setColoredLobbyTitle();</span>
+<span class="nc" id="L87">        joinCodeTxt.setText(joinCode);</span>
+<span class="nc" id="L88">        getLobbyRequest();</span>
+
+<span class="nc" id="L90">        deleteBtn.setOnClickListener(v -&gt; deleteLobbyRequest());</span>
+<span class="nc" id="L91">        leaveBtn.setOnClickListener(v -&gt; leaveLobbyRequest());</span>
+<span class="nc" id="L92">        findViewById(R.id.chat_button).setOnClickListener(v -&gt; openChatSheet());</span>
+<span class="nc" id="L93">        startBtn.setOnClickListener(v -&gt; startGame());</span>
+<span class="nc" id="L94">    }</span>
+
+    // ------------------ Accent Color Helpers ------------------
+    private int getAccentColor() {
+<span class="nc bnc" id="L98" title="All 4 branches missed.">        switch (gameType.toUpperCase()) {</span>
+<span class="nc" id="L99">            case &quot;BLACKJACK&quot;: return getColor(R.color.my_red);</span>
+<span class="nc" id="L100">            case &quot;EUCHRE&quot;: return getColor(R.color.my_blue);</span>
+            case &quot;GO_FISH&quot;:
+<span class="nc" id="L102">            case &quot;GOFISH&quot;: return getColor(R.color.my_green);</span>
+<span class="nc" id="L103">            default: return Color.WHITE;</span>
+        }
+    }
+
+    private void setColoredLobbyTitle() {
+<span class="nc" id="L108">        String formatted = gameType.replace(&quot;_&quot;, &quot; &quot;).toUpperCase();</span>
+<span class="nc" id="L109">        String full = formatted + &quot; LOBBY&quot;;</span>
+<span class="nc" id="L110">        int accent = getAccentColor();</span>
+
+<span class="nc" id="L112">        SpannableString span = new SpannableString(full);</span>
+<span class="nc" id="L113">        span.setSpan(new ForegroundColorSpan(accent), 0, formatted.length(), Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);</span>
+<span class="nc" id="L114">        gameTypeTxt.setText(span);</span>
+<span class="nc" id="L115">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L119">        super.onStart();</span>
+<span class="nc" id="L120">        String wsUrl = &quot;ws://coms-3090-006.class.las.iastate.edu:8080/ws/lobby/&quot; + joinCode + &quot;/&quot; + username;</span>
+<span class="nc" id="L121">        WebSocketManager.getInstance().connectWebSocket(wsUrl);</span>
+<span class="nc" id="L122">        WebSocketManager.getInstance().setWebSocketListener(this);</span>
+<span class="nc" id="L123">    }</span>
+
+    @Override protected void onStop() {
+<span class="nc" id="L126">        super.onStop();</span>
+<span class="nc bnc" id="L127" title="All 4 branches missed.">        if (chatDialog != null &amp;&amp; chatDialog.isShowing()) chatDialog.dismiss();</span>
+<span class="nc" id="L128">    }</span>
+
+    // ------------------ WebSocket ------------------
+    @Override
+    public void onWebSocketMessage(String message) {
+<span class="nc" id="L133">        runOnUiThread(() -&gt; {</span>
+            try {
+<span class="nc" id="L135">                JSONObject json = new JSONObject(message);</span>
+<span class="nc" id="L136">                String type = json.getString(&quot;type&quot;);</span>
+<span class="nc" id="L137">                String user = json.optString(&quot;username&quot;, &quot;&quot;);</span>
+<span class="nc" id="L138">                String msgText = json.optString(&quot;message&quot;, &quot;&quot;);</span>
+
+<span class="nc bnc" id="L140" title="All 18 branches missed.">                switch (type) {</span>
+                    case &quot;JOIN&quot;:
+<span class="nc bnc" id="L142" title="All 2 branches missed.">                        if (!currentUsers.contains(user)) {</span>
+<span class="nc" id="L143">                            currentUsers.add(user);</span>
+<span class="nc" id="L144">                            addUserCard(user);</span>
+                        }
+                        break;
+                    case &quot;LEAVE&quot;:
+<span class="nc" id="L148">                        currentUsers.remove(user);</span>
+<span class="nc" id="L149">                        removeUserCard(user);</span>
+<span class="nc" id="L150">                        break;</span>
+                    case &quot;MESSAGE&quot;:
+<span class="nc" id="L152">                        Message newMsg = new Message(user, msgText, System.currentTimeMillis());</span>
+<span class="nc" id="L153">                        chat.add(newMsg);</span>
+<span class="nc bnc" id="L154" title="All 4 branches missed.">                        if (chatDialog == null || !chatDialog.isShowing()) {</span>
+<span class="nc" id="L155">                            unreadMessages++;</span>
+<span class="nc" id="L156">                            updateUnreadLabel();</span>
+<span class="nc" id="L157">                        } else addMessageBubble(user, msgText);</span>
+<span class="nc" id="L158">                        break;</span>
+                    case &quot;START&quot;:
+<span class="nc" id="L160">                        Log.d(TAG, &quot;START received, switching activity...&quot;);</span>
+<span class="nc" id="L161">                        WebSocketManager.getInstance().disconnectWebSocket();</span>
+
+                        Intent i;
+<span class="nc bnc" id="L164" title="All 2 branches missed.">                        if (gameType.equalsIgnoreCase(&quot;BLACKJACK&quot;)) {</span>
+<span class="nc" id="L165">                            i = new Intent(this, BlackjackActivity.class);</span>
+<span class="nc bnc" id="L166" title="All 2 branches missed.">                        } else if (gameType.equalsIgnoreCase(&quot;EUCHRE&quot;)) {</span>
+<span class="nc" id="L167">                            i = new Intent(this, EuchreActivity.class);</span>
+                        } else {
+<span class="nc" id="L169">                            i = new Intent(this, GofishActivity.class);</span>
+                        }
+
+<span class="nc" id="L172">                        i.putExtra(&quot;GAMETYPE&quot;, gameType);</span>
+<span class="nc" id="L173">                        i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L174">                        i.putExtra(&quot;JOINCODE&quot;, joinCode);</span>
+<span class="nc" id="L175">                        i.putExtra(&quot;HOST&quot;, isHost);</span>
+<span class="nc" id="L176">                        i.putStringArrayListExtra(&quot;PLAYERS&quot;, currentUsers);</span>
+<span class="nc" id="L177">                        startActivity(i);</span>
+                        break;
+                }
+<span class="nc" id="L180">            } catch (JSONException e) {</span>
+<span class="nc" id="L181">                Log.e(TAG, &quot;Bad JSON: &quot; + message, e);</span>
+<span class="nc" id="L182">            }</span>
+<span class="nc" id="L183">        });</span>
+<span class="nc" id="L184">    }</span>
+
+<span class="nc" id="L186">    @Override public void onWebSocketOpen(ServerHandshake h) { Log.d(TAG, &quot;WS opened&quot;); }</span>
+<span class="nc" id="L187">    @Override public void onWebSocketClose(int c, String r, boolean rem) { Log.d(TAG, &quot;WS closed: &quot; + r); }</span>
+<span class="nc" id="L188">    @Override public void onWebSocketError(Exception ex) { Log.e(TAG, &quot;WS error&quot;, ex); }</span>
+
+    // ------------------ UI ------------------
+    private MaterialCardView createUserCard(String username) {
+<span class="nc" id="L192">        int accent = getAccentColor();</span>
+
+<span class="nc" id="L194">        MaterialCardView card = new MaterialCardView(this);</span>
+<span class="nc" id="L195">        card.setLayoutParams(new LinearLayout.LayoutParams(</span>
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+<span class="nc" id="L198">        ) {{ setMargins(0, 12, 0, 12); }});</span>
+<span class="nc" id="L199">        card.setRadius(28f);</span>
+<span class="nc" id="L200">        card.setCardElevation(10f);</span>
+<span class="nc" id="L201">        card.setStrokeWidth(3);</span>
+<span class="nc" id="L202">        card.setStrokeColor(accent);</span>
+<span class="nc" id="L203">        card.setCardBackgroundColor(Color.parseColor(&quot;#141414&quot;));</span>
+<span class="nc" id="L204">        card.setUseCompatPadding(true);</span>
+
+<span class="nc" id="L206">        LinearLayout inner = new LinearLayout(this);</span>
+<span class="nc" id="L207">        inner.setOrientation(LinearLayout.HORIZONTAL);</span>
+<span class="nc" id="L208">        inner.setPadding(32, 32, 32, 32);</span>
+<span class="nc" id="L209">        inner.setGravity(Gravity.CENTER_VERTICAL | Gravity.START);</span>
+
+<span class="nc" id="L211">        ImageView avatar = new ImageView(this);</span>
+<span class="nc" id="L212">        avatar.setImageResource(R.drawable.icon_profile);</span>
+<span class="nc" id="L213">        avatar.setColorFilter(accent);</span>
+<span class="nc" id="L214">        avatar.setLayoutParams(new LinearLayout.LayoutParams(64, 64) {{ setMarginEnd(24); }});</span>
+
+<span class="nc" id="L216">        TextView userText = new TextView(this);</span>
+<span class="nc" id="L217">        userText.setText(username);</span>
+<span class="nc" id="L218">        userText.setTextColor(Color.WHITE);</span>
+<span class="nc" id="L219">        userText.setTextSize(20);</span>
+<span class="nc" id="L220">        userText.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));</span>
+
+<span class="nc" id="L222">        inner.addView(avatar);</span>
+<span class="nc" id="L223">        inner.addView(userText);</span>
+<span class="nc" id="L224">        card.addView(inner);</span>
+<span class="nc" id="L225">        card.startAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));</span>
+
+<span class="nc" id="L227">        return card;</span>
+    }
+
+<span class="nc" id="L230">    private void addUserCard(String username) { userListLayout.addView(createUserCard(username)); }</span>
+
+    private void removeUserCard(String username) {
+<span class="nc bnc" id="L233" title="All 2 branches missed.">        for (int i = 0; i &lt; userListLayout.getChildCount(); i++) {</span>
+<span class="nc" id="L234">            View v = userListLayout.getChildAt(i);</span>
+<span class="nc bnc" id="L235" title="All 2 branches missed.">            if (v instanceof MaterialCardView) {</span>
+<span class="nc" id="L236">                TextView t = (TextView) ((MaterialCardView) v).getChildAt(0);</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">                if (t.getText().toString().equals(username)) {</span>
+<span class="nc" id="L238">                    userListLayout.removeViewAt(i);</span>
+<span class="nc" id="L239">                    break;</span>
+                }
+            }
+        }
+<span class="nc" id="L243">    }</span>
+
+    private void addHeader() {
+<span class="nc" id="L246">        TextView header = new TextView(this);</span>
+<span class="nc" id="L247">        header.setText(&quot;PLAYERS&quot;);</span>
+<span class="nc" id="L248">        header.setTextColor(Color.WHITE);</span>
+<span class="nc" id="L249">        header.setTextSize(20);</span>
+<span class="nc" id="L250">        header.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));</span>
+<span class="nc" id="L251">        header.setGravity(Gravity.CENTER);</span>
+<span class="nc" id="L252">        header.setPadding(0, 8, 0, 24);</span>
+<span class="nc" id="L253">        userListLayout.addView(header);</span>
+<span class="nc" id="L254">    }</span>
+
+    private void updateUnreadLabel() {
+<span class="nc bnc" id="L257" title="All 2 branches missed.">        if (chatUnreadLabel == null) return;</span>
+<span class="nc bnc" id="L258" title="All 2 branches missed.">        chatUnreadLabel.setVisibility(unreadMessages &gt; 0 ? View.VISIBLE : View.GONE);</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">        if (unreadMessages &gt; 0) chatUnreadLabel.setText(unreadMessages + &quot; unread&quot;);</span>
+<span class="nc" id="L260">    }</span>
+
+    // ------------------ HTTP ------------------
+    private void getLobbyRequest() {
+<span class="nc" id="L264">        String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/&quot; + joinCode;</span>
+<span class="nc" id="L265">        JsonObjectRequest req = new JsonObjectRequest(Request.Method.GET, url, null,</span>
+                response -&gt; {
+                    try {
+<span class="nc" id="L268">                        JSONArray arr = response.getJSONArray(&quot;users&quot;);</span>
+<span class="nc" id="L269">                        currentUsers.clear();</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">                        for (int i = 0; i &lt; arr.length(); i++) {</span>
+<span class="nc" id="L271">                            currentUsers.add(arr.getJSONObject(i).getString(&quot;username&quot;));</span>
+                        }
+<span class="nc" id="L273">                        userListLayout.removeAllViews();</span>
+<span class="nc" id="L274">                        addHeader();</span>
+<span class="nc bnc" id="L275" title="All 2 branches missed.">                        for (String u : currentUsers) addUserCard(u);</span>
+<span class="nc" id="L276">                    } catch (Exception e) {</span>
+<span class="nc" id="L277">                        Log.e(TAG, &quot;Parse error&quot;, e);</span>
+<span class="nc" id="L278">                    }</span>
+<span class="nc" id="L279">                },</span>
+                error -&gt; {
+<span class="nc" id="L281">                    Toast.makeText(this, &quot;Failed to get lobby info&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L282">                    Log.e(TAG, &quot;Volley error&quot;, error);</span>
+<span class="nc" id="L283">                });</span>
+<span class="nc" id="L284">        VolleySingleton.getInstance(this).addToRequestQueue(req);</span>
+<span class="nc" id="L285">    }</span>
+
+    private void deleteLobbyRequest() {
+<span class="nc" id="L288">        String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/&quot; + joinCode;</span>
+<span class="nc" id="L289">        JsonObjectRequest req = new JsonObjectRequest(Request.Method.DELETE, url, null,</span>
+                res -&gt; {
+<span class="nc" id="L291">                    Intent i = new Intent(this, LobbyActivity.class);</span>
+<span class="nc" id="L292">                    i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L293">                    i.putExtra(&quot;GAMETYPE&quot;, gameType);</span>
+<span class="nc" id="L294">                    WebSocketManager.getInstance().disconnectWebSocket();</span>
+<span class="nc" id="L295">                    startActivity(i);</span>
+<span class="nc" id="L296">                },</span>
+                err -&gt; {
+<span class="nc" id="L298">                    Toast.makeText(this, &quot;Failed to delete lobby&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L299">                    Log.e(TAG, &quot;Volley error&quot;, err);</span>
+<span class="nc" id="L300">                });</span>
+<span class="nc" id="L301">        VolleySingleton.getInstance(this).addToRequestQueue(req);</span>
+<span class="nc" id="L302">    }</span>
+
+    private void leaveLobbyRequest() {
+<span class="nc" id="L305">        String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/&quot; + joinCode + &quot;/&quot; + username;</span>
+<span class="nc" id="L306">        JsonObjectRequest req = new JsonObjectRequest(Request.Method.PUT, url, null,</span>
+                (Response.Listener&lt;JSONObject&gt;) res -&gt; {
+                    try {
+<span class="nc bnc" id="L309" title="All 2 branches missed.">                        if (&quot;success&quot;.equals(res.getString(&quot;message&quot;))) {</span>
+<span class="nc" id="L310">                            Toast.makeText(this, &quot;Lobby left!&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L311">                            Intent i = new Intent(this, LobbyActivity.class);</span>
+<span class="nc" id="L312">                            i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L313">                            i.putExtra(&quot;GAMETYPE&quot;, gameType);</span>
+<span class="nc" id="L314">                            WebSocketManager.getInstance().disconnectWebSocket();</span>
+<span class="nc" id="L315">                            startActivity(i);</span>
+<span class="nc" id="L316">                        } else Toast.makeText(this, &quot;Can't leave lobby&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L317">                    } catch (JSONException e) { throw new RuntimeException(e); }</span>
+<span class="nc" id="L318">                },</span>
+                err -&gt; {
+<span class="nc" id="L320">                    Toast.makeText(this, &quot;Failed to leave lobby&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L321">                    Log.e(TAG, &quot;Volley error&quot;, err);</span>
+<span class="nc" id="L322">                });</span>
+<span class="nc" id="L323">        VolleySingleton.getInstance(this).addToRequestQueue(req);</span>
+<span class="nc" id="L324">    }</span>
+
+    // ------------------ Chat ------------------
+    private void openChatSheet() {
+<span class="nc" id="L328">        chatDialog = new BottomSheetDialog(this);</span>
+<span class="nc" id="L329">        View sheet = getLayoutInflater().inflate(R.layout.chat_bottom_sheet, null);</span>
+<span class="nc" id="L330">        chatDialog.setContentView(sheet);</span>
+
+<span class="nc" id="L332">        chatDialog.setOnShowListener(d -&gt; {</span>
+<span class="nc" id="L333">            View bs = chatDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);</span>
+<span class="nc bnc" id="L334" title="All 2 branches missed.">            if (bs != null) {</span>
+<span class="nc" id="L335">                bs.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;</span>
+<span class="nc" id="L336">                bs.requestLayout();</span>
+<span class="nc" id="L337">                BottomSheetBehavior&lt;View&gt; behavior = BottomSheetBehavior.from(bs);</span>
+<span class="nc" id="L338">                behavior.setSkipCollapsed(true);</span>
+<span class="nc" id="L339">                behavior.setFitToContents(true);</span>
+<span class="nc" id="L340">                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);</span>
+            }
+<span class="nc" id="L342">        });</span>
+
+<span class="nc" id="L344">        chatDialog.show();</span>
+<span class="nc" id="L345">        unreadMessages = 0;</span>
+<span class="nc" id="L346">        updateUnreadLabel();</span>
+
+<span class="nc" id="L348">        chatMessagesLayout = sheet.findViewById(R.id.chat_messages_layout);</span>
+<span class="nc" id="L349">        chatScroll = sheet.findViewById(R.id.chat_scroll);</span>
+<span class="nc" id="L350">        EditText input = sheet.findViewById(R.id.chat_edit_text);</span>
+<span class="nc" id="L351">        ImageButton sendBtn = sheet.findViewById(R.id.chat_send_btn);</span>
+
+<span class="nc bnc" id="L353" title="All 2 branches missed.">        for (Message m : chat) addMessageBubble(m.getSender(), m.getText());</span>
+
+<span class="nc" id="L355">        sendBtn.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L356">            String text = input.getText().toString().trim();</span>
+<span class="nc bnc" id="L357" title="All 2 branches missed.">            if (!text.isEmpty()) {</span>
+<span class="nc" id="L358">                WebSocketManager.getInstance().sendMessage(&quot;{\&quot;type\&quot;:\&quot;MESSAGE\&quot;,\&quot;message\&quot;:\&quot;&quot; + text + &quot;\&quot;}&quot;);</span>
+<span class="nc" id="L359">                input.setText(&quot;&quot;);</span>
+            }
+<span class="nc" id="L361">        });</span>
+<span class="nc" id="L362">    }</span>
+
+    private void addMessageBubble(String sender, String text) {
+<span class="nc bnc" id="L365" title="All 2 branches missed.">        if (chatMessagesLayout == null) return;</span>
+<span class="nc" id="L366">        TextView msg = new TextView(this);</span>
+<span class="nc" id="L367">        msg.setText(sender + &quot;: &quot; + text);</span>
+<span class="nc" id="L368">        msg.setTextSize(16f);</span>
+<span class="nc" id="L369">        msg.setTypeface(ResourcesCompat.getFont(this, R.font.inter_regular));</span>
+<span class="nc" id="L370">        msg.setTextColor(Color.WHITE);</span>
+
+<span class="nc" id="L372">        LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(</span>
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+<span class="nc" id="L374">        p.setMargins(0, 8, 0, 8);</span>
+
+<span class="nc bnc" id="L376" title="All 2 branches missed.">        if (sender.equals(username)) {</span>
+<span class="nc" id="L377">            p.gravity = Gravity.END;</span>
+<span class="nc" id="L378">            msg.setBackgroundResource(R.drawable.chat_message_bubble_user);</span>
+        } else {
+<span class="nc" id="L380">            p.gravity = Gravity.START;</span>
+<span class="nc" id="L381">            msg.setBackgroundResource(R.drawable.chat_message_bubble);</span>
+        }
+
+<span class="nc" id="L384">        msg.setLayoutParams(p);</span>
+<span class="nc" id="L385">        msg.setPadding(24, 16, 24, 16);</span>
+<span class="nc" id="L386">        msg.startAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));</span>
+
+<span class="nc" id="L388">        chatMessagesLayout.addView(msg);</span>
+<span class="nc bnc" id="L389" title="All 2 branches missed.">        if (chatScroll != null) chatScroll.post(() -&gt; chatScroll.fullScroll(View.FOCUS_DOWN));</span>
+<span class="nc" id="L390">    }</span>
+
+    private void startGame() {
+<span class="nc" id="L393">        WebSocketManager.getInstance().sendMessage(&quot;{\&quot;type\&quot;: \&quot;START\&quot;}&quot;);</span>
+<span class="nc" id="L394">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

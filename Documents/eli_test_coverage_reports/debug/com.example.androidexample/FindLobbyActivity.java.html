@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FindLobbyActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">FindLobbyActivity.java</span></div><h1>FindLobbyActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.GradientDrawable;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.core.content.res.ResourcesCompat;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.services.VolleySingleton;
+import com.example.androidexample.services.WebSocketListener;
+import com.example.androidexample.services.WebSocketManager;
+import com.google.android.material.card.MaterialCardView;
+
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+<span class="nc" id="L29">public class FindLobbyActivity extends AppCompatActivity implements WebSocketListener {</span>
+
+    private static final String TAG = &quot;FindLobbyActivity&quot;;
+    private LinearLayout lobbyListLayout;
+
+    private Button backButton;
+    private Button joinButton;
+    private String gameType;
+    private String username;
+    private TextView gameTitle;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L42">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L43">        setContentView(R.layout.activity_findlobby);</span>
+<span class="nc" id="L44">        ConstraintLayout rootLayout = findViewById(R.id.find_lobby_root);</span>
+
+        //setDynamicBackground(rootLayout, gameType);
+
+<span class="nc" id="L48">        lobbyListLayout = findViewById(R.id.lobby_list_layout);</span>
+<span class="nc" id="L49">        backButton = findViewById(R.id.find_lobby_back_btn);</span>
+<span class="nc" id="L50">        joinButton = findViewById(R.id.find_lobby_join_btn);</span>
+<span class="nc" id="L51">        gameTitle = findViewById(R.id.find_lobby_title);</span>
+
+
+<span class="nc" id="L54">        Intent intent = getIntent();</span>
+<span class="nc" id="L55">        gameType = intent.getStringExtra(&quot;GAMETYPE&quot;);</span>
+<span class="nc" id="L56">        username = intent.getStringExtra(&quot;USERNAME&quot;);</span>
+
+<span class="nc" id="L58">        setDynamicBackground(rootLayout, gameType);</span>
+
+<span class="nc" id="L60">        gameTitle.setText(gameType + &quot;\nlobbies&quot;);</span>
+
+<span class="nc" id="L62">        joinButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L63">            Intent i = new Intent(FindLobbyActivity.this, JoinActivity.class);</span>
+<span class="nc" id="L64">            i.putExtra(&quot;GAMETYPE&quot;, gameType);</span>
+<span class="nc" id="L65">            i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L66">            startActivity(i);</span>
+<span class="nc" id="L67">        });</span>
+
+<span class="nc" id="L69">        backButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L70">           Intent i = new Intent(FindLobbyActivity.this, LobbyActivity.class);</span>
+<span class="nc" id="L71">           i.putExtra(&quot;GAMETYPE&quot;, gameType);</span>
+<span class="nc" id="L72">           i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L73">           startActivity(i);</span>
+<span class="nc" id="L74">        });</span>
+
+
+<span class="nc" id="L77">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L81">        super.onStart();</span>
+
+        // Connect to your WebSocket that sends lobby updates
+<span class="nc" id="L84">        String wsUrl = &quot;ws://coms-3090-006.class.las.iastate.edu:8080/ws/lobbies&quot;;</span>
+<span class="nc" id="L85">        WebSocketManager.getInstance().connectWebSocket(wsUrl);</span>
+<span class="nc" id="L86">        WebSocketManager.getInstance().setWebSocketListener(this);</span>
+<span class="nc" id="L87">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L91">        super.onStop();</span>
+        //WebSocketManager.getInstance().disconnectWebSocket();
+<span class="nc" id="L93">    }</span>
+
+    // ----------------------- WEBSOCKET CALLBACKS -----------------------
+
+    @Override
+    public void onWebSocketOpen(ServerHandshake handshakedata) {
+<span class="nc" id="L99">        Log.d(TAG, &quot;Connected to lobby WebSocket&quot;);</span>
+<span class="nc" id="L100">    }</span>
+
+    @Override
+    public void onWebSocketMessage(String message) {
+<span class="nc" id="L104">        Log.d(TAG, &quot;Received message: &quot; + message);</span>
+
+<span class="nc" id="L106">        runOnUiThread(() -&gt; {</span>
+            try {
+<span class="nc" id="L108">                JSONObject json = new JSONObject(message);</span>
+<span class="nc bnc" id="L109" title="All 4 branches missed.">                if (!json.has(&quot;type&quot;) || !json.getString(&quot;type&quot;).equals(&quot;LOBBY_LIST&quot;)) {</span>
+<span class="nc" id="L110">                    Log.d(TAG, &quot;Ignoring non-lobby message&quot;);</span>
+<span class="nc" id="L111">                    return;</span>
+                }
+
+<span class="nc" id="L114">                JSONArray lobbies = json.getJSONArray(&quot;lobbies&quot;);</span>
+<span class="nc" id="L115">                lobbyListLayout.removeAllViews(); // clear before redrawing</span>
+
+<span class="nc bnc" id="L117" title="All 2 branches missed.">                for (int i = 0; i &lt; lobbies.length(); i++) {</span>
+
+<span class="nc" id="L119">                    JSONObject lobby = lobbies.getJSONObject(i);</span>
+
+<span class="nc" id="L121">                    String joinCode = lobby.getString(&quot;joinCode&quot;);</span>
+<span class="nc" id="L122">                    String game = lobby.getString(&quot;gameType&quot;);</span>
+<span class="nc" id="L123">                    JSONArray users = lobby.getJSONArray(&quot;usernames&quot;);</span>
+<span class="nc" id="L124">                    int playerCount = users.length();</span>
+<span class="nc bnc" id="L125" title="All 6 branches missed.">                    if(gameType.equals(game) || (game.equals(&quot;GO_FISH&quot;) &amp;&amp; gameType.equals(&quot;GOFISH&quot;))){</span>
+<span class="nc" id="L126">                        addLobbyCard(joinCode, game, playerCount, users);</span>
+                    }
+                }
+
+<span class="nc" id="L130">            } catch (JSONException e) {</span>
+<span class="nc" id="L131">                Log.e(TAG, &quot;Error parsing JSON&quot;, e);</span>
+<span class="nc" id="L132">            }</span>
+<span class="nc" id="L133">        });</span>
+<span class="nc" id="L134">    }</span>
+
+    @Override
+    public void onWebSocketClose(int code, String reason, boolean remote) {
+<span class="nc" id="L138">        Log.d(TAG, &quot;WebSocket closed: &quot; + reason);</span>
+<span class="nc" id="L139">    }</span>
+
+    @Override
+    public void onWebSocketError(Exception ex) {
+<span class="nc" id="L143">        Log.e(TAG, &quot;WebSocket error&quot;, ex);</span>
+<span class="nc" id="L144">    }</span>
+
+    // ----------------------- UI: LOBBY CARD CREATION -----------------------
+
+    private void addLobbyCard(String joinCode, String gameType, int playerCount, JSONArray users) {
+<span class="nc" id="L149">        MaterialCardView card = new MaterialCardView(this);</span>
+<span class="nc" id="L150">        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(</span>
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+<span class="nc" id="L154">        params.setMargins(0, 16, 0, 16);</span>
+<span class="nc" id="L155">        card.setLayoutParams(params);</span>
+<span class="nc" id="L156">        card.setRadius(20f);</span>
+<span class="nc" id="L157">        card.setCardElevation(8f);</span>
+<span class="nc" id="L158">        card.setCardBackgroundColor(Color.WHITE);</span>
+<span class="nc" id="L159">        card.setClickable(true);</span>
+<span class="nc" id="L160">        card.setFocusable(true);</span>
+
+        // Build player list text
+<span class="nc" id="L163">        StringBuilder playerList = new StringBuilder();</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        for (int i = 0; i &lt; users.length(); i++) {</span>
+            try {
+<span class="nc" id="L166">                playerList.append(users.getString(i));</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">                if (i &lt; users.length() - 1) playerList.append(&quot;, &quot;);</span>
+<span class="nc" id="L168">            } catch (JSONException ignored) {}</span>
+        }
+
+        // Create info view
+<span class="nc" id="L172">        TextView info = new TextView(this);</span>
+<span class="nc" id="L173">        info.setText(String.format(</span>
+                &quot;Game: %s\nJoin Code: %s\nPlayers: %d\n[%s]&quot;,
+                gameType,
+                joinCode,
+<span class="nc" id="L177">                playerCount,</span>
+                playerList
+        ));
+<span class="nc" id="L180">        info.setTextColor(Color.BLACK);</span>
+<span class="nc" id="L181">        info.setTextSize(18);</span>
+<span class="nc" id="L182">        info.setTypeface(ResourcesCompat.getFont(this, R.font.inter_bold));</span>
+<span class="nc" id="L183">        info.setPadding(40, 40, 40, 40);</span>
+
+<span class="nc" id="L185">        card.addView(info);</span>
+
+        // Click → Go to lobby
+        // inside addLobbyCard(...) replace existing setOnClickListener with this:
+<span class="nc" id="L189">        card.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L190">            String joinUrl = &quot;http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/&quot; + joinCode + &quot;/&quot; + username;</span>
+<span class="nc" id="L191">            Log.d(TAG, &quot;Attempting to join via: &quot; + joinUrl);</span>
+
+<span class="nc" id="L193">            JsonObjectRequest joinRequest = new JsonObjectRequest(</span>
+                    Request.Method.PUT,
+                    joinUrl,
+                    null,
+                    response -&gt; {
+                        try {
+<span class="nc" id="L199">                            String message = response.getString(&quot;message&quot;);</span>
+<span class="nc bnc" id="L200" title="All 2 branches missed.">                            if (&quot;success&quot;.equalsIgnoreCase(message)) {</span>
+                                // clean up the lobby-list websocket first (important)
+<span class="nc" id="L202">                                WebSocketManager.getInstance().disconnectWebSocket();</span>
+
+                                // start LobbyViewActivity (only on successful join)
+<span class="nc" id="L205">                                Intent intent = new Intent(FindLobbyActivity.this, LobbyViewActivity.class);</span>
+<span class="nc" id="L206">                                intent.putExtra(&quot;JOINCODE&quot;, joinCode);</span>
+<span class="nc" id="L207">                                Log.d(&quot;HElLO&quot;,joinCode);</span>
+<span class="nc" id="L208">                                Log.d(&quot;HElLO&quot;,username);</span>
+<span class="nc" id="L209">                                Log.d(&quot;HELLO&quot;,gameType);</span>
+<span class="nc" id="L210">                                intent.putExtra(&quot;GAMETYPE&quot;, gameType);</span>
+<span class="nc" id="L211">                                intent.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L212">                                intent.putExtra(&quot;HOST&quot;, false);</span>
+<span class="nc" id="L213">                                WebSocketManager.getInstance().disconnectWebSocket();</span>
+<span class="nc" id="L214">                                startActivity(intent);</span>
+<span class="nc" id="L215">                            } else {</span>
+<span class="nc" id="L216">                                Log.e(TAG, &quot;Join failed: &quot; + message);</span>
+<span class="nc" id="L217">                                Toast.makeText(FindLobbyActivity.this, &quot;Failed to join lobby: &quot; + message, Toast.LENGTH_SHORT).show();</span>
+                            }
+
+<span class="nc" id="L220">                        } catch (JSONException e) {</span>
+<span class="nc" id="L221">                            Log.e(TAG, &quot;Error parsing join response&quot;, e);</span>
+<span class="nc" id="L222">                            Toast.makeText(FindLobbyActivity.this, &quot;Unexpected server response&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L223">                        }</span>
+<span class="nc" id="L224">                    },</span>
+                    error -&gt; {
+<span class="nc" id="L226">                        Log.e(TAG, &quot;Volley join error&quot;, error);</span>
+<span class="nc" id="L227">                        Toast.makeText(FindLobbyActivity.this, &quot;Failed to join lobby (network)&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L228">                    }</span>
+            );
+
+<span class="nc" id="L231">            VolleySingleton.getInstance(FindLobbyActivity.this).addToRequestQueue(joinRequest);</span>
+<span class="nc" id="L232">        });</span>
+
+
+
+
+<span class="nc" id="L237">        lobbyListLayout.addView(card);</span>
+<span class="nc" id="L238">    }</span>
+
+    private void setDynamicBackground(ConstraintLayout layout, String gameType) {
+        int[] colors;
+
+<span class="nc bnc" id="L243" title="All 4 branches missed.">        switch (gameType.toUpperCase()) {</span>
+            case &quot;BLACKJACK&quot;:
+<span class="nc" id="L245">                colors = new int[]{</span>
+<span class="nc" id="L246">                        getColor(R.color.my_red),</span>
+<span class="nc" id="L247">                        getColor(R.color.my_dark_red)</span>
+                };
+<span class="nc" id="L249">                break;</span>
+            case &quot;GOFISH&quot;:
+<span class="nc" id="L251">                colors = new int[]{</span>
+<span class="nc" id="L252">                        getColor(R.color.my_green),</span>
+<span class="nc" id="L253">                        getColor(R.color.my_dark_green)</span>
+                };
+<span class="nc" id="L255">                break;</span>
+            case &quot;EUCHRE&quot;:
+<span class="nc" id="L257">                colors = new int[]{</span>
+<span class="nc" id="L258">                        getColor(R.color.my_blue),</span>
+<span class="nc" id="L259">                        getColor(R.color.my_dark_blue)</span>
+                };
+<span class="nc" id="L261">                break;</span>
+            default:
+<span class="nc" id="L263">                colors = new int[]{</span>
+<span class="nc" id="L264">                        getColor(R.color.my_grey),</span>
+<span class="nc" id="L265">                        getColor(R.color.black)</span>
+                };
+                break;
+        }
+
+<span class="nc" id="L270">        GradientDrawable gradient = new GradientDrawable(</span>
+                GradientDrawable.Orientation.TOP_BOTTOM,
+                colors
+        );
+<span class="nc" id="L274">        gradient.setCornerRadius(0f);</span>
+<span class="nc" id="L275">        layout.setBackground(gradient);</span>
+<span class="nc" id="L276">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

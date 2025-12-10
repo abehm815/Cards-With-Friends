@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SignupActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">SignupActivity.java</span></div><h1>SignupActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.services.VolleySingleton;
+
+import org.json.JSONObject;
+import org.json.JSONException;
+
+<span class="nc" id="L21">public class SignupActivity extends AppCompatActivity {</span>
+
+    private EditText usernameEditText;
+    private EditText passwordEditText;
+    private EditText confirmEditText;
+    private EditText firstnameEditText;
+    private EditText lastnameEditText;
+    private EditText emailEditText;
+    private EditText ageEditText;
+
+    private Button signupButton;
+    private Button backButton;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L36">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L37">        setContentView(R.layout.activity_signup);</span>
+
+        // Initialize UI elements
+<span class="nc" id="L40">        firstnameEditText = findViewById(R.id.signup_firstname_edt);</span>
+<span class="nc" id="L41">        lastnameEditText = findViewById(R.id.signup_lastname_edt);</span>
+<span class="nc" id="L42">        emailEditText = findViewById(R.id.signup_email_edt);</span>
+<span class="nc" id="L43">        ageEditText = findViewById(R.id.signup_age_edt);</span>
+<span class="nc" id="L44">        usernameEditText = findViewById(R.id.signup_username_edt);</span>
+<span class="nc" id="L45">        passwordEditText = findViewById(R.id.signup_password_edt);</span>
+<span class="nc" id="L46">        confirmEditText = findViewById(R.id.signup_confirm_edt);</span>
+<span class="nc" id="L47">        signupButton = findViewById(R.id.signup_signup_btn);</span>
+<span class="nc" id="L48">        backButton = findViewById(R.id.signup_back_btn);</span>
+
+        // Handle signup button
+<span class="nc" id="L51">        signupButton.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L54">                String firstName = firstnameEditText.getText().toString().trim();</span>
+<span class="nc" id="L55">                String lastName = lastnameEditText.getText().toString().trim();</span>
+<span class="nc" id="L56">                String email = emailEditText.getText().toString().trim();</span>
+<span class="nc" id="L57">                String age = ageEditText.getText().toString().trim();</span>
+<span class="nc" id="L58">                String username = usernameEditText.getText().toString().trim();</span>
+<span class="nc" id="L59">                String password = passwordEditText.getText().toString();</span>
+<span class="nc" id="L60">                String confirm = confirmEditText.getText().toString();</span>
+
+<span class="nc bnc" id="L62" title="All 12 branches missed.">                if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || age.isEmpty() || username.isEmpty() || password.isEmpty()) {</span>
+<span class="nc" id="L63">                    Toast.makeText(getApplicationContext(), &quot;All fields are required&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L64">                    return;</span>
+                }
+
+<span class="nc bnc" id="L67" title="All 2 branches missed.">                if (!password.equals(confirm)) {</span>
+<span class="nc" id="L68">                    Toast.makeText(getApplicationContext(), &quot;Passwords do not match&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L69">                    return;</span>
+                }
+
+<span class="nc" id="L72">                sendSignup(firstName, lastName, email, age, username, password);</span>
+<span class="nc" id="L73">            }</span>
+        });
+
+        // Handle back button
+<span class="nc" id="L77">        backButton.setOnClickListener(new View.OnClickListener() {</span>
+            @Override
+            public void onClick(View v) {
+<span class="nc" id="L80">                Intent intent = new Intent(SignupActivity.this, MainActivity.class);</span>
+<span class="nc" id="L81">                startActivity(intent);</span>
+<span class="nc" id="L82">            }</span>
+        });
+<span class="nc" id="L84">    }</span>
+
+    // Sends signup info to backend
+    private void sendSignup(String firstName, String lastName, String email, String age, String username, String password) {
+<span class="nc" id="L88">        JSONObject body = new JSONObject();</span>
+        try {
+<span class="nc" id="L90">            body.put(&quot;firstName&quot;, firstName);</span>
+<span class="nc" id="L91">            body.put(&quot;lastName&quot;, lastName);</span>
+<span class="nc" id="L92">            body.put(&quot;email&quot;, email);</span>
+<span class="nc" id="L93">            body.put(&quot;age&quot;, age);</span>
+<span class="nc" id="L94">            body.put(&quot;username&quot;, username);</span>
+<span class="nc" id="L95">            body.put(&quot;password&quot;, password);</span>
+<span class="nc" id="L96">        } catch (JSONException e) {</span>
+<span class="nc" id="L97">            Toast.makeText(getApplicationContext(), &quot;Error Creating Request&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L98">            return;</span>
+<span class="nc" id="L99">        }</span>
+
+<span class="nc" id="L101">        String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080/AppUser&quot;;</span>
+
+<span class="nc" id="L103">        JsonObjectRequest postRequest = new JsonObjectRequest(</span>
+                Request.Method.POST,
+                url,
+                body,
+<span class="nc" id="L107">                new Response.Listener&lt;JSONObject&gt;() {</span>
+                    @Override
+                    public void onResponse(JSONObject response) {
+<span class="nc" id="L110">                        Toast.makeText(getApplicationContext(), &quot;Signup successful!&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L111">                        Intent intent = new Intent(SignupActivity.this, HomeActivity.class);</span>
+<span class="nc" id="L112">                        intent.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L113">                        startActivity(intent);</span>
+<span class="nc" id="L114">                        finish();</span>
+<span class="nc" id="L115">                    }</span>
+                },
+<span class="nc" id="L117">                new Response.ErrorListener() {</span>
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+<span class="nc" id="L120">                        Toast.makeText(getApplicationContext(), &quot;Signup Failed&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L121">                    }</span>
+                }
+        );
+
+<span class="nc" id="L125">        VolleySingleton.getInstance(SignupActivity.this).addToRequestQueue(postRequest);</span>
+<span class="nc" id="L126">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

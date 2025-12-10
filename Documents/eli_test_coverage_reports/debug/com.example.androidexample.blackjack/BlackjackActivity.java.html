@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BlackjackActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample.blackjack</a> &gt; <span class="el_source">BlackjackActivity.java</span></div><h1>BlackjackActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample.blackjack;
+
+import com.example.androidexample.blackjack.BlackjackModels.*;
+import android.view.Gravity;
+
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+
+import com.example.androidexample.R;
+import com.example.androidexample.services.WebSocketListener;
+import com.example.androidexample.services.WebSocketManager;
+import com.google.android.material.button.MaterialButton;
+
+import org.java_websocket.handshake.ServerHandshake;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * BlackjackActivity
+ * Handles all blackjack game UI updates and WebSocket communications.
+ * Includes player turn indicators, card rendering, betting logic, and dealer display.
+ */
+<span class="nc" id="L38">public class BlackjackActivity extends AppCompatActivity implements WebSocketListener {</span>
+
+    // Game session variables
+    private String joinCode;
+    private String username;
+    private boolean isHost;
+    private String gameType;
+
+    // Layout references
+    private LinearLayout actionButtons;
+    private PlayerTurnBar playerTurnBar;
+    private LinearLayout playerListLayout;
+    private LinearLayout dealerCardContainer;
+    private LinearLayout cardContainer;
+    private TextView balanceText;
+    private EditText betInput;
+    private ImageButton betButton;
+    private MaterialButton startNewRoundBtn;
+
+    // Game data
+    private String selectedPlayer;
+<span class="nc" id="L59">    private GameState gameState = new GameState();</span>
+
+<span class="nc" id="L61">    private GameState previousGameState = null;</span>
+
+<span class="nc" id="L63">    private List&lt;CardState&gt; previousDealerHand = new ArrayList&lt;&gt;();</span>
+
+    // Helpers
+    private CardRenderer cardRenderer;
+    private BetHandler betHandler;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L71">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L72">        setContentView(R.layout.activity_blackjack);</span>
+
+        // Retrieve intent data
+<span class="nc" id="L75">        Intent intent = getIntent();</span>
+<span class="nc" id="L76">        gameType = intent.getStringExtra(&quot;GAMETYPE&quot;);</span>
+<span class="nc" id="L77">        username = intent.getStringExtra(&quot;USERNAME&quot;);</span>
+<span class="nc" id="L78">        joinCode = intent.getStringExtra(&quot;JOINCODE&quot;);</span>
+<span class="nc" id="L79">        isHost = intent.getBooleanExtra(&quot;HOST&quot;, false);</span>
+
+        // Initialize views
+<span class="nc" id="L82">        startNewRoundBtn = findViewById(R.id.start_new_round_btn);</span>
+<span class="nc" id="L83">        startNewRoundBtn.setVisibility(View.GONE);</span>
+
+<span class="nc" id="L85">        playerListLayout = findViewById(R.id.playerList);</span>
+<span class="nc" id="L86">        playerTurnBar = new PlayerTurnBar(playerListLayout, this);</span>
+<span class="nc" id="L87">        balanceText = findViewById(R.id.balanceText);</span>
+<span class="nc" id="L88">        betInput = findViewById(R.id.betInput);</span>
+<span class="nc" id="L89">        betButton = findViewById(R.id.betButton);</span>
+<span class="nc" id="L90">        actionButtons = findViewById(R.id.actionButtons);</span>
+<span class="nc" id="L91">        cardContainer = findViewById(R.id.cardContainer);</span>
+<span class="nc" id="L92">        dealerCardContainer = findViewById(R.id.dealerCardContainer);</span>
+
+<span class="nc" id="L94">        selectedPlayer = username;</span>
+
+
+        // Initialize helpers
+<span class="nc" id="L98">        cardRenderer = new CardRenderer(this, getResources().getDisplayMetrics().density);</span>
+<span class="nc" id="L99">        betHandler = new BetHandler(betInput, betButton, balanceText, username);</span>
+
+        // Action button listeners
+<span class="nc" id="L102">        betButton.setOnClickListener(v -&gt; betHandler.sendBet(gameState, selectedPlayer));</span>
+<span class="nc" id="L103">        findViewById(R.id.btnHit).setOnClickListener(v -&gt; sendAction(&quot;HIT&quot;));</span>
+<span class="nc" id="L104">        findViewById(R.id.btnStand).setOnClickListener(v -&gt; sendAction(&quot;STAND&quot;));</span>
+<span class="nc" id="L105">        findViewById(R.id.btnSplit).setOnClickListener(v -&gt; sendAction(&quot;SPLIT&quot;));</span>
+<span class="nc" id="L106">        findViewById(R.id.btnDouble).setOnClickListener(v -&gt; sendAction(&quot;DOUBLE&quot;));</span>
+
+        // Start new round (host only)
+<span class="nc" id="L109">        startNewRoundBtn.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L110">            String startRoundMsg = &quot;{ \&quot;action\&quot;: \&quot;STARTROUND\&quot;, \&quot;player\&quot;: \&quot;&quot; + username + &quot;\&quot; }&quot;;</span>
+<span class="nc" id="L111">            WebSocketManager.getInstance().sendMessage(startRoundMsg);</span>
+<span class="nc" id="L112">            Log.d(&quot;WebSocket&quot;, &quot;STARTROUND MESSAGE SENT&quot;);</span>
+<span class="nc" id="L113">            startNewRoundBtn.animate()</span>
+<span class="nc" id="L114">                    .alpha(0f)</span>
+<span class="nc" id="L115">                    .translationY(100f)</span>
+<span class="nc" id="L116">                    .setDuration(400)</span>
+<span class="nc" id="L117">                    .withEndAction(() -&gt; startNewRoundBtn.setVisibility(View.GONE))</span>
+<span class="nc" id="L118">                    .start();</span>
+<span class="nc" id="L119">        });</span>
+<span class="nc" id="L120">    }</span>
+
+    @Override
+    protected void onStart() {
+<span class="nc" id="L124">        super.onStart();</span>
+<span class="nc" id="L125">        String wsUrl = &quot;ws://coms-3090-006.class.las.iastate.edu:8080/ws/blackjack/&quot; + joinCode;</span>
+<span class="nc" id="L126">        WebSocketManager.getInstance().connectWebSocket(wsUrl);</span>
+<span class="nc" id="L127">        WebSocketManager.getInstance().setWebSocketListener(this);</span>
+<span class="nc" id="L128">    }</span>
+
+    @Override
+    protected void onStop() {
+<span class="nc" id="L132">        super.onStop();</span>
+<span class="nc" id="L133">        WebSocketManager.getInstance().disconnectWebSocket();</span>
+<span class="nc" id="L134">    }</span>
+
+    // -------------------------------------------------------------------
+    // WebSocket event handling
+    // -------------------------------------------------------------------
+    @Override
+    public void onWebSocketOpen(ServerHandshake handshakedata) {
+<span class="nc" id="L141">        runOnUiThread(() -&gt; showCountdownToNextRound(3));</span>
+
+<span class="nc" id="L143">        new android.os.Handler(android.os.Looper.getMainLooper())</span>
+<span class="nc" id="L144">                .postDelayed(() -&gt; runOnUiThread(() -&gt; findViewById(R.id.bettingPanel).setVisibility(View.VISIBLE)), 4000);</span>
+
+<span class="nc bnc" id="L146" title="All 2 branches missed.">        if (isHost) {</span>
+<span class="nc" id="L147">            new android.os.Handler(android.os.Looper.getMainLooper())</span>
+<span class="nc" id="L148">                    .postDelayed(() -&gt; {</span>
+<span class="nc" id="L149">                        String startMsg = &quot;{ \&quot;action\&quot;: \&quot;START\&quot;, \&quot;player\&quot;: \&quot;&quot; + username + &quot;\&quot; }&quot;;</span>
+<span class="nc" id="L150">                        String startRoundMsg = &quot;{ \&quot;action\&quot;: \&quot;STARTROUND\&quot;, \&quot;player\&quot;: \&quot;&quot; + username + &quot;\&quot; }&quot;;</span>
+<span class="nc" id="L151">                        Log.d(&quot;WebSocket&quot;, &quot;Host started new round after countdown&quot;);</span>
+<span class="nc" id="L152">                        WebSocketManager.getInstance().sendMessage(startMsg);</span>
+<span class="nc" id="L153">                        WebSocketManager.getInstance().sendMessage(startRoundMsg);</span>
+<span class="nc" id="L154">                    }, 4000);</span>
+        }
+<span class="nc" id="L156">    }</span>
+
+    @Override
+    public void onWebSocketMessage(String message) {
+<span class="nc" id="L160">        runOnUiThread(() -&gt; {</span>
+            try {
+<span class="nc" id="L162">                JSONObject json = new JSONObject(message);</span>
+<span class="nc" id="L163">                gameState = GameStateParser.fromJson(json);</span>
+
+                // -------------------------------------------------------------------
+                // Logic to switch views to different players
+                // -------------------------------------------------------------------
+
+                // --- Do the switch after the delay ---
+<span class="nc" id="L170">                long viewSwitchDelay = 1500;</span>
+<span class="nc" id="L171">                new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -&gt; {</span>
+
+                    //TODO change so that backend sends a notification when the round is over (This is a wierd check)
+<span class="nc bnc" id="L174" title="All 4 branches missed.">                    boolean isRoundOver = gameState.currentTurn == null || gameState.currentTurn.equals(&quot;null&quot;);</span>
+
+                    // Find this client's player state
+<span class="nc" id="L177">                    PlayerState self = null;</span>
+<span class="nc bnc" id="L178" title="All 2 branches missed.">                    for (PlayerState p : gameState.players) {</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">                        if (p.username.equals(username)) {</span>
+<span class="nc" id="L180">                            self = p;</span>
+<span class="nc" id="L181">                            break;</span>
+                        }
+<span class="nc" id="L183">                    }</span>
+
+                    //Determine if all the bets are placed
+<span class="nc" id="L186">                    boolean allBetsPlaced = true;</span>
+<span class="nc bnc" id="L187" title="All 2 branches missed.">                    for (PlayerState p : gameState.players) {</span>
+<span class="nc bnc" id="L188" title="All 2 branches missed.">                        if (!p.hasBet) {</span>
+<span class="nc" id="L189">                            allBetsPlaced = false;</span>
+<span class="nc" id="L190">                            break;</span>
+                        }
+<span class="nc" id="L192">                    }</span>
+
+                    // While bets are being placed focus the client on themselves
+<span class="nc bnc" id="L195" title="All 2 branches missed.">                    if (!allBetsPlaced) {</span>
+<span class="nc" id="L196">                        selectedPlayer = username;</span>
+                    }
+
+                    // If the round is over, show your own hand again
+<span class="nc bnc" id="L200" title="All 2 branches missed.">                    else if (isRoundOver) {</span>
+<span class="nc" id="L201">                        selectedPlayer = username;</span>
+                    }
+
+                    // Otherwise, switch to whoever’s turn it is
+                    else {
+<span class="nc" id="L206">                        boolean switched = false;</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">                        for (PlayerState p : gameState.players) {</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">                            if (p.username.equals(gameState.currentTurn)) {</span>
+<span class="nc" id="L209">                                selectedPlayer = p.username;</span>
+<span class="nc" id="L210">                                switched = true;</span>
+<span class="nc" id="L211">                                break;</span>
+                            }
+<span class="nc" id="L213">                        }</span>
+<span class="nc bnc" id="L214" title="All 2 branches missed.">                        if (!switched) selectedPlayer = username;</span>
+                    }
+
+<span class="nc" id="L217">                    playerTurnBar.updateFromGameState(gameState, selectedPlayer);</span>
+<span class="nc" id="L218">                    updateBalanceUI();</span>
+<span class="nc" id="L219">                    updateCardUI();</span>
+<span class="nc" id="L220">                    updateDealerCardsUI(isRoundOver);</span>
+<span class="nc" id="L221">                    updateActionButtonsUI();</span>
+
+<span class="nc" id="L223">                }, viewSwitchDelay);</span>
+
+                //TODO change so that backend sends a notification when the round is over (This is a wierd check)
+<span class="nc bnc" id="L226" title="All 4 branches missed.">                boolean isRoundOver = gameState.currentTurn == null || gameState.currentTurn.equals(&quot;null&quot;);</span>
+
+                // Immediate refresh too
+<span class="nc" id="L229">                playerTurnBar.updateFromGameState(gameState, selectedPlayer);</span>
+<span class="nc" id="L230">                updateBalanceUI();</span>
+<span class="nc" id="L231">                updateCardUI();</span>
+<span class="nc" id="L232">                updateDealerCardsUI(isRoundOver);</span>
+<span class="nc" id="L233">                updateActionButtonsUI();</span>
+
+<span class="nc" id="L235">                long newRoundDelay = 3000; //How long the countdown timer is</span>
+<span class="nc" id="L236">                long countDownDelay = 5000; //Delay before countdown starts</span>
+<span class="nc bnc" id="L237" title="All 2 branches missed.">                if (isRoundOver) {</span>
+<span class="nc" id="L238">                    new android.os.Handler(android.os.Looper.getMainLooper())</span>
+<span class="nc" id="L239">                            .postDelayed(() -&gt; {</span>
+<span class="nc" id="L240">                                showCountdownToNextRound((int) (newRoundDelay / 1000));</span>
+                                // Animate cards out of view
+<span class="nc" id="L242">                                cardRenderer.animateAllCardsOut(cardContainer);</span>
+<span class="nc" id="L243">                                cardRenderer.animateAllCardsOut(dealerCardContainer);</span>
+                                // Host automatically restarts
+<span class="nc bnc" id="L245" title="All 2 branches missed.">                                if (isHost) {</span>
+<span class="nc" id="L246">                                    new android.os.Handler(android.os.Looper.getMainLooper())</span>
+<span class="nc" id="L247">                                            .postDelayed(() -&gt; {</span>
+<span class="nc" id="L248">                                                String startRoundMsg = &quot;{ \&quot;action\&quot;: \&quot;STARTROUND\&quot;, \&quot;player\&quot;: \&quot;&quot; + username + &quot;\&quot; }&quot;;</span>
+<span class="nc" id="L249">                                                WebSocketManager.getInstance().sendMessage(startRoundMsg);</span>
+<span class="nc" id="L250">                                                Log.d(&quot;WebSocket&quot;, &quot;Auto STARTROUND message sent after countdown&quot;);</span>
+<span class="nc" id="L251">                                            }, newRoundDelay);</span>
+                                }
+<span class="nc" id="L253">                            }, countDownDelay);</span>
+                }
+<span class="nc" id="L255">            } catch (JSONException e) {</span>
+<span class="nc" id="L256">                Log.e(&quot;WebSocket&quot;, &quot;Failed to parse message: &quot; + message, e);</span>
+<span class="nc" id="L257">            }</span>
+<span class="nc" id="L258">        });</span>
+<span class="nc" id="L259">    }</span>
+
+    @Override
+    public void onWebSocketClose(int code, String reason, boolean remote) {
+<span class="nc" id="L263">        Log.e(&quot;WebSocket&quot;, &quot;Closed → code=&quot; + code + &quot;, reason=&quot; + reason + &quot;, remote=&quot; + remote);</span>
+<span class="nc" id="L264">    }</span>
+
+    @Override
+    public void onWebSocketError(Exception ex) {
+<span class="nc" id="L268">        Log.e(&quot;WebSocket&quot;, &quot;Error → &quot; + ex.getMessage(), ex);</span>
+<span class="nc" id="L269">    }</span>
+
+    // -------------------------------------------------------------------
+    // Player actions and betting
+    // -------------------------------------------------------------------
+    private void sendAction(String action) {
+<span class="nc bnc" id="L275" title="All 2 branches missed.">        if (!username.equals(gameState.currentTurn)) {</span>
+<span class="nc" id="L276">            return;</span>
+        }
+<span class="nc" id="L278">        String msg = &quot;{ \&quot;action\&quot;: \&quot;&quot; + action + &quot;\&quot;, \&quot;player\&quot;: \&quot;&quot; + username + &quot;\&quot; }&quot;;</span>
+<span class="nc" id="L279">        WebSocketManager.getInstance().sendMessage(msg);</span>
+<span class="nc" id="L280">    }</span>
+
+    private void updateBalanceUI() {
+<span class="nc" id="L283">        betHandler.updateBalanceUI(gameState, selectedPlayer);</span>
+<span class="nc" id="L284">    }</span>
+
+    // -------------------------------------------------------------------
+    // Card and dealer rendering (via CardRenderer)
+    // -------------------------------------------------------------------
+    private void updateCardUI() {
+<span class="nc" id="L290">        PlayerState player = null;</span>
+<span class="nc bnc" id="L291" title="All 2 branches missed.">        for (PlayerState p : gameState.players) {</span>
+<span class="nc bnc" id="L292" title="All 2 branches missed.">            if (p.username.equals(selectedPlayer)) {</span>
+<span class="nc" id="L293">                player = p;</span>
+<span class="nc" id="L294">                break;</span>
+            }
+<span class="nc" id="L296">        }</span>
+
+<span class="nc bnc" id="L298" title="All 2 branches missed.">        if (player == null) return;</span>
+
+        // Use animated renderer
+<span class="nc" id="L301">        cardRenderer.renderPlayerHandsAnimated(</span>
+                cardContainer,
+                player,
+<span class="nc bnc" id="L304" title="All 2 branches missed.">                previousGameState != null ? findPreviousHands(player.username, previousGameState) : null</span>
+        );
+
+        // Save deep copy for next frame comparison
+<span class="nc" id="L308">        previousGameState = gameState.deepCopy();</span>
+<span class="nc" id="L309">    }</span>
+
+    private List&lt;HandState&gt; findPreviousHands(String username, GameState previous) {
+<span class="nc bnc" id="L312" title="All 4 branches missed.">        if (previous == null || previous.players == null) return new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L313" title="All 2 branches missed.">        for (PlayerState p : previous.players) {</span>
+<span class="nc bnc" id="L314" title="All 2 branches missed.">            if (p.username.equals(username)) return p.hands;</span>
+<span class="nc" id="L315">        }</span>
+<span class="nc" id="L316">        return new ArrayList&lt;&gt;();</span>
+    }
+
+
+    private void updateDealerCardsUI(boolean isRoundOver) {
+<span class="nc bnc" id="L321" title="All 6 branches missed.">        if (gameState == null || gameState.dealer == null || gameState.dealer.hand == null) {</span>
+<span class="nc" id="L322">            return; // No dealer yet, skip rendering</span>
+        }
+
+<span class="nc" id="L325">        cardRenderer.renderDealer(dealerCardContainer, gameState.dealer, isRoundOver, previousDealerHand);</span>
+<span class="nc" id="L326">        previousDealerHand = new ArrayList&lt;&gt;(gameState.dealer.hand);</span>
+<span class="nc" id="L327">    }</span>
+
+    // -------------------------------------------------------------------
+    // Action buttons
+    // -------------------------------------------------------------------
+    private void updateActionButtonsUI() {
+<span class="nc" id="L333">        boolean showButtons = false;</span>
+
+<span class="nc" id="L335">        PlayerState selected = null;</span>
+<span class="nc bnc" id="L336" title="All 2 branches missed.">        for (PlayerState p : gameState.players) {</span>
+<span class="nc bnc" id="L337" title="All 2 branches missed.">            if (p.username.equals(selectedPlayer)) {</span>
+<span class="nc" id="L338">                selected = p;</span>
+<span class="nc" id="L339">                break;</span>
+            }
+<span class="nc" id="L341">        }</span>
+
+<span class="nc bnc" id="L343" title="All 2 branches missed.">        if (selected != null) {</span>
+<span class="nc" id="L344">            boolean isMyTurn = username.equals(gameState.currentTurn);</span>
+<span class="nc" id="L345">            boolean isViewingSelf = selectedPlayer.equals(username);</span>
+
+<span class="nc" id="L347">            boolean hasCards = false;</span>
+<span class="nc bnc" id="L348" title="All 4 branches missed.">            if (selected.hands != null &amp;&amp; !selected.hands.isEmpty()) {</span>
+<span class="nc bnc" id="L349" title="All 2 branches missed.">                for (HandState hand : selected.hands) {</span>
+<span class="nc bnc" id="L350" title="All 4 branches missed.">                    if (hand.hand != null &amp;&amp; !hand.hand.isEmpty()) {</span>
+<span class="nc" id="L351">                        hasCards = true;</span>
+<span class="nc" id="L352">                        break;</span>
+                    }
+<span class="nc" id="L354">                }</span>
+            }
+
+<span class="nc bnc" id="L357" title="All 6 branches missed.">            showButtons = isMyTurn &amp;&amp; isViewingSelf &amp;&amp; hasCards;</span>
+        }
+
+<span class="nc bnc" id="L360" title="All 2 branches missed.">        actionButtons.setVisibility(showButtons ? View.VISIBLE : View.GONE);</span>
+
+<span class="nc" id="L362">        View splitBtn = findViewById(R.id.btnSplit);</span>
+<span class="nc" id="L363">        boolean canSplit = false;</span>
+
+<span class="nc bnc" id="L365" title="All 6 branches missed.">        if (selected != null &amp;&amp; selected.hands != null &amp;&amp; !selected.hands.isEmpty()) {</span>
+<span class="nc bnc" id="L366" title="All 2 branches missed.">            for (HandState hand : selected.hands) {</span>
+<span class="nc bnc" id="L367" title="All 2 branches missed.">                if (hand.canSplit) {</span>
+<span class="nc" id="L368">                    canSplit = true;</span>
+<span class="nc" id="L369">                    break;</span>
+                }
+<span class="nc" id="L371">            }</span>
+        }
+
+<span class="nc bnc" id="L374" title="All 2 branches missed.">        splitBtn.setVisibility(canSplit ? View.VISIBLE : View.GONE);</span>
+<span class="nc" id="L375">    }</span>
+    private void showCountdownToNextRound(int seconds) {
+<span class="nc" id="L377">        TextView countdownText = new TextView(this);</span>
+<span class="nc" id="L378">        countdownText.setTextSize(72);</span>
+<span class="nc" id="L379">        countdownText.setTypeface(ResourcesCompat.getFont(this, R.font.inter_black));</span>
+<span class="nc" id="L380">        countdownText.setGravity(Gravity.CENTER);</span>
+<span class="nc" id="L381">        countdownText.setTextColor(Color.WHITE);</span>
+<span class="nc" id="L382">        countdownText.setShadowLayer(25f, 0f, 0f, Color.BLACK);</span>
+<span class="nc" id="L383">        countdownText.setAlpha(0f);</span>
+<span class="nc" id="L384">        countdownText.setElevation(9999f);</span>
+
+<span class="nc" id="L386">        addContentView(countdownText, new LinearLayout.LayoutParams(</span>
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT
+        ));
+
+<span class="nc" id="L391">        final int[] timeLeft = {seconds};</span>
+<span class="nc" id="L392">        android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());</span>
+
+<span class="nc" id="L394">        Runnable runnable = new Runnable() {</span>
+            @Override
+            public void run() {
+<span class="nc bnc" id="L397" title="All 2 branches missed.">                if (timeLeft[0] &lt;= 0) {</span>
+                    // Show &quot;BET&quot; instead of removing the view
+<span class="nc" id="L399">                    countdownText.setText(&quot;BET&quot;);</span>
+<span class="nc" id="L400">                    countdownText.setAlpha(0f);</span>
+<span class="nc" id="L401">                    countdownText.animate()</span>
+<span class="nc" id="L402">                            .alpha(1f)</span>
+<span class="nc" id="L403">                            .scaleX(1.3f)</span>
+<span class="nc" id="L404">                            .scaleY(1.3f)</span>
+<span class="nc" id="L405">                            .setDuration(500)</span>
+<span class="nc" id="L406">                            .withEndAction(() -&gt; countdownText.animate()</span>
+<span class="nc" id="L407">                                    .alpha(0f)</span>
+<span class="nc" id="L408">                                    .setDuration(600)</span>
+<span class="nc" id="L409">                                    .setStartDelay(600)</span>
+<span class="nc" id="L410">                                    .withEndAction(() -&gt; {</span>
+<span class="nc" id="L411">                                        ViewGroup parent = (ViewGroup) countdownText.getParent();</span>
+<span class="nc bnc" id="L412" title="All 2 branches missed.">                                        if (parent != null) parent.removeView(countdownText);</span>
+<span class="nc" id="L413">                                    })</span>
+<span class="nc" id="L414">                                    .start())</span>
+<span class="nc" id="L415">                            .start();</span>
+<span class="nc" id="L416">                    return;</span>
+                }
+
+<span class="nc" id="L419">                countdownText.setText(String.valueOf(timeLeft[0]));</span>
+<span class="nc" id="L420">                countdownText.setAlpha(1f);</span>
+<span class="nc" id="L421">                countdownText.setScaleX(1f);</span>
+<span class="nc" id="L422">                countdownText.setScaleY(1f);</span>
+<span class="nc" id="L423">                countdownText.animate()</span>
+<span class="nc" id="L424">                        .alpha(0f)</span>
+<span class="nc" id="L425">                        .scaleX(1.4f)</span>
+<span class="nc" id="L426">                        .scaleY(1.4f)</span>
+<span class="nc" id="L427">                        .setDuration(900)</span>
+<span class="nc" id="L428">                        .start();</span>
+
+<span class="nc" id="L430">                timeLeft[0]--;</span>
+<span class="nc" id="L431">                handler.postDelayed(this, 1000);</span>
+<span class="nc" id="L432">            }</span>
+        };
+
+<span class="nc" id="L435">        handler.post(runnable);</span>
+<span class="nc" id="L436">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

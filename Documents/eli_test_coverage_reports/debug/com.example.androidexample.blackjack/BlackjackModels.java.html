@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BlackjackModels.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample.blackjack</a> &gt; <span class="el_source">BlackjackModels.java</span></div><h1>BlackjackModels.java</h1><pre class="source lang-java linenums">package com.example.androidexample.blackjack;
+
+import java.util.ArrayList;
+import java.util.List;
+
+/**
+ * Centralized model definitions for all Blackjack-related game data.
+ *
+ * &lt;p&gt;This file defines the full hierarchy of objects used to represent
+ * the current game state on the client side. These mirror the JSON
+ * structures sent from the backend WebSocket server and are populated
+ * by {@link GameStateParser}.&lt;/p&gt;
+ *
+ * &lt;p&gt;Each nested class represents a logical entity:
+ * &lt;ul&gt;
+ *   &lt;li&gt;{@link GameState} — overall snapshot of the lobby&lt;/li&gt;
+ *   &lt;li&gt;{@link DealerState} — the dealer’s hand and value&lt;/li&gt;
+ *   &lt;li&gt;{@link PlayerState} — an individual player’s info and hands&lt;/li&gt;
+ *   &lt;li&gt;{@link HandState} — a single hand containing cards and bet&lt;/li&gt;
+ *   &lt;li&gt;{@link CardState} — a single playing card&lt;/li&gt;
+ * &lt;/ul&gt;
+ * &lt;/p&gt;
+ */
+<span class="nc" id="L24">public class BlackjackModels {</span>
+
+    // ==========================================================
+    // GameState (Root of all game data)
+    // ==========================================================
+
+    /**
+     * Represents the full current state of a Blackjack game lobby.
+     * This object encapsulates everything needed to render the game UI.
+     */
+<span class="nc" id="L34">    public static class GameState {</span>
+        /** Unique lobby code shared between players (used for joining). */
+        public String lobbyCode;
+
+        /** Whether a round of Blackjack is currently active. */
+        public boolean roundInProgress;
+
+        /** Username of the player whose turn it currently is. */
+        public String currentTurn;
+
+        /** The dealer's cards and total hand value. */
+        public DealerState dealer;
+
+        /** All players participating in the current lobby. */
+<span class="nc" id="L48">        public List&lt;PlayerState&gt; players = new ArrayList&lt;&gt;();</span>
+
+        // ==========================================================
+        // Deep Copy Utility — creates a full duplicate of GameState
+        // ==========================================================
+        public GameState deepCopy() {
+<span class="nc" id="L54">            GameState copy = new GameState();</span>
+
+<span class="nc" id="L56">            copy.currentTurn = this.currentTurn;</span>
+<span class="nc" id="L57">            copy.roundInProgress = this.roundInProgress;</span>
+<span class="nc" id="L58">            copy.lobbyCode = this.lobbyCode;</span>
+
+            // Copy dealer
+<span class="nc bnc" id="L61" title="All 2 branches missed.">            if (this.dealer != null) {</span>
+<span class="nc" id="L62">                DealerState dealerCopy = new DealerState();</span>
+<span class="nc" id="L63">                dealerCopy.handValue = this.dealer.handValue;</span>
+<span class="nc" id="L64">                dealerCopy.hand = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L65" title="All 2 branches missed.">                for (CardState c : this.dealer.hand) {</span>
+<span class="nc" id="L66">                    CardState cardCopy = new CardState();</span>
+<span class="nc" id="L67">                    cardCopy.value = c.value;</span>
+<span class="nc" id="L68">                    cardCopy.suit = c.suit;</span>
+<span class="nc" id="L69">                    cardCopy.isShowing = c.isShowing;</span>
+<span class="nc" id="L70">                    dealerCopy.hand.add(cardCopy);</span>
+<span class="nc" id="L71">                }</span>
+<span class="nc" id="L72">                copy.dealer = dealerCopy;</span>
+            }
+
+            // Copy players
+<span class="nc" id="L76">            copy.players = new ArrayList&lt;&gt;();</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">            if (this.players != null) {</span>
+<span class="nc bnc" id="L78" title="All 2 branches missed.">                for (PlayerState p : this.players) {</span>
+<span class="nc" id="L79">                    PlayerState playerCopy = new PlayerState();</span>
+<span class="nc" id="L80">                    playerCopy.username = p.username;</span>
+<span class="nc" id="L81">                    playerCopy.chips = p.chips;</span>
+<span class="nc" id="L82">                    playerCopy.hasBet = p.hasBet;</span>
+<span class="nc" id="L83">                    playerCopy.hands = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L85" title="All 2 branches missed.">                    if (p.hands != null) {</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">                        for (HandState h : p.hands) {</span>
+<span class="nc" id="L87">                            HandState handCopy = new HandState();</span>
+<span class="nc" id="L88">                            handCopy.bet = h.bet;</span>
+<span class="nc" id="L89">                            handCopy.hasStood = h.hasStood;</span>
+<span class="nc" id="L90">                            handCopy.canSplit = h.canSplit;</span>
+<span class="nc" id="L91">                            handCopy.handValue = h.handValue;</span>
+<span class="nc" id="L92">                            handCopy.handIndex = h.handIndex;</span>
+<span class="nc" id="L93">                            handCopy.hand = new ArrayList&lt;&gt;();</span>
+
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                            if (h.hand != null) {</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">                                for (CardState c : h.hand) {</span>
+<span class="nc" id="L97">                                    CardState cardCopy = new CardState();</span>
+<span class="nc" id="L98">                                    cardCopy.value = c.value;</span>
+<span class="nc" id="L99">                                    cardCopy.suit = c.suit;</span>
+<span class="nc" id="L100">                                    cardCopy.isShowing = c.isShowing;</span>
+<span class="nc" id="L101">                                    handCopy.hand.add(cardCopy);</span>
+<span class="nc" id="L102">                                }</span>
+                            }
+<span class="nc" id="L104">                            playerCopy.hands.add(handCopy);</span>
+<span class="nc" id="L105">                        }</span>
+                    }
+
+<span class="nc" id="L108">                    copy.players.add(playerCopy);</span>
+<span class="nc" id="L109">                }</span>
+            }
+
+<span class="nc" id="L112">            return copy;</span>
+        }
+    }
+
+    // ==========================================================
+    // PlayerState (Individual player info)
+    // ==========================================================
+
+    /**
+     * Represents an individual player's status and hands within a game.
+     */
+<span class="nc" id="L123">    public static class PlayerState {</span>
+        /** The player's unique username (used as identifier). */
+        public String username;
+
+        /** The number of chips the player currently has. */
+        public int chips;
+
+        /** Whether the player has already placed a bet this round. */
+        public boolean hasBet;
+
+        /** All active hands that belong to this player. */
+<span class="nc" id="L134">        public List&lt;HandState&gt; hands = new ArrayList&lt;&gt;();</span>
+    }
+
+    // ==========================================================
+    // DealerState (House hand info)
+    // ==========================================================
+
+    /**
+     * Represents the dealer's cards and total hand value.
+     */
+<span class="nc" id="L144">    public static class DealerState {</span>
+        /** The current total value of the dealer’s hand. */
+        public int handValue;
+
+        /** All cards currently held by the dealer. */
+<span class="nc" id="L149">        public List&lt;CardState&gt; hand = new ArrayList&lt;&gt;();</span>
+    }
+
+    // ==========================================================
+    // HandState (Individual hand)
+    // ==========================================================
+
+    /**
+     * Represents a single Blackjack hand — for either a player or the dealer.
+     */
+<span class="nc" id="L159">    public static class HandState {</span>
+        /** Index of this hand (used for split-hand identification). */
+        public int handIndex;
+
+        /** Total numerical value of this hand (e.g. 18, 21, etc.). */
+        public int handValue;
+
+        /** The amount of chips wagered on this hand. */
+        public int bet;
+
+        /** Whether the player has stood on this hand (no more actions). */
+        public boolean hasStood;
+
+        /** Whether this hand can currently be split into two. */
+        public boolean canSplit;
+
+        /** List of cards that make up this hand. */
+<span class="nc" id="L176">        public List&lt;CardState&gt; hand = new ArrayList&lt;&gt;();</span>
+    }
+
+    // ==========================================================
+    // CardState (Single playing card)
+    // ==========================================================
+
+    /**
+     * Represents a single playing card in the deck or hand.
+     */
+<span class="nc" id="L186">    public static class CardState {</span>
+        /** Numeric value of the card (1–11 for Aces, 10 for face cards, etc.). */
+        public int value;
+
+        /** Suit of the card (e.g., &quot;h&quot; for hearts, &quot;s&quot; for spades). */
+        public String suit;
+
+        /** Whether the card is currently visible (face-up) to the player. */
+        public boolean isShowing;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

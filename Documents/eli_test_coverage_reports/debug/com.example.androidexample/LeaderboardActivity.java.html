@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LeaderboardActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">LeaderboardActivity.java</span></div><h1>LeaderboardActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonArrayRequest;
+import com.example.androidexample.services.BottomNavHelper;
+import com.example.androidexample.services.VolleySingleton;
+import com.google.android.material.card.MaterialCardView;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.List;
+
+<span class="nc" id="L28">public class LeaderboardActivity extends AppCompatActivity {</span>
+
+    private static final String DB_URL = &quot;http://coms-3090-006.class.las.iastate.edu:8080&quot;;
+
+    private String username;
+<span class="nc" id="L33">    private boolean dataLoaded = false;</span>
+
+<span class="nc" id="L35">    private final List&lt;PlayerStat&gt; blackjackList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L36">    private final List&lt;PlayerStat&gt; euchreList = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L37">    private final List&lt;PlayerStat&gt; gofishList = new ArrayList&lt;&gt;();</span>
+
+    private LinearLayout leaderboardContainer;
+    private TextView blackjackBtn, euchreBtn, gofishBtn;
+    private ImageButton refreshBtn;
+
+<span class="nc" id="L43">    private String currentGame = &quot;Blackjack&quot;;</span>
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L47">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L48">        setContentView(R.layout.activity_leaderboard);</span>
+
+<span class="nc" id="L50">        Intent intent = getIntent();</span>
+<span class="nc" id="L51">        username = intent.getStringExtra(&quot;USERNAME&quot;);</span>
+<span class="nc" id="L52">        BottomNavHelper.setupBottomNav(this, username);</span>
+
+<span class="nc" id="L54">        leaderboardContainer = findViewById(R.id.leaderboard_container);</span>
+<span class="nc" id="L55">        blackjackBtn = findViewById(R.id.leaderboard_blackjack_btn);</span>
+<span class="nc" id="L56">        euchreBtn = findViewById(R.id.leaderboard_euchre_btn);</span>
+<span class="nc" id="L57">        gofishBtn = findViewById(R.id.leaderboard_gofish_btn);</span>
+
+<span class="nc" id="L59">        blackjackBtn.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L60">            currentGame = &quot;Blackjack&quot;;</span>
+<span class="nc" id="L61">            displayLeaderboard(blackjackList);</span>
+<span class="nc" id="L62">            setActiveButton(currentGame);</span>
+<span class="nc" id="L63">        });</span>
+
+<span class="nc" id="L65">        euchreBtn.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L66">            currentGame = &quot;Euchre&quot;;</span>
+<span class="nc" id="L67">            displayLeaderboard(euchreList);</span>
+<span class="nc" id="L68">            setActiveButton(currentGame);</span>
+<span class="nc" id="L69">        });</span>
+
+<span class="nc" id="L71">        gofishBtn.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L72">            currentGame = &quot;Go Fish&quot;;</span>
+<span class="nc" id="L73">            displayLeaderboard(gofishList);</span>
+<span class="nc" id="L74">            setActiveButton(currentGame);</span>
+<span class="nc" id="L75">        });</span>
+
+<span class="nc" id="L77">        getUserStats();</span>
+<span class="nc" id="L78">        setActiveButton(currentGame);</span>
+<span class="nc" id="L79">    }</span>
+
+    /** Highlights the selected game button **/
+    private void setActiveButton(String activeGame) {
+<span class="nc" id="L83">        blackjackBtn.setBackgroundResource(R.drawable.btn_dark);</span>
+<span class="nc" id="L84">        euchreBtn.setBackgroundResource(R.drawable.btn_dark);</span>
+<span class="nc" id="L85">        gofishBtn.setBackgroundResource(R.drawable.btn_dark);</span>
+
+<span class="nc bnc" id="L87" title="All 4 branches missed.">        switch (activeGame) {</span>
+            case &quot;Blackjack&quot;:
+<span class="nc" id="L89">                blackjackBtn.setBackgroundResource(R.drawable.btn_red);</span>
+<span class="nc" id="L90">                break;</span>
+            case &quot;Euchre&quot;:
+<span class="nc" id="L92">                euchreBtn.setBackgroundResource(R.drawable.btn_blue);</span>
+<span class="nc" id="L93">                break;</span>
+            case &quot;Go Fish&quot;:
+<span class="nc" id="L95">                gofishBtn.setBackgroundResource(R.drawable.btn_green);</span>
+                break;
+        }
+<span class="nc" id="L98">    }</span>
+
+    /** Fetches leaderboard data from backend **/
+    private void getUserStats() {
+<span class="nc" id="L102">        String url = DB_URL + &quot;/UserStats&quot;;</span>
+
+<span class="nc" id="L104">        JsonArrayRequest request = new JsonArrayRequest(</span>
+                Request.Method.GET,
+                url,
+                null,
+                this::handleResponse,
+                error -&gt; {
+<span class="nc" id="L110">                    Log.e(&quot;Volley&quot;, &quot;Error fetching user stats: &quot; + error);</span>
+<span class="nc" id="L111">                    showUnavailableMessage();</span>
+<span class="nc" id="L112">                }</span>
+        );
+
+<span class="nc" id="L115">        VolleySingleton.getInstance(this).addToRequestQueue(request);</span>
+<span class="nc" id="L116">    }</span>
+
+    /** Handles valid server responses **/
+    private void handleResponse(JSONArray response) {
+        try {
+<span class="nc" id="L121">            blackjackList.clear();</span>
+<span class="nc" id="L122">            euchreList.clear();</span>
+<span class="nc" id="L123">            gofishList.clear();</span>
+
+<span class="nc bnc" id="L125" title="All 2 branches missed.">            for (int i = 0; i &lt; response.length(); i++) {</span>
+<span class="nc" id="L126">                JSONObject obj = response.getJSONObject(i);</span>
+<span class="nc" id="L127">                JSONObject userObj = obj.optJSONObject(&quot;appUser&quot;);</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">                if (userObj == null) continue;</span>
+
+<span class="nc" id="L130">                String name = userObj.optString(&quot;username&quot;, &quot;Unknown&quot;);</span>
+<span class="nc" id="L131">                JSONObject stats = obj.optJSONObject(&quot;allGameStats&quot;);</span>
+<span class="nc bnc" id="L132" title="All 2 branches missed.">                if (stats == null) continue;</span>
+
+<span class="nc" id="L134">                JSONObject bj = stats.optJSONObject(&quot;Blackjack&quot;);</span>
+<span class="nc" id="L135">                JSONObject eu = stats.optJSONObject(&quot;Euchre&quot;);</span>
+<span class="nc" id="L136">                JSONObject gf = stats.optJSONObject(&quot;GoFish&quot;);</span>
+
+<span class="nc" id="L138">                blackjackList.add(new PlayerStat(name, calcWinPct(bj)));</span>
+<span class="nc" id="L139">                euchreList.add(new PlayerStat(name, calcWinPct(eu)));</span>
+<span class="nc" id="L140">                gofishList.add(new PlayerStat(name, calcWinPct(gf)));</span>
+            }
+
+<span class="nc" id="L143">            blackjackList.sort((a, b) -&gt; Double.compare(b.winPct, a.winPct));</span>
+<span class="nc" id="L144">            euchreList.sort((a, b) -&gt; Double.compare(b.winPct, a.winPct));</span>
+<span class="nc" id="L145">            gofishList.sort((a, b) -&gt; Double.compare(b.winPct, a.winPct));</span>
+
+<span class="nc" id="L147">            dataLoaded = true;</span>
+<span class="nc" id="L148">            displayLeaderboard(getCurrentList());</span>
+<span class="nc" id="L149">            setActiveButton(currentGame);</span>
+
+<span class="nc" id="L151">        } catch (Exception e) {</span>
+<span class="nc" id="L152">            Log.e(&quot;Volley&quot;, &quot;Parse error&quot;, e);</span>
+<span class="nc" id="L153">            showUnavailableMessage();</span>
+<span class="nc" id="L154">        }</span>
+<span class="nc" id="L155">    }</span>
+
+    /** Shows styled &quot;unavailable&quot; card like StatsActivity **/
+    private void showUnavailableMessage() {
+<span class="nc" id="L159">        leaderboardContainer.removeAllViews();</span>
+<span class="nc" id="L160">        addTextBox(&quot;Leaderboard is unavailable when offline.&quot;);</span>
+<span class="nc" id="L161">    }</span>
+
+    /** Creates styled card matching StatsActivity **/
+    private void addTextBox(String text) {
+        int accent;
+<span class="nc bnc" id="L166" title="All 3 branches missed.">        switch (currentGame) {</span>
+            case &quot;Blackjack&quot;:
+<span class="nc" id="L168">                accent = getColor(R.color.my_red);</span>
+<span class="nc" id="L169">                break;</span>
+            case &quot;Euchre&quot;:
+<span class="nc" id="L171">                accent = getColor(R.color.my_blue);</span>
+<span class="nc" id="L172">                break;</span>
+            case &quot;Go Fish&quot;:
+            default:
+<span class="nc" id="L175">                accent = getColor(R.color.my_green);</span>
+                break;
+        }
+
+<span class="nc" id="L179">        View cardView = getLayoutInflater().inflate(R.layout.item_stat_card, leaderboardContainer, false);</span>
+<span class="nc" id="L180">        MaterialCardView card = (MaterialCardView) cardView;</span>
+<span class="nc" id="L181">        card.setStrokeColor(accent);</span>
+
+<span class="nc" id="L183">        TextView tv = card.findViewById(R.id.stat_text);</span>
+<span class="nc" id="L184">        tv.setText(text);</span>
+
+<span class="nc" id="L186">        ImageView icon = card.findViewById(R.id.stat_icon);</span>
+<span class="nc" id="L187">        icon.setColorFilter(accent);</span>
+
+<span class="nc" id="L189">        card.startAnimation(AnimationUtils.loadAnimation(this, android.R.anim.fade_in));</span>
+<span class="nc" id="L190">        leaderboardContainer.addView(card);</span>
+<span class="nc" id="L191">    }</span>
+
+    /** Selects the list for the currently active game **/
+    private List&lt;PlayerStat&gt; getCurrentList() {
+<span class="nc bnc" id="L195" title="All 3 branches missed.">        switch (currentGame) {</span>
+            case &quot;Euchre&quot;:
+<span class="nc" id="L197">                return euchreList;</span>
+            case &quot;Go Fish&quot;:
+<span class="nc" id="L199">                return gofishList;</span>
+            default:
+<span class="nc" id="L201">                return blackjackList;</span>
+        }
+    }
+
+    /** Calculates win percentage for a user's game stats **/
+    private double calcWinPct(JSONObject obj) {
+<span class="nc bnc" id="L207" title="All 2 branches missed.">        if (obj == null) return 0;</span>
+<span class="nc" id="L208">        int played = obj.optInt(&quot;gamesPlayed&quot;, 0);</span>
+<span class="nc" id="L209">        int won = obj.optInt(&quot;gamesWon&quot;, 0);</span>
+<span class="nc bnc" id="L210" title="All 2 branches missed.">        return played &gt; 0 ? (double) won / played * 100 : 0;</span>
+    }
+
+    /** Builds and displays the leaderboard entries dynamically **/
+    private void displayLeaderboard(List&lt;PlayerStat&gt; list) {
+<span class="nc" id="L215">        leaderboardContainer.removeAllViews();</span>
+
+<span class="nc bnc" id="L217" title="All 4 branches missed.">        if (!dataLoaded || list.isEmpty()) {</span>
+<span class="nc" id="L218">            addTextBox(&quot;No leaderboard data available for &quot; + currentGame + &quot;.&quot;);</span>
+<span class="nc" id="L219">            return;</span>
+        }
+
+        int borderColor;
+<span class="nc bnc" id="L223" title="All 3 branches missed.">        switch (currentGame) {</span>
+            case &quot;Euchre&quot;:
+<span class="nc" id="L225">                borderColor = ContextCompat.getColor(this, R.color.my_blue);</span>
+<span class="nc" id="L226">                break;</span>
+            case &quot;Go Fish&quot;:
+<span class="nc" id="L228">                borderColor = ContextCompat.getColor(this, R.color.my_green);</span>
+<span class="nc" id="L229">                break;</span>
+            default:
+<span class="nc" id="L231">                borderColor = ContextCompat.getColor(this, R.color.my_red);</span>
+                break;
+        }
+
+<span class="nc" id="L235">        int rank = 1;</span>
+<span class="nc bnc" id="L236" title="All 2 branches missed.">        for (PlayerStat p : list) {</span>
+<span class="nc" id="L237">            View card = getLayoutInflater().inflate(R.layout.item_leaderboard_entry, leaderboardContainer, false);</span>
+<span class="nc" id="L238">            MaterialCardView cardView = (MaterialCardView) card;</span>
+<span class="nc" id="L239">            cardView.setStrokeColor(borderColor);</span>
+
+<span class="nc" id="L241">            TextView rankText = card.findViewById(R.id.rank_text);</span>
+<span class="nc" id="L242">            TextView usernameText = card.findViewById(R.id.username_text);</span>
+<span class="nc" id="L243">            TextView scoreText = card.findViewById(R.id.score_text);</span>
+
+<span class="nc" id="L245">            rankText.setText(String.valueOf(rank));</span>
+<span class="nc" id="L246">            usernameText.setText(p.username);</span>
+<span class="nc" id="L247">            scoreText.setText(String.format(&quot;%.2f%%&quot;, p.winPct));</span>
+
+            // Rank background gradient
+<span class="nc bnc" id="L250" title="All 2 branches missed.">            if (rank == 1) {</span>
+<span class="nc" id="L251">                rankText.setBackgroundResource(R.drawable.leaderboard_rank_gold);</span>
+<span class="nc bnc" id="L252" title="All 2 branches missed.">            } else if (rank == 2) {</span>
+<span class="nc" id="L253">                rankText.setBackgroundResource(R.drawable.leaderboard_rank_silver);</span>
+<span class="nc bnc" id="L254" title="All 2 branches missed.">            } else if (rank == 3) {</span>
+<span class="nc" id="L255">                rankText.setBackgroundResource(R.drawable.leaderboard_rank_bronze);</span>
+            } else {
+<span class="nc" id="L257">                rankText.setBackgroundResource(R.drawable.bg_rank_gradient);</span>
+            }
+
+<span class="nc" id="L260">            rankText.setTextColor(ContextCompat.getColor(this, android.R.color.white));</span>
+<span class="nc" id="L261">            leaderboardContainer.addView(card);</span>
+<span class="nc" id="L262">            rank++;</span>
+<span class="nc" id="L263">        }</span>
+<span class="nc" id="L264">    }</span>
+
+    /** Simple model for leaderboard entries **/
+    public static class PlayerStat {
+        String username;
+        double winPct;
+
+<span class="nc" id="L271">        public PlayerStat(String username, double winPct) {</span>
+<span class="nc" id="L272">            this.username = username;</span>
+<span class="nc" id="L273">            this.winPct = winPct;</span>
+<span class="nc" id="L274">        }</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

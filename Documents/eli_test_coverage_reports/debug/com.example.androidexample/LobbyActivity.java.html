@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LobbyActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">LobbyActivity.java</span></div><h1>LobbyActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
+
+import com.android.volley.Request;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.services.VolleySingleton;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+<span class="nc" id="L21">public class LobbyActivity extends AppCompatActivity {</span>
+
+    private TextView gameText;
+    private TextView joinButton;
+    private TextView hostButton;
+    private TextView findButton;
+    private TextView backButton;
+    private String gameType;
+    private String username;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L33">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L34">        setContentView(R.layout.activity_lobby);</span>
+
+        // Link UI
+<span class="nc" id="L37">        gameText = findViewById(R.id.lobby_title);</span>
+<span class="nc" id="L38">        backButton = findViewById(R.id.lobby_back_btn);</span>
+<span class="nc" id="L39">        joinButton = findViewById(R.id.lobby_join_btn);</span>
+<span class="nc" id="L40">        hostButton = findViewById(R.id.lobby_host_btn);</span>
+<span class="nc" id="L41">        findButton = findViewById(R.id.lobby_find_btn);</span>
+
+        // Get intent data
+<span class="nc" id="L44">        Intent intent = getIntent();</span>
+<span class="nc" id="L45">        gameType = intent.getStringExtra(&quot;GAMETYPE&quot;);</span>
+<span class="nc" id="L46">        username = intent.getStringExtra(&quot;USERNAME&quot;);</span>
+
+        // Normalize and color title (ALL CAPS)
+<span class="nc" id="L49">        String normalized = gameType.replace(&quot;_&quot;, &quot; &quot;).toUpperCase();</span>
+        int accentColor;
+<span class="nc bnc" id="L51" title="All 4 branches missed.">        switch (gameType.toUpperCase()) {</span>
+            case &quot;BLACKJACK&quot;:
+<span class="nc" id="L53">                accentColor = ContextCompat.getColor(this, R.color.my_red);</span>
+<span class="nc" id="L54">                break;</span>
+            case &quot;EUCHRE&quot;:
+<span class="nc" id="L56">                accentColor = ContextCompat.getColor(this, R.color.my_blue);</span>
+<span class="nc" id="L57">                break;</span>
+            case &quot;GO_FISH&quot;:
+<span class="nc" id="L59">                accentColor = ContextCompat.getColor(this, R.color.my_green);</span>
+<span class="nc" id="L60">                break;</span>
+            default:
+<span class="nc" id="L62">                accentColor = ContextCompat.getColor(this, android.R.color.white);</span>
+        }
+
+<span class="nc" id="L65">        String titleText = &quot;ENTER &quot; + normalized + &quot; LOBBY&quot;;</span>
+<span class="nc" id="L66">        SpannableString span = new SpannableString(titleText);</span>
+<span class="nc" id="L67">        int start = titleText.indexOf(normalized);</span>
+<span class="nc" id="L68">        int end = start + normalized.length();</span>
+<span class="nc" id="L69">        span.setSpan(new ForegroundColorSpan(accentColor), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);</span>
+<span class="nc" id="L70">        gameText.setText(span);</span>
+
+        // Back button → return to home
+<span class="nc" id="L73">        backButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L74">            Intent i = new Intent(LobbyActivity.this, HomeActivity.class);</span>
+<span class="nc" id="L75">            i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L76">            startActivity(i);</span>
+<span class="nc" id="L77">        });</span>
+
+        // Join button
+<span class="nc" id="L80">        joinButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L81">            Intent i = new Intent(LobbyActivity.this, JoinActivity.class);</span>
+<span class="nc" id="L82">            i.putExtra(&quot;GAMETYPE&quot;, gameType);</span>
+<span class="nc" id="L83">            i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L84">            startActivity(i);</span>
+<span class="nc" id="L85">        });</span>
+
+        // Host button → autogen and open LobbyViewActivity
+<span class="nc" id="L88">        hostButton.setOnClickListener(v -&gt; createAutoLobby());</span>
+
+        // Find button
+<span class="nc" id="L91">        findButton.setOnClickListener(v -&gt; {</span>
+<span class="nc" id="L92">            Intent i = new Intent(LobbyActivity.this, FindLobbyActivity.class);</span>
+<span class="nc" id="L93">            i.putExtra(&quot;GAMETYPE&quot;, gameType);</span>
+<span class="nc" id="L94">            i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L95">            startActivity(i);</span>
+<span class="nc" id="L96">        });</span>
+<span class="nc" id="L97">    }</span>
+
+    private void createAutoLobby() {
+<span class="nc" id="L100">        String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080/Lobby/joinCode/autogen/&quot; + username;</span>
+
+<span class="nc" id="L102">        JSONObject body = new JSONObject();</span>
+        try {
+<span class="nc" id="L104">            body.put(&quot;gameType&quot;, gameType.toUpperCase());</span>
+<span class="nc" id="L105">        } catch (JSONException e) {</span>
+<span class="nc" id="L106">            Toast.makeText(this, &quot;Error creating request&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L107">            return;</span>
+<span class="nc" id="L108">        }</span>
+
+<span class="nc" id="L110">        JsonObjectRequest request = new JsonObjectRequest(</span>
+                Request.Method.POST,
+                url,
+                body,
+<span class="nc" id="L114">                response -&gt; {},</span>
+<span class="nc" id="L115">                error -&gt; Toast.makeText(this, &quot;Network Error&quot;, Toast.LENGTH_LONG).show()</span>
+<span class="nc" id="L116">        ) {</span>
+            @Override
+            protected com.android.volley.Response&lt;JSONObject&gt; parseNetworkResponse(com.android.volley.NetworkResponse response) {
+                try {
+<span class="nc" id="L120">                    String joinCode = new String(response.data).replace(&quot;\&quot;&quot;, &quot;&quot;).trim();</span>
+<span class="nc" id="L121">                    runOnUiThread(() -&gt; {</span>
+<span class="nc" id="L122">                        Intent i = new Intent(LobbyActivity.this, LobbyViewActivity.class);</span>
+<span class="nc" id="L123">                        i.putExtra(&quot;GAMETYPE&quot;, gameType);</span>
+<span class="nc" id="L124">                        i.putExtra(&quot;USERNAME&quot;, username);</span>
+<span class="nc" id="L125">                        i.putExtra(&quot;JOINCODE&quot;, joinCode);</span>
+<span class="nc" id="L126">                        i.putExtra(&quot;HOST&quot;, true);</span>
+<span class="nc" id="L127">                        startActivity(i);</span>
+<span class="nc" id="L128">                    });</span>
+<span class="nc" id="L129">                    return com.android.volley.Response.success(new JSONObject(), null);</span>
+<span class="nc" id="L130">                } catch (Exception e) {</span>
+<span class="nc" id="L131">                    return com.android.volley.Response.error(new com.android.volley.VolleyError(e));</span>
+                }
+            }
+        };
+
+<span class="nc" id="L136">        VolleySingleton.getInstance(this).addToRequestQueue(request);</span>
+<span class="nc" id="L137">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

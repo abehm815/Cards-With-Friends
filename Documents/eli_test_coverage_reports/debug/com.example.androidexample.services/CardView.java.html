@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CardView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample.services</a> &gt; <span class="el_source">CardView.java</span></div><h1>CardView.java</h1><pre class="source lang-java linenums">package com.example.androidexample.services;
+
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
+import android.content.Context;
+import android.graphics.*;
+import android.util.AttributeSet;
+import android.view.MotionEvent;
+import android.view.View;
+import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
+
+import com.example.androidexample.R;
+
+public class CardView extends View {
+
+<span class="nc" id="L20">    private String rank = &quot;7&quot;;</span>
+<span class="nc" id="L21">    private String suit = &quot;s&quot;;</span>
+<span class="nc" id="L22">    private boolean faceUp = true;</span>
+
+<span class="nc" id="L24">    private final Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);</span>
+<span class="nc" id="L25">    private final RectF rect = new RectF();</span>
+    private Typeface interBlack;
+    private int redStart, redEnd, greyStart, greyEnd;
+
+<span class="nc" id="L29">    public CardView(Context context) { super(context); init(context); }</span>
+<span class="nc" id="L30">    public CardView(Context context, @Nullable AttributeSet attrs) { super(context, attrs); init(context); }</span>
+<span class="nc" id="L31">    public CardView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) { super(context, attrs, defStyleAttr); init(context); }</span>
+
+    private void init(Context context) {
+<span class="nc" id="L34">        interBlack = ResourcesCompat.getFont(context, R.font.inter_black);</span>
+<span class="nc" id="L35">        paint.setTypeface(interBlack);</span>
+<span class="nc" id="L36">        paint.setTextAlign(Paint.Align.LEFT);</span>
+
+<span class="nc" id="L38">        redStart = ContextCompat.getColor(context, R.color.my_red);</span>
+<span class="nc" id="L39">        redEnd   = ContextCompat.getColor(context, R.color.my_dark_red);</span>
+<span class="nc" id="L40">        greyStart = ContextCompat.getColor(context, R.color.my_dark_grey);</span>
+<span class="nc" id="L41">        greyEnd   = ContextCompat.getColor(context, R.color.my_light_grey);</span>
+
+        // Enable hardware acceleration for smoother 3D rotation
+<span class="nc" id="L44">        setLayerType(LAYER_TYPE_HARDWARE, null);</span>
+<span class="nc" id="L45">    }</span>
+
+    public void setCard(String rank, String suit, boolean faceUp) {
+<span class="nc" id="L48">        this.rank = rank.toLowerCase();</span>
+<span class="nc" id="L49">        this.suit = suit.toLowerCase();</span>
+<span class="nc" id="L50">        this.faceUp = faceUp;</span>
+<span class="nc" id="L51">        invalidate();</span>
+<span class="nc" id="L52">    }</span>
+
+    public String getCardValue() {
+<span class="nc" id="L55">        return rank;</span>
+    }
+
+    public String getCardSuit() {
+<span class="nc" id="L59">        return suit;</span>
+    }
+
+    public boolean isFaceUp() {
+<span class="nc" id="L63">        return faceUp;</span>
+    }
+
+    private float dX, dY;
+    private float startX, startY;
+    private float startRotation; // store original rotation
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+<span class="nc bnc" id="L72" title="All 4 branches missed.">        switch (event.getAction()) {</span>
+            case MotionEvent.ACTION_DOWN:
+                // Remember original position and rotation
+<span class="nc" id="L75">                startX = getX();</span>
+<span class="nc" id="L76">                startY = getY();</span>
+<span class="nc" id="L77">                startRotation = getRotation();</span>
+
+                // Record offset between touch and card position
+<span class="nc" id="L80">                dX = event.getRawX() - getX();</span>
+<span class="nc" id="L81">                dY = event.getRawY() - getY();</span>
+
+                // Straighten and &quot;lift&quot; the card
+<span class="nc" id="L84">                animate()</span>
+<span class="nc" id="L85">                        .rotation(0f)         // straighten to vertical</span>
+<span class="nc" id="L86">                        .scaleX(1.15f)</span>
+<span class="nc" id="L87">                        .scaleY(1.15f)</span>
+<span class="nc" id="L88">                        .setDuration(150)</span>
+<span class="nc" id="L89">                        .start();</span>
+<span class="nc" id="L90">                setElevation(25f);</span>
+<span class="nc" id="L91">                return true;</span>
+
+            case MotionEvent.ACTION_MOVE:
+                // Move with finger
+<span class="nc" id="L95">                float newX = event.getRawX() - dX;</span>
+<span class="nc" id="L96">                float newY = event.getRawY() - dY;</span>
+<span class="nc" id="L97">                setX(newX);</span>
+<span class="nc" id="L98">                setY(newY);</span>
+<span class="nc" id="L99">                return true;</span>
+
+            case MotionEvent.ACTION_UP:
+            case MotionEvent.ACTION_CANCEL:
+                // Animate back to original position and rotation
+<span class="nc" id="L104">                animate()</span>
+<span class="nc" id="L105">                        .x(startX)</span>
+<span class="nc" id="L106">                        .y(startY)</span>
+<span class="nc" id="L107">                        .rotation(startRotation)</span>
+<span class="nc" id="L108">                        .scaleX(1f)</span>
+<span class="nc" id="L109">                        .scaleY(1f)</span>
+<span class="nc" id="L110">                        .setDuration(350)</span>
+<span class="nc" id="L111">                        .withEndAction(() -&gt; setElevation(0f))</span>
+<span class="nc" id="L112">                        .start();</span>
+<span class="nc" id="L113">                return true;</span>
+        }
+
+<span class="nc" id="L116">        return super.onTouchEvent(event);</span>
+    }
+
+    /** flip animation */
+    public void flipCard() {
+<span class="nc" id="L121">        ObjectAnimator half1 = ObjectAnimator.ofFloat(this, &quot;rotationY&quot;, 0f, 90f);</span>
+<span class="nc" id="L122">        half1.setDuration(150);</span>
+
+<span class="nc" id="L124">        ObjectAnimator half2 = ObjectAnimator.ofFloat(this, &quot;rotationY&quot;, -90f, 0f);</span>
+<span class="nc" id="L125">        half2.setDuration(150);</span>
+
+<span class="nc" id="L127">        half1.addListener(new AnimatorListenerAdapter() {</span>
+            @Override
+            public void onAnimationEnd(Animator animation) {
+<span class="nc bnc" id="L130" title="All 2 branches missed.">                faceUp = !faceUp;</span>
+<span class="nc" id="L131">                invalidate();</span>
+<span class="nc" id="L132">            }</span>
+        });
+
+<span class="nc" id="L135">        AnimatorSet set = new AnimatorSet();</span>
+<span class="nc" id="L136">        set.playSequentially(half1, half2);</span>
+<span class="nc" id="L137">        set.start();</span>
+<span class="nc" id="L138">    }</span>
+
+    @Override
+    protected void onDraw(Canvas canvas) {
+<span class="nc" id="L142">        super.onDraw(canvas);</span>
+
+<span class="nc" id="L144">        int w = getWidth();</span>
+<span class="nc" id="L145">        int h = getHeight();</span>
+<span class="nc" id="L146">        float cornerRadius = w * 0.12f;</span>
+
+<span class="nc" id="L148">        rect.set(0, 0, w, h);</span>
+<span class="nc" id="L149">        paint.setShader(null);</span>
+<span class="nc" id="L150">        paint.setStyle(Paint.Style.FILL);</span>
+
+<span class="nc" id="L152">        Path path = new Path();</span>
+<span class="nc" id="L153">        path.addRoundRect(rect, cornerRadius, cornerRadius, Path.Direction.CW);</span>
+
+<span class="nc bnc" id="L155" title="All 2 branches missed.">        if (faceUp) {</span>
+<span class="nc" id="L156">            paint.setColor(Color.WHITE);</span>
+<span class="nc" id="L157">            canvas.drawPath(path, paint);</span>
+
+<span class="nc bnc" id="L159" title="All 4 branches missed.">            boolean isRed = suit.equals(&quot;h&quot;) || suit.equals(&quot;d&quot;);</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">            int startColor = isRed ? redStart : greyStart;</span>
+<span class="nc bnc" id="L161" title="All 2 branches missed.">            int endColor = isRed ? redEnd : greyEnd;</span>
+
+<span class="nc" id="L163">            Shader gradient = new LinearGradient(0, 0, 0, h, startColor, endColor, Shader.TileMode.CLAMP);</span>
+<span class="nc" id="L164">            paint.setShader(gradient);</span>
+
+            // Rank
+<span class="nc" id="L167">            paint.setTextSize(h * 0.35f);</span>
+<span class="nc" id="L168">            canvas.drawText(formatRank(rank), w * 0.1f, h * 0.35f, paint);</span>
+
+            // Suit
+<span class="nc" id="L171">            paint.setTextSize(h * 0.55f);</span>
+<span class="nc" id="L172">            float suitX = (w - paint.measureText(getSuitSymbol(suit))) / 2f;</span>
+<span class="nc" id="L173">            canvas.drawText(getSuitSymbol(suit), suitX, h * 0.90f, paint);</span>
+<span class="nc" id="L174">        } else {</span>
+            // Back of card: gradient design
+<span class="nc" id="L176">            Shader backShader = new LinearGradient(0, 0, w, h,</span>
+<span class="nc" id="L177">                    ContextCompat.getColor(getContext(), R.color.my_dark_grey),</span>
+<span class="nc" id="L178">                    ContextCompat.getColor(getContext(), R.color.my_light_grey),</span>
+                    Shader.TileMode.CLAMP);
+<span class="nc" id="L180">            paint.setShader(backShader);</span>
+<span class="nc" id="L181">            canvas.drawPath(path, paint);</span>
+
+            // Optional decorative symbol
+<span class="nc" id="L184">            paint.setShader(null);</span>
+<span class="nc" id="L185">            paint.setColor(Color.WHITE);</span>
+<span class="nc" id="L186">            paint.setTextSize(h * 0.4f);</span>
+<span class="nc" id="L187">            paint.setTextAlign(Paint.Align.CENTER);</span>
+<span class="nc" id="L188">            canvas.drawText(&quot;★&quot;, w / 2f, h / 2f + h * 0.15f, paint);</span>
+<span class="nc" id="L189">            paint.setTextAlign(Paint.Align.LEFT);</span>
+        }
+<span class="nc" id="L191">    }</span>
+
+    private String formatRank(String rank) {
+        try {
+<span class="nc" id="L195">            int value = Integer.parseInt(rank);</span>
+<span class="nc bnc" id="L196" title="All 5 branches missed.">            switch (value) {</span>
+<span class="nc" id="L197">                case 11: return &quot;J&quot;;</span>
+<span class="nc" id="L198">                case 12: return &quot;Q&quot;;</span>
+<span class="nc" id="L199">                case 13: return &quot;K&quot;;</span>
+<span class="nc" id="L200">                case 14: return &quot;A&quot;;</span>
+<span class="nc" id="L201">                default: return String.valueOf(value);</span>
+            }
+<span class="nc" id="L203">        } catch (NumberFormatException e) {</span>
+            // fallback in case rank isn't numeric
+<span class="nc bnc" id="L205" title="All 5 branches missed.">            switch (rank.toLowerCase()) {</span>
+<span class="nc" id="L206">                case &quot;a&quot;: return &quot;A&quot;;</span>
+<span class="nc" id="L207">                case &quot;k&quot;: return &quot;K&quot;;</span>
+<span class="nc" id="L208">                case &quot;q&quot;: return &quot;Q&quot;;</span>
+<span class="nc" id="L209">                case &quot;j&quot;: return &quot;J&quot;;</span>
+<span class="nc" id="L210">                default:  return rank.toUpperCase();</span>
+            }
+        }
+    }
+
+    private String getSuitSymbol(String suit) {
+<span class="nc bnc" id="L216" title="All 5 branches missed.">        switch (suit) {</span>
+<span class="nc" id="L217">            case &quot;h&quot;: return &quot;\u2665\uFE0E&quot;; //Ascii codes for suit symbols</span>
+<span class="nc" id="L218">            case &quot;d&quot;: return &quot;\u2666\uFE0E&quot;;</span>
+<span class="nc" id="L219">            case &quot;c&quot;: return &quot;\u2663\uFE0E&quot;;</span>
+<span class="nc" id="L220">            case &quot;s&quot;: return &quot;\u2660\uFE0E&quot;;</span>
+<span class="nc" id="L221">            default:  return &quot;?&quot;;</span>
+        }
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>

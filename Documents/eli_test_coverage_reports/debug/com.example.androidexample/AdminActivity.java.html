@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>AdminActivity.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=0;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">debug</a> &gt; <a href="index.source.html" class="el_package">com.example.androidexample</a> &gt; <span class="el_source">AdminActivity.java</span></div><h1>AdminActivity.java</h1><pre class="source lang-java linenums">package com.example.androidexample;
+
+import android.os.Bundle;
+import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+
+import com.android.volley.Request;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.example.androidexample.services.VolleySingleton;
+
+import org.json.JSONObject;
+
+
+<span class="nc" id="L21">public class AdminActivity extends AppCompatActivity{</span>
+
+    private EditText usernameText;
+    private EditText gameText;
+    private EditText statToChangeText;
+    private EditText newStatText;
+
+    private Button statUpdateButton;
+
+
+
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+<span class="nc" id="L35">        super.onCreate(savedInstanceState);</span>
+<span class="nc" id="L36">        setContentView(R.layout.activity_admin);</span>
+
+<span class="nc" id="L38">        usernameText = findViewById(R.id.admin_user_input);</span>
+<span class="nc" id="L39">        gameText = findViewById(R.id.admin_game_input);</span>
+<span class="nc" id="L40">        statToChangeText = findViewById(R.id.admin_stat_input);</span>
+<span class="nc" id="L41">        newStatText = findViewById(R.id.admin_new_stat_input);</span>
+<span class="nc" id="L42">        statUpdateButton = findViewById(R.id.admin_update_stats_button);</span>
+
+<span class="nc" id="L44">        statUpdateButton.setOnClickListener(new View.OnClickListener(){</span>
+            @Override
+            public void onClick(View v){
+<span class="nc" id="L47">                updateUserStat(usernameText.getText().toString(), gameText.getText().toString(),</span>
+<span class="nc" id="L48">                        statToChangeText.getText().toString(), newStatText.getText().toString());</span>
+<span class="nc" id="L49">            }</span>
+        });
+
+<span class="nc" id="L52">    }</span>
+
+    private void updateUserStat(String user, String game, String statToChange, String newStat){
+
+
+<span class="nc" id="L57">        String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080&quot; + &quot;/AppUser/username/&quot; + user;</span>
+
+<span class="nc" id="L59">        JsonObjectRequest request = new JsonObjectRequest(</span>
+                Request.Method.GET,
+                url,
+                null,
+                response -&gt; {
+                    try {
+                        ;
+<span class="nc" id="L66">                        int userID = response.getInt(&quot;userID&quot;);;</span>
+<span class="nc" id="L67">                        updateUserStatFromID(userID, game, statToChange, newStat);</span>
+<span class="nc" id="L68">                    } catch (Exception e) {</span>
+<span class="nc" id="L69">                        e.printStackTrace();</span>
+<span class="nc" id="L70">                    }</span>
+<span class="nc" id="L71">                },</span>
+                error -&gt; {
+<span class="nc" id="L73">                    Log.e(&quot;Volley&quot;, &quot;Error fetching user: &quot; + error.toString());</span>
+<span class="nc" id="L74">                    Toast.makeText(this, &quot;Failed to fetch userID&quot;, Toast.LENGTH_SHORT).show();</span>
+<span class="nc" id="L75">                }</span>
+        );
+
+        // Add to the request queue
+<span class="nc" id="L79">        VolleySingleton.getInstance(this).addToRequestQueue(request);</span>
+
+<span class="nc" id="L81">    }</span>
+
+    private void updateUserStatFromID(int userID, String game, String statToChange, String newStat){
+<span class="nc" id="L84">        String url = &quot;http://coms-3090-006.class.las.iastate.edu:8080&quot; + &quot;/UserStats/&quot; + userID + &quot;/&quot; + game + &quot;/set/&quot; + statToChange + &quot;/&quot; + newStat;</span>
+
+
+<span class="nc" id="L87">        JsonObjectRequest postRequest = new JsonObjectRequest(</span>
+                Request.Method.PUT,
+                url,
+                null,
+<span class="nc" id="L91">                new Response.Listener&lt;JSONObject&gt;() {</span>
+                    @Override
+                    public void onResponse(JSONObject response) {
+
+<span class="nc" id="L95">                    }</span>
+                },
+<span class="nc" id="L97">                new Response.ErrorListener() {</span>
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+<span class="nc" id="L100">                        Toast.makeText(getApplicationContext(), &quot;Update Failed&quot;, Toast.LENGTH_LONG).show();</span>
+<span class="nc" id="L101">                    }</span>
+                }
+        );
+        //Volley
+<span class="nc" id="L105">        VolleySingleton.getInstance(AdminActivity.this).addToRequestQueue(postRequest);</span>
+
+<span class="nc" id="L107">    }</span>
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.13.202504020838</span>Generated by the Android Gradle plugin 8.13.0</div></body></html>
