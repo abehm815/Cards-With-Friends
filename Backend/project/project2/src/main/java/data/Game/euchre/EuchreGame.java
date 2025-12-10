@@ -96,19 +96,34 @@ public class EuchreGame {
      * @return optionCard
      */
     public EuchreCard startNewRound() {
+        // reset deck and current trick list
         deck = new EuchreDeck();
         this.currentTrick = new ArrayList<>();
+
+        // rotate dealer, set first player to left of dealer
         currentDealerIndex = nextPlayerIndex(currentDealerIndex);
         currentPlayerIndex = nextPlayerIndex(currentDealerIndex);
+
+        // reset team trick counters and flags
         teamOne.clearTricksTaken();
         teamTwo.clearTricksTaken();
         teamOne.setTeamMemberWhenAlone(false);
         teamOne.setTeamPickedUpCard(false);
         teamTwo.setTeamMemberWhenAlone(false);
         teamTwo.setTeamPickedUpCard(false);
-        this.dealCards();
+
+        // reset round-specific suits/flags so bidding happens fresh
+        this.trumpSuit = '\0';   // clear old trump
+        this.leadSuit = '\0';    // clear old lead
+        this.optionCard = null;  // will be set after dealing
         this.isChoice = false;
         this.isBidding = true;
+
+        // deal new hands
+        // (if player hands aren't cleared by dealCard(player), ensure player.clearHand() before dealing)
+        this.dealCards();
+
+        // reveal up-card
         optionCard = deck.dealCard();
 
         // Log game start
