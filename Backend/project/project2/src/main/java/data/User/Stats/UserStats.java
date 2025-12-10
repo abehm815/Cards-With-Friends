@@ -24,7 +24,8 @@ public class UserStats {
     @OneToMany(
             mappedBy = "userStats",
             cascade = CascadeType.ALL,
-            orphanRemoval = true
+            orphanRemoval = true,
+            fetch = FetchType.EAGER
     )
     @MapKeyColumn(name = "game_name")
     private Map<String, GameStats> gameStats = new HashMap<>();

@@ -99,6 +99,7 @@ public class EuchreGame {
         deck = new EuchreDeck();
         this.currentTrick = new ArrayList<>();
         currentDealerIndex = nextPlayerIndex(currentDealerIndex);
+        currentPlayerIndex = nextPlayerIndex(currentDealerIndex);
         teamOne.clearTricksTaken();
         teamTwo.clearTricksTaken();
         teamOne.setTeamMemberWhenAlone(false);
@@ -450,8 +451,22 @@ public class EuchreGame {
      * @return winning team
      */
     public EuchreTeam getWinner() {
-        if (teamOne.getScore() >= 10) {
+        if (teamOne.getScore() >= 2) {
             System.out.println("Team One has won!");
+
+            EuchreStats winnerOneStats = teamOne.getTeamMembers().get(0).getStats();
+            EuchreStats winnerTwoStats = teamOne.getTeamMembers().get(1).getStats();
+            EuchreStats loserOneStats = teamTwo.getTeamMembers().get(0).getStats();
+            EuchreStats loserTwoStats = teamTwo.getTeamMembers().get(1).getStats();
+
+            winnerTwoStats.addGameWon();
+            winnerTwoStats.addGamePlayed();
+
+            winnerOneStats.addGameWon();
+            winnerOneStats.addGamePlayed();
+
+            loserOneStats.addGamePlayed();
+            loserTwoStats.addGamePlayed();
 
             // Log Win
             logEvent(
@@ -468,22 +483,26 @@ public class EuchreGame {
                     getCurrentDealerUsername(),
                     null
             );
-
-            // Keep track of stat for wins
-            // Get both player's stats
-            List<EuchrePlayer> winningTeam = teamTwo.getTeamMembers();
-            EuchreStats winnerStatsOne = winningTeam.get(0).getStats();
-            EuchreStats winnerStatsTwo = winningTeam.get(1).getStats();
-
-            // Increment Wins for both players
-            winnerStatsOne.addGameWon();
-            winnerStatsTwo.addGameWon();
 
             return teamOne;
         }
 
-        if (teamTwo.getScore() >= 10) {
+        if (teamTwo.getScore() >= 2) {
             System.out.println("Team Two has won!");
+
+            EuchreStats winnerOneStats = teamTwo.getTeamMembers().get(0).getStats();
+            EuchreStats winnerTwoStats = teamTwo.getTeamMembers().get(1).getStats();
+            EuchreStats loserOneStats = teamOne.getTeamMembers().get(0).getStats();
+            EuchreStats loserTwoStats = teamOne.getTeamMembers().get(1).getStats();
+
+            winnerTwoStats.addGameWon();
+            winnerTwoStats.addGamePlayed();
+
+            winnerOneStats.addGameWon();
+            winnerOneStats.addGamePlayed();
+
+            loserOneStats.addGamePlayed();
+            loserTwoStats.addGamePlayed();
 
             // Log Win
             logEvent(
@@ -500,16 +519,6 @@ public class EuchreGame {
                     getCurrentDealerUsername(),
                     null
             );
-
-            // Keep track of stat for wins
-            // Get both player's stats
-            List<EuchrePlayer> winningTeam = teamTwo.getTeamMembers();
-            EuchreStats winnerStatsOne = winningTeam.get(0).getStats();
-            EuchreStats winnerStatsTwo = winningTeam.get(1).getStats();
-
-            // Increment Wins for both players
-            winnerStatsOne.addGameWon();
-            winnerStatsTwo.addGameWon();
 
             return teamTwo;
         }
@@ -716,5 +725,21 @@ public class EuchreGame {
         event.setUpCard(upCard);
 
         this.matchHistory.getEvents().add(event);
+    }
+
+    public void setTeamOne(EuchreTeam teamOne) {
+        this.teamOne = teamOne;
+    }
+
+    public void setTeamTwo(EuchreTeam teamTwo) {
+        this.teamTwo = teamTwo;
+    }
+
+    public EuchreTeam getTeamOne() {
+        return teamOne;
+    }
+
+    public EuchreTeam getTeamTwo() {
+        return teamTwo;
     }
 }

@@ -39,6 +39,12 @@ public class EuchreTeam {
     }
 
     /**
+     * Sets the score (used for testing)
+     * @param score score
+     */
+    public void setScore(int score) { this.score = score; }
+
+    /**
      * Gets the members of the team
      * @return teamMembers
      */
@@ -119,10 +125,12 @@ public class EuchreTeam {
     }
 
     /**
-     * Increments the count of tricks taken by the team by 1.
+     * Clears all the tricks taken for the team and the player
      */
 
     public void clearTricksTaken() {
         tricksTaken = 0;
+        teamMembers.get(0).clearTricks();
+        teamMembers.get(1).clearTricks();
     }
 }

@@ -21,10 +21,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EuchreServer {
         private static EuchreService euchreService;
         private static ObjectMapper objectMapper = new ObjectMapper();
+    private static final Map<String, Set<Session>> lobbySessions = new ConcurrentHashMap<>();
 
         @Autowired
         public void setObjectMapper(ObjectMapper mapper) { EuchreServer.objectMapper = mapper; }
-        private static final Map<String, Set<Session>> lobbySessions = new ConcurrentHashMap<>();
 
         @Autowired
         public void setEuchreService(EuchreService service) {
@@ -52,6 +52,7 @@ public class EuchreServer {
                     case "play" -> handlePlay(msg, lobbyCode);
                     case "state" -> sendFullGameState(session, lobbyCode);
                     case "end" -> handleEnd(msg, lobbyCode);
+                    case "testEnd" -> handleTestEnd(msg, lobbyCode);
                     default -> sendMessage(session, "Unknown message type: " + type);
                 }
             } catch (Exception e) {
@@ -74,7 +75,7 @@ public class EuchreServer {
         private void handleStart(Map<String, Object> msg, String lobbyCode) {
             List<String> usernames = (List<String>) msg.get("players");
             EuchreGame game = euchreService.startGame(lobbyCode, usernames);
-            broadcast(lobbyCode, "New Euchre round started. Dealer: " + game.getCurrentDealerUsername());
+            broadcast(lobbyCode, "New Euchre round started. Dealer: " + game.getCurrentDealerUsername() + " || Option card: " + game.getOptionCard().toString());
             broadcastGameState(lobbyCode);
         }
 
@@ -171,5 +172,10 @@ public class EuchreServer {
             } catch (IOException e) {
                 e.printStackTrace();
             }
+        }
+
+        private void handleTestEnd(Map<String, Object> msg, String lobbyCode) {
+            euchreService.forceEndGameForTesting(lobbyCode);
+            broadcast(lobbyCode, "Euchre game ended.");
         }
 }
