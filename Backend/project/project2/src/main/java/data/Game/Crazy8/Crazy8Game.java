@@ -256,6 +256,7 @@ public class Crazy8Game {
         player.removeCard(cardToPlay);
         playedCards.add(cardToPlay);
         upCard = cardToPlay;
+        currentColor = upCard.getSuit(); // BUG FIX if value is the same on the cards and colors diffrent current color must be updated
         logEvent(player.getUsername(),"player placed a card", cardToPlay.toString(), null, null, player.getHandSize());
         // Update stats for cards played
         Crazy8Stats playerStats = player.getCrazy8Stats();
